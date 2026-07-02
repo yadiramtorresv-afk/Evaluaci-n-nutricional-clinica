@@ -34,6 +34,7 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .tab.t-emb.active{background:var(--pink);border-color:var(--pink)}
 .tab.t-lab.active{background:var(--accent2);border-color:var(--accent2)}
+.tab.t-plan.active{background:#e08a3c;border-color:#e08a3c}
 .tab.t-pac.active{background:var(--green);border-color:var(--green);color:#0f1117}
 .tab-content{display:none}
 .tab-content.active{display:block}
@@ -73,6 +74,26 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .lab-interp-item.alto{background:#3a1010;border-color:var(--red);color:#ffb0b0}
 .lab-interp-item.medio{background:#3a2a10;border-color:#e0a030;color:#ffd699}
 .lab-interp-item.bajo{background:#1a2a4a;border-color:#7ab3f7;color:#b8d8ff}
+
+/* PLAN DE ALIMENTOS */
+.sec-title.orange{color:#e08a3c}
+.pg-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)}
+.pg-row:last-child{border-bottom:none}
+.pg-info{flex:1}
+.pg-name{font-size:.82rem;font-weight:700}
+.pg-macros{font-size:.68rem;color:var(--muted);margin-top:1px}
+.pg-input{width:64px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 6px;font-size:.85rem;text-align:center}
+.pg-input:focus{outline:none;border-color:#e08a3c}
+.pg-sub{width:78px;text-align:right;font-size:.72rem;color:var(--muted)}
+
+.plan-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.ps-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+.ps-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.ps-val{font-size:1rem;font-weight:800;margin-top:2px}
+.ps-target{font-size:.68rem;color:var(--muted);margin-top:1px}
+.ps-val.ok{color:var(--green)}
+.ps-val.warn{color:#e0a030}
+.ps-val.off{color:var(--red)}
 
 /* FIELDS */
 .field{margin-bottom:10px}
@@ -195,6 +216,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   <div class="tab active" onclick="switchTab('general')">🏥 General</div>
   <div class="tab t-emb" onclick="switchTab('embarazo')">🤰 Embarazo</div>
   <div class="tab t-lab" onclick="switchTab('labs')">🧪 Labs</div>
+  <div class="tab t-plan" onclick="switchTab('plan')">🍽️ Plan</div>
   <div class="tab t-pac" onclick="switchTab('pacientes')">📋 Pacientes</div>
 </div>
 
@@ -503,6 +525,51 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 </div>
 
+<!-- ======= TAB PLAN DE ALIMENTOS ======= -->
+<div id="tab-plan" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title orange">Sistema de equivalentes</div>
+    <div class="pb-wrap">
+      <div class="pb on" id="plan-mode-completo" onclick="setPlanMode('completo')">SMAE completo</div>
+      <div class="pb" id="plan-mode-simple" onclick="setPlanMode('simple')">Simplificado (sin azúcar)</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title orange">Objetivo calórico y de macronutrientes</div>
+    <div class="row">
+      <button class="btn-reset" style="flex:1;font-size:.72rem" onclick="planFromTab('g')">↙ Usar de General</button>
+      <button class="btn-reset" style="flex:1;font-size:.72rem" onclick="planFromTab('e')">↙ Usar de Embarazo</button>
+    </div>
+    <div class="field" style="margin-top:10px"><label>Kcal totales</label><input type="number" id="plan-kcal" step="1" placeholder="0" oninput="renderPlanGrid()"></div>
+    <div class="row">
+      <div class="field"><label>% HC</label><input type="number" id="plan-pctHC" step="1" value="55" oninput="renderPlanGrid()"></div>
+      <div class="field"><label>% Prot</label><input type="number" id="plan-pctProt" step="1" value="15" oninput="renderPlanGrid()"></div>
+      <div class="field"><label>% Lip</label><input type="number" id="plan-pctLip" step="1" value="30" oninput="renderPlanGrid()"></div>
+    </div>
+    <div class="res neutral" id="plan-sumpct" style="margin-top:6px;font-size:.78rem">—</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title orange">Porciones por grupo</div>
+    <p class="note" style="margin-bottom:8px">Ajusta las porciones de cada grupo y observa cómo se acercan los totales al objetivo.</p>
+    <div id="plan-grid"></div>
+    <button class="btn-reset" onclick="resetPlanPortions()">↺ Reiniciar porciones</button>
+  </div>
+
+  <div class="section">
+    <div class="sec-title orange">Totales del plan vs. objetivo</div>
+    <div class="plan-summary">
+      <div class="ps-card"><div class="ps-label">Kcal</div><div class="ps-val" id="ps-kcal">0</div><div class="ps-target" id="ps-kcal-t">meta: —</div></div>
+      <div class="ps-card"><div class="ps-label">HC (g)</div><div class="ps-val" id="ps-hc">0</div><div class="ps-target" id="ps-hc-t">meta: —</div></div>
+      <div class="ps-card"><div class="ps-label">Proteína (g)</div><div class="ps-val" id="ps-prot">0</div><div class="ps-target" id="ps-prot-t">meta: —</div></div>
+      <div class="ps-card"><div class="ps-label">Lípidos (g)</div><div class="ps-val" id="ps-lip">0</div><div class="ps-target" id="ps-lip-t">meta: —</div></div>
+    </div>
+  </div>
+
+</div>
+
 <!-- ======= TAB PACIENTES ======= -->
 <div id="tab-pacientes" class="tab-content">
   <div class="section">
@@ -544,7 +611,8 @@ function switchTab(t) {
   if(t==='general') tabs[0].classList.add('active');
   else if(t==='embarazo') tabs[1].classList.add('active');
   else if(t==='labs') tabs[2].classList.add('active');
-  else { tabs[3].classList.add('active'); renderPacs(); }
+  else if(t==='plan') { tabs[3].classList.add('active'); renderPlanGrid(); }
+  else { tabs[4].classList.add('active'); renderPacs(); }
 }
 
 // ===== HELPERS =====
@@ -701,6 +769,7 @@ function calcG() {
   sv('gs-prot', r1(pg)+' g · '+r0(pkcal)+' kcal · '+r1(ppct)+'%');
   sv('gs-lip',  r0(lipkcal)+' kcal · '+r0(lipg)+' g');
   document.getElementById('g-sum').style.display='block';
+  planFromGeneral = {kcal:kcal, hcg:hcg, pg:pg, lipg:lipg};
 }
 
 function clearGMacs(){
@@ -832,6 +901,7 @@ function calcE() {
   sv('es-prot', r1(pg)+' g · '+r0(pkcal)+' kcal · '+r1(ppct)+'%');
   sv('es-lip',  r0(lipkcal)+' kcal · '+r0(lipg)+' g');
   document.getElementById('e-sum').style.display='block';
+  planFromEmbarazo = {kcal:kcalT, hcg:hcg, pg:pg, lipg:lipg};
 }
 
 function clearEMacs(){
@@ -1289,11 +1359,151 @@ function renderInterpretacion() {
 
 
 
+// ===== PLAN DE ALIMENTOS (SMAE) =====
+var planFromGeneral = null, planFromEmbarazo = null;
+var planMode = 'completo';
+var planPortions = {};
+
+// Valores por porción: CHO(g), PROT(g), LIP(g), kcal — Sistema Mexicano de Equivalentes
+var PLAN_GROUPS_COMPLETO = [
+ {key:'verduras', name:'Verduras', cho:4, prot:2, lip:0, kcal:25},
+ {key:'frutas', name:'Frutas', cho:15, prot:0, lip:0, kcal:60},
+ {key:'cereal_sg', name:'Cereales y tubérculos sin grasa', cho:15, prot:2, lip:0, kcal:70},
+ {key:'cereal_cg', name:'Cereales y tubérculos con grasa', cho:15, prot:2, lip:5, kcal:115},
+ {key:'legumin', name:'Leguminosas', cho:20, prot:8, lip:1, kcal:120},
+ {key:'aoa_mb', name:'AOA muy bajo aporte de grasa', cho:0, prot:7, lip:1, kcal:40},
+ {key:'aoa_b', name:'AOA bajo aporte de grasa', cho:0, prot:7, lip:3, kcal:55},
+ {key:'aoa_m', name:'AOA moderado aporte de grasa', cho:0, prot:7, lip:5, kcal:75},
+ {key:'aoa_a', name:'AOA alto aporte de grasa', cho:0, prot:7, lip:8, kcal:100},
+ {key:'leche_desc', name:'Leche descremada', cho:12, prot:9, lip:2, kcal:95},
+ {key:'leche_semi', name:'Leche semidescremada', cho:12, prot:9, lip:4, kcal:110},
+ {key:'leche_ent', name:'Leche entera', cho:12, prot:9, lip:8, kcal:150},
+ {key:'aceite_sp', name:'Aceites y grasas sin proteína', cho:0, prot:0, lip:5, kcal:45},
+ {key:'aceite_cp', name:'Aceites y grasas con proteína', cho:0, prot:3, lip:5, kcal:70},
+ {key:'azucar_sg', name:'Azúcares sin grasa', cho:10, prot:0, lip:0, kcal:40},
+ {key:'azucar_cg', name:'Azúcares con grasa', cho:10, prot:0, lip:5, kcal:85}
+];
+
+var PLAN_GROUPS_SIMPLE = [
+ {key:'verduras', name:'Verduras', cho:4, prot:2, lip:0, kcal:25},
+ {key:'frutas', name:'Frutas', cho:15, prot:0, lip:0, kcal:60},
+ {key:'cereal_sg', name:'Cereales y tubérculos', cho:15, prot:2, lip:0, kcal:70},
+ {key:'legumin', name:'Leguminosas', cho:20, prot:8, lip:1, kcal:120},
+ {key:'aoa_m', name:'AOA (moderado aporte de grasa)', cho:0, prot:7, lip:5, kcal:75},
+ {key:'leche_semi', name:'Leche semidescremada', cho:12, prot:9, lip:4, kcal:110},
+ {key:'aceite_sp', name:'Aceites y grasas', cho:0, prot:0, lip:5, kcal:45}
+];
+
+function planGroups(){ return planMode==='completo' ? PLAN_GROUPS_COMPLETO : PLAN_GROUPS_SIMPLE; }
+
+function setPlanMode(m){
+  planMode = m;
+  document.getElementById('plan-mode-completo').className = 'pb'+(m==='completo'?' on':'');
+  document.getElementById('plan-mode-simple').className = 'pb'+(m==='simple'?' on':'');
+  planPortions = {};
+  renderPlanGrid();
+}
+
+function planFromTab(which){
+  var src = which==='g' ? planFromGeneral : planFromEmbarazo;
+  if(!src){ alert('Primero calcula en la pestaña de '+(which==='g'?'General':'Embarazo')+'.'); return; }
+  document.getElementById('plan-kcal').value = r0(src.kcal);
+  var pctHC = (src.hcg*4/src.kcal)*100;
+  var pctProt = (src.pg*4/src.kcal)*100;
+  var pctLip = (src.lipg*9/src.kcal)*100;
+  document.getElementById('plan-pctHC').value = r0(pctHC);
+  document.getElementById('plan-pctProt').value = r0(pctProt);
+  document.getElementById('plan-pctLip').value = r0(pctLip);
+  renderPlanGrid();
+}
+
+function resetPlanPortions(){
+  planPortions = {};
+  renderPlanGrid();
+}
+
+function updatePortion(key, val){
+  var n = parseFloat(val);
+  planPortions[key] = isNaN(n) ? 0 : n;
+  renderPlanTotals();
+}
+
+function renderPlanGrid(){
+  var grid = document.getElementById('plan-grid');
+  if(!grid) return;
+  var groups = planGroups();
+  grid.innerHTML = groups.map(function(g){
+    var val = planPortions[g.key]||'';
+    return '<div class="pg-row">'+
+      '<div class="pg-info"><div class="pg-name">'+g.name+'</div><div class="pg-macros">HC '+g.cho+'g · Prot '+g.prot+'g · Lip '+g.lip+'g · '+g.kcal+' kcal / porción</div></div>'+
+      '<input class="pg-input" type="number" step="0.5" min="0" placeholder="0" value="'+val+'" oninput="updatePortion(\''+g.key+'\',this.value)">'+
+      '</div>';
+  }).join('');
+  renderPlanTotals();
+}
+
+function planTargets(){
+  var kcal = parseFloat(gv('plan-kcal'))||0;
+  var pctHC = parseFloat(gv('plan-pctHC'))||0;
+  var pctProt = parseFloat(gv('plan-pctProt'))||0;
+  var pctLip = parseFloat(gv('plan-pctLip'))||0;
+  var sum = pctHC+pctProt+pctLip;
+  var el = document.getElementById('plan-sumpct');
+  if(el){
+    if(kcal>0 && Math.abs(sum-100)>1){ el.textContent='⚠️ Los porcentajes suman '+r0(sum)+'%, deberían sumar 100%'; el.className='res off'; }
+    else if(kcal>0){ el.textContent='Porcentajes: '+r0(sum)+'% del total'; el.className='res neutral'; }
+    else { el.textContent='—'; el.className='res neutral'; }
+  }
+  return {
+    kcal: kcal,
+    cho: kcal*(pctHC/100)/4,
+    prot: kcal*(pctProt/100)/4,
+    lip: kcal*(pctLip/100)/9
+  };
+}
+
+function pctDiffClass(actual, target){
+  if(target<=0) return 'neutral';
+  var diff = Math.abs(actual-target)/target*100;
+  if(diff<=5) return 'ok';
+  if(diff<=15) return 'warn';
+  return 'off';
+}
+
+function renderPlanTotals(){
+  var groups = planGroups();
+  var totCho=0, totProt=0, totLip=0, totKcal=0;
+  groups.forEach(function(g){
+    var n = planPortions[g.key]||0;
+    totCho += n*g.cho; totProt += n*g.prot; totLip += n*g.lip; totKcal += n*g.kcal;
+  });
+  var t = planTargets();
+  setPlanCard('ps-kcal', totKcal, t.kcal, 0);
+  setPlanCard('ps-hc', totCho, t.cho, 1);
+  setPlanCard('ps-prot', totProt, t.prot, 1);
+  setPlanCard('ps-lip', totLip, t.lip, 1);
+}
+
+function setPlanCard(id, actual, target, dec){
+  var valEl = document.getElementById(id);
+  var tEl = document.getElementById(id+'-t');
+  if(!valEl) return;
+  var actualR = dec===0 ? r0(actual) : r1(actual);
+  valEl.textContent = actualR + (id==='ps-kcal'?'':' g');
+  valEl.className = 'ps-val '+pctDiffClass(actual, target);
+  if(target>0){
+    tEl.textContent = 'meta: '+(dec===0?r0(target):r1(target))+(id==='ps-kcal'?' kcal':' g');
+  } else {
+    tEl.textContent = 'meta: —';
+  }
+}
+
+
+
+
 // Init
 setLact(false);
 initLabSelect();
-
-
 
 // Registro del Service Worker (PWA offline)
 if ('serviceWorker' in navigator) {
