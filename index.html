@@ -377,7 +377,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
   <div class="section">
     <div class="sec-title pink">Kilocalorías</div>
-    <div class="field"><label>Kcal base</label><div class="res" id="e-kcalb">—</div><p class="note">Bajo peso: peso ideal×30 · Normopeso: peso actual×30 · Sobrepeso/Obesidad: peso pregestacional×25</p></div>
+    <div class="field"><label>Kcal base</label><div class="res" id="e-kcalb">—</div><p class="note">Bajo peso: peso ideal×30 · Normopeso: peso actual×30 · Sobrepeso: peso ideal×25 · Obesidad (I/II/III): peso ajustado×25</p></div>
     <div class="field"><label>Incremento por trimestre / lactancia</label><div class="res" id="e-inc">—</div></div>
     <div class="field">
       <label>Total kcal/día <span class="trim-badge" id="e-trim">—</span></label>
@@ -840,7 +840,8 @@ function calcE() {
   var kcalBase;
   if(clsP==='bajo')        kcalBase=pideal*30;
   else if(clsP==='normal') kcalBase=pActual*30;
-  else                      kcalBase=pPreg*25;
+  else if(clsP==='sobre')  kcalBase=pideal*25;
+  else                      kcalBase=(paj||pActual)*25;
   setR('e-kcalb', r0(kcalBase)+' kcal/día');
 
   var inc=0, trimLbl='1° Trimestre';
