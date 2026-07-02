@@ -29,8 +29,9 @@ header h1{font-size:1.2rem;font-weight:700;letter-spacing:.04em;color:var(--acce
 header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 
 /* TABS */
-.tabs{display:flex;gap:5px;margin-bottom:14px}
-.tab{flex:1;padding:9px 3px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:.73rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s}
+.tabs{display:flex;gap:5px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;min-width:74px;padding:9px 10px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:.73rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .tab.t-emb.active{background:var(--pink);border-color:var(--pink)}
 .tab.t-lab.active{background:var(--accent2);border-color:var(--accent2)}
