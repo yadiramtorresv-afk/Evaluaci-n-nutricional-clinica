@@ -59,6 +59,21 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .lab-tag.alto{background:#3a1010;color:var(--red)}
 .lab-ref{font-size:.72rem;color:var(--muted);margin-top:3px}
 
+/* LAB QUICK GRID */
+.lg-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.lg-row:last-child{border-bottom:none}
+.lg-name{flex:1;font-size:.8rem;font-weight:600}
+.lg-input{width:88px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 8px;font-size:.85rem;text-align:right}
+.lg-input:focus{outline:none;border-color:var(--accent2)}
+.lg-unit{width:70px;font-size:.7rem;color:var(--muted)}
+
+/* INTERPRETACION GLOBAL */
+.lab-interp-item{border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:.82rem;line-height:1.5;border-left:4px solid}
+.lab-interp-item b{color:inherit}
+.lab-interp-item.alto{background:#3a1010;border-color:var(--red);color:#ffb0b0}
+.lab-interp-item.medio{background:#3a2a10;border-color:#e0a030;color:#ffd699}
+.lab-interp-item.bajo{background:#1a2a4a;border-color:#7ab3f7;color:#b8d8ff}
+
 /* FIELDS */
 .field{margin-bottom:10px}
 label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:4px;font-weight:500}
@@ -464,26 +479,26 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
         <div class="pb" id="trim-3" onclick="setTrim(3)">3º</div>
       </div>
     </div>
-    <div class="info-box">⚠️ Los rangos generales son de referencia bioquímica estándar por edad/sexo. Los rangos <b>por trimestre</b> son valores aproximados de fisiología obstétrica; confirma siempre con los valores de referencia de tu laboratorio institucional, ya que varían según método analítico.</div>
+    <div class="info-box">⚠️ Rangos de población general: valores estándar de laboratorio. Rangos de <b>embarazo</b>: Hb/Hto/Ferritina son puntos de corte OMS para alerta de anemia por trimestre (no rango completo). <b>Glucosa en ayuno y poscarga en embarazo son el criterio diagnóstico OMS de diabetes gestacional</b>, no un rango "saludable" — un valor dentro de ese rango sugiere DMG, no normalidad. Confirma siempre con los valores de tu laboratorio institucional, ya que varían según método analítico.</div>
   </div>
 
   <div class="section">
-    <div class="sec-title purple">Agregar resultado</div>
-    <div class="field">
-      <label>Analito</label>
-      <select id="lab-analito"></select>
-    </div>
-    <div class="row">
-      <div class="field"><label>Valor obtenido</label><input type="number" id="lab-valor" step="0.01" placeholder="0.0"></div>
-      <div class="field"><label>Unidad</label><div class="res neutral" id="lab-unidad">—</div></div>
-    </div>
-    <button class="btn-save" style="background:var(--accent2)" onclick="agregarLab()">➕ Interpretar y agregar</button>
+    <div class="sec-title purple">Capturar resultados</div>
+    <p class="note" style="margin-bottom:10px">Llena los valores que tengas del paciente y presiona interpretar. Puedes dejar en blanco los que no apliquen.</p>
+    <div id="lab-grid"></div>
+    <button class="btn-save" style="background:var(--accent2)" onclick="agregarLabs()">➕ Interpretar todos</button>
   </div>
 
   <div class="section" id="lab-results-sec" style="display:none">
     <div class="sec-title purple">Resultados</div>
     <div id="lab-results-list"></div>
     <button class="btn-reset" onclick="limpiarLabs()">↺ Limpiar resultados</button>
+  </div>
+
+  <div class="section" id="lab-interp-sec" style="display:none">
+    <div class="sec-title purple">🧠 Interpretación global</div>
+    <div id="lab-interp-list"></div>
+    <p class="note" style="margin-top:8px">Interpretación orientativa basada en patrones combinados de los valores capturados. No sustituye el juicio clínico ni un diagnóstico médico formal.</p>
   </div>
 
 </div>
@@ -986,186 +1001,100 @@ var labCtx = { rn:null, sexo:'F', meno:false, emb:false, trim:1 };
 var labResultados = [];
 
 var LABS = [
- {key:'ac_urico', name:'Ácido úrico', unit:'mg/dL',
-  preg:{1:[2,4.2],2:[2.4,4.9],3:[3.1,6.3]},
+ {key:'hb', name:'Hemoglobina', unit:'g/dL',
+  preg:{
+   1:{min:11.0,max:null,refText:'≥ 11.0 g/dL (alerta de anemia si menor)',label:'Embarazo · 1er trimestre (criterio OMS)'},
+   2:{min:10.5,max:null,refText:'≥ 10.5 g/dL (alerta de anemia si menor)',label:'Embarazo · 2do trimestre (criterio OMS)'},
+   3:{min:11.0,max:null,refText:'≥ 11.0 g/dL (alerta de anemia si menor)',label:'Embarazo · 3er trimestre (criterio OMS)'}
+  },
   rules:[
-   {test:c=>c.rn, range:[2,6.2], label:'Recién nacido'},
-   {test:c=>c.ageYears<18, range:[3.5,7], label:'Niños'},
-   {test:c=>c.sexo==='F', range:[3,5.5], label:'Adultos (femenino)'},
-   {test:c=>true, range:[5,7], label:'Adultos (masculino)'}
+   {test:c=>true, min:12.0, max:null, refText:'> 12.0 g/dL', label:'Población general'}
   ]},
- {key:'albumina', name:'Albúmina', unit:'g/dL',
-  preg:{1:[3.1,5.1],2:[2.6,4.5],3:[2.3,4.2]},
+
+ {key:'hto', name:'Hematocrito', unit:'%',
+  preg:{
+   1:{min:33,max:null,refText:'≥ 33 % (alerta de anemia si menor)',label:'Embarazo · 1er trimestre'},
+   2:{min:32,max:null,refText:'≥ 32 % (alerta de anemia si menor)',label:'Embarazo · 2do trimestre'},
+   3:{min:33,max:null,refText:'≥ 33 % (alerta de anemia si menor)',label:'Embarazo · 3er trimestre'}
+  },
   rules:[
-   {test:c=>c.rn==='rnpt', range:[1.8,3], label:'RN pretérmino'},
-   {test:c=>c.rn, range:[2.5,3.4], label:'Recién nacido'},
-   {test:c=>c.ageYears<5, range:[3.9,5], label:'<5 años'},
-   {test:c=>c.ageYears<19, range:[4,5.3], label:'5-19 años'},
-   {test:c=>true, range:[3.8,5], label:'>19 años'}
+   {test:c=>true, min:36, max:48, refText:'36 – 48 %', label:'Población general'}
   ]},
- {key:'bili_dir', name:'Bilirrubina directa (conjugada)', unit:'mg/dL',
-  rules:[
-   {test:c=>c.ageYears>=19, range:[0,0.4], label:'Adultos'},
-   {test:c=>true, range:[0,0.2], label:'General/pediátrico'}
-  ]},
- {key:'bili_tot', name:'Bilirrubina total', unit:'mg/dL',
-  rules:[
-   {test:c=>c.rn, range:[0,2], label:'Recién nacido'},
-   {test:c=>c.ageYears>=19, range:[0.1,1.2], label:'Adulto'},
-   {test:c=>true, range:[0.2,1], label:'Niño mayor'}
-  ]},
- {key:'ca_ion', name:'Calcio iónico', unit:'mg/dL',
-  rules:[{test:c=>true, range:[4.4,5], label:'Todas las edades'}]},
- {key:'ca_tot', name:'Calcio total', unit:'mg/dL',
-  rules:[
-   {test:c=>c.rn==='rnt', range:[7,12], label:'RN a término'},
-   {test:c=>c.rn==='rnpt', range:[6,10], label:'RN pretérmino'},
-   {test:c=>c.ageYears<19, range:[8,10.5], label:'Niño'},
-   {test:c=>true, range:[8.4,10.2], label:'Adulto'}
-  ]},
- {key:'col_tot', name:'Colesterol total', unit:'mg/dL',
-  preg:{1:[141,210],2:[176,299],3:[219,349]},
-  rules:[
-   {test:c=>c.rn, range:[50,153], label:'Recién nacido'},
-   {test:c=>c.ageYears<2, range:[50,175], label:'Lactante'},
-   {test:c=>c.ageYears<18, range:[120,200], label:'Niño'},
-   {test:c=>true, range:[0,200], label:'Adulto (<200)'}
-  ]},
- {key:'col_hdl', name:'Colesterol HDL', unit:'mg/dL',
-  rules:[{test:c=>true, range:[40,60], label:'Todas las edades'}]},
- {key:'col_ldl', name:'Colesterol LDL', unit:'mg/dL',
-  rules:[{test:c=>true, range:[60,140], label:'Todas las edades'}]},
- {key:'creatinina', name:'Creatinina', unit:'mg/dL',
-  preg:{1:[0.4,0.7],2:[0.4,0.6],3:[0.4,0.6]},
-  rules:[
-   {test:c=>c.rn, range:[0.3,1], label:'Recién nacido'},
-   {test:c=>c.ageYears<2, range:[0.2,0.4], label:'Lactante'},
-   {test:c=>c.ageYears<12, range:[0.3,0.7], label:'Niño'},
-   {test:c=>c.ageYears<19, range:[0.5,1.1], label:'Adolescente'},
-   {test:c=>c.sexo==='F', range:[0.40,0.80], label:'Adulto (femenino)'},
-   {test:c=>true, range:[0.60,1.10], label:'Adulto (masculino)'}
-  ]},
+
  {key:'ferritina', name:'Ferritina', unit:'ng/mL',
-  preg:{1:[6,130],2:[2,80],3:[0,70]},
+  preg:{
+   1:{min:15,max:null,refText:'≥ 15 ng/mL (alerta de anemia si menor)',label:'Embarazo · 1er trimestre'},
+   2:{min:15,max:null,refText:'≥ 15 ng/mL (alerta de anemia si menor)',label:'Embarazo · 2do trimestre'},
+   3:{min:15,max:null,refText:'≥ 15 ng/mL (alerta de anemia si menor)',label:'Embarazo · 3er trimestre'}
+  },
   rules:[
-   {test:c=>c.rn, range:[25,200], label:'Recién nacido'},
-   {test:c=>c.ageMonths<=1, range:[200,600], label:'1 mes'},
-   {test:c=>c.ageMonths<=5, range:[50,200], label:'2-5 meses'},
-   {test:c=>c.ageYears<15, range:[7,140], label:'6 meses-15 años'},
-   {test:c=>c.sexo==='F'&&c.meno, range:[25,280], label:'Menopausia'},
-   {test:c=>true, range:[15,200], label:'Adulto'}
+   {test:c=>true, min:15, max:150, refText:'15 – 150 ng/mL', label:'Población general'}
   ]},
- {key:'folato_ser', name:'Folato sérico', unit:'ng/mL',
-  rules:[{test:c=>true, range:[2.5,20], label:'Todas las edades'}]},
- {key:'folato_eri', name:'Folato eritrocitario', unit:'ng/mL',
-  rules:[{test:c=>true, range:[160,855], label:'Todas las edades'}]},
- {key:'fa', name:'Fosfatasa alcalina', unit:'U/L',
-  preg:{1:[17,88],2:[25,126],3:[38,229]},
+
+ {key:'glucosa_ayuno', name:'Glucosa en ayuno', unit:'mg/dL',
+  preg:{
+   1:{min:92,max:125,refText:'92 – 125 mg/dL (criterio diagnóstico DMG)',label:'Embarazo (criterios OMS)'},
+   2:{min:92,max:125,refText:'92 – 125 mg/dL (criterio diagnóstico DMG)',label:'Embarazo (criterios OMS)'},
+   3:{min:92,max:125,refText:'92 – 125 mg/dL (criterio diagnóstico DMG)',label:'Embarazo (criterios OMS)'}
+  },
   rules:[
-   {test:c=>c.ageYears<2, range:[150,400], label:'Lactante'},
-   {test:c=>c.ageYears<11, range:[100,300], label:'2-10 años'},
-   {test:c=>c.ageYears<19&&c.sexo==='F', range:[30,300], label:'11-18 años (femenino)'},
-   {test:c=>c.ageYears<19, range:[50,375], label:'11-18 años (masculino)'},
-   {test:c=>true, range:[32,111], label:'Adulto'}
+   {test:c=>true, min:70, max:100, refText:'70 – 100 mg/dL', label:'Población general'}
   ]},
- {key:'fosforo', name:'Fósforo sérico', unit:'mg/dL',
+
+ {key:'glucosa_1h', name:'Glucosa (1 hora tras carga de 75 g)', unit:'mg/dL',
+  preg:{
+   1:{min:180,max:199,refText:'180 – 199 mg/dL (criterio diagnóstico DMG)',label:'Embarazo (criterios OMS)'},
+   2:{min:180,max:199,refText:'180 – 199 mg/dL (criterio diagnóstico DMG)',label:'Embarazo (criterios OMS)'},
+   3:{min:180,max:199,refText:'180 – 199 mg/dL (criterio diagnóstico DMG)',label:'Embarazo (criterios OMS)'}
+  },
   rules:[
-   {test:c=>c.rn, range:[4.3,9.3], label:'Recién nacido'},
-   {test:c=>c.ageYears<18, range:[3.8,6.8], label:'Niño'},
-   {test:c=>true, range:[3,4.5], label:'Adulto'}
+   {test:c=>true, min:null, max:139.9, refText:'< 140 mg/dL', label:'Población general'}
   ]},
- {key:'glucosa', name:'Glucosa', unit:'mg/dL',
-  preg:{1:[70,92],2:[70,92],3:[70,92]},
+
+ {key:'leucocitos', name:'Glóbulos blancos (Leucocitos)', unit:'células/µL',
   rules:[
-   {test:c=>c.rn==='rnpt', range:[20,65], label:'RN pretérmino'},
-   {test:c=>c.rn, range:[40,60], label:'RN a término'},
-   {test:c=>c.ageYears<1, range:[50,90], label:'>1 día - 1 año'},
-   {test:c=>c.ageYears<18, range:[60,100], label:'Niño'},
-   {test:c=>true, range:[70,100], label:'Adulto'}
+   {test:c=>true, min:4500, max:11000, refText:'4,500 – 11,000 células/µL', label:'Población general'}
   ]},
- {key:'hierro', name:'Hierro sérico', unit:'mcg/dL',
-  preg:{1:[60,150],2:[40,120],3:[30,110]},
+
+ {key:'plaquetas', name:'Plaquetas', unit:'/µL',
   rules:[
-   {test:c=>c.rn, range:[100,250], label:'Recién nacido'},
-   {test:c=>c.ageYears<2, range:[40,100], label:'Lactante'},
-   {test:c=>true, range:[50,120], label:'Niño-adulto'}
+   {test:c=>true, min:150000, max:450000, refText:'150,000 – 450,000 /µL', label:'Población general'}
   ]},
- {key:'hba1', name:'Hemoglobina A1 (fracción normal)', unit:'% Hb total',
-  rules:[{test:c=>true, range:[95,98], label:'Todas las edades'}]},
- {key:'hba2', name:'Hemoglobina A2', unit:'% Hb total',
-  rules:[{test:c=>true, range:[0,2], label:'Todas las edades'}]},
- {key:'hbc', name:'Hemoglobina C', unit:'% Hb total',
-  rules:[{test:c=>true, range:[0,0], label:'Cualquier valor detectable es anormal'}]},
- {key:'hbf', name:'Hemoglobina fetal (HbF)', unit:'% Hb total',
+
+ {key:'creatinina', name:'Creatinina', unit:'mg/dL',
   rules:[
-   {test:c=>c.rn, range:[50,85], label:'Recién nacido'},
-   {test:c=>c.ageYears<=2, range:[5,15], label:'1-2 años'},
-   {test:c=>c.ageYears<19, range:[0,2], label:'>2 años'},
-   {test:c=>true, range:[0,1], label:'Adultos'}
+   {test:c=>true, min:0.6, max:1.2, refText:'0.6 – 1.2 mg/dL (varía por sexo y masa muscular)', label:'Población general'}
   ]},
- {key:'hba1c', name:'Hemoglobina glucosilada (HbA1c)', unit:'%',
-  preg:{1:[4,6],2:[4,6],3:[4,6]},
-  rules:[{test:c=>true, range:[0,5.6], label:'Todas las edades'}]},
- {key:'tsh', name:'TSH', unit:'mcUI/mL',
-  preg:{1:[0.1,2.5],2:[0.2,3.0],3:[0.3,3.0]},
-  rules:[{test:c=>true, range:[0.5,5], label:'Todas las edades'}]},
- {key:'pth', name:'Hormona paratiroidea (PTH)', unit:'pg/mL',
-  rules:[{test:c=>true, range:[10,65], label:'Todas las edades'}]},
- {key:'bun', name:'Nitrógeno ureico (BUN)', unit:'mg/dL',
-  preg:{1:[3,13],2:[3,13],3:[3,13]},
-  rules:[{test:c=>true, range:[8,20], label:'Todas las edades'}]},
- {key:'plaquetas', name:'Plaquetas', unit:'cél/µL',
-  preg:{1:[150000,400000],2:[150000,400000],3:[116000,400000]},
-  rules:[{test:c=>true, range:[150000,400000], label:'Todas las edades'}]},
- {key:'pcr', name:'Proteína C reactiva (PCR)', unit:'mg/L',
-  rules:[{test:c=>true, range:[0,10], label:'Todas las edades'}]},
- {key:'potasio', name:'Potasio (K)', unit:'mEq/L',
-  rules:[{test:c=>true, range:[3.5,5], label:'Todas las edades'}]},
- {key:'prealbumina', name:'Pre-albúmina', unit:'mg/dL',
-  rules:[{test:c=>true, range:[10,40], label:'Todas las edades'}]},
- {key:'sodio', name:'Sodio (Na)', unit:'mEq/L',
-  rules:[{test:c=>true, range:[135,145], label:'Todas las edades'}]},
- {key:'tt', name:'Tiempo de trombina (TT)', unit:'segundos',
-  rules:[{test:c=>true, range:[18.5,24], label:'Todas las edades'}]},
- {key:'t4_libre', name:'Tiroxina libre (T4)', unit:'ng/dL',
-  rules:[{test:c=>true, range:[0.9,2.4], label:'Todas las edades'}]},
- {key:'t4_indice', name:'Índice de T4 libre', unit:'—',
-  rules:[{test:c=>true, range:[4,11], label:'Todas las edades'}]},
- {key:'t4_total', name:'Tiroxina total (T4)', unit:'mcg/dL',
-  rules:[{test:c=>true, range:[5,12], label:'Todas las edades'}]},
+
+ {key:'ac_urico', name:'Ácido úrico', unit:'mg/dL',
+  rules:[
+   {test:c=>c.sexo==='F', min:2.4, max:6.0, refText:'2.4 – 6.0 mg/dL', label:'Mujeres'},
+   {test:c=>true, min:3.4, max:7.0, refText:'3.4 – 7.0 mg/dL', label:'Hombres'}
+  ]},
+
+ {key:'col_tot', name:'Colesterol total', unit:'mg/dL',
+  rules:[
+   {test:c=>true, min:null, max:199.9, refText:'< 200 mg/dL (deseable)', label:'Población general'}
+  ]},
+
  {key:'trigliceridos', name:'Triglicéridos', unit:'mg/dL',
-  preg:{1:[40,159],2:[75,382],3:[131,453]},
   rules:[
-   {test:c=>c.ageYears<6, range:[30,99], label:'0-5 años'},
-   {test:c=>c.ageYears<12, range:[31,114], label:'6-11 años'},
-   {test:c=>true, range:[37,150], label:'Adulto'}
-  ]},
- {key:'urea', name:'Urea', unit:'mg/dL',
-  preg:{1:[10,30],2:[8,25],3:[7,22]},
-  rules:[
-   {test:c=>c.rn==='cordon', range:[45,86], label:'Sangre de cordón'},
-   {test:c=>c.rn==='rnpt', range:[6,54], label:'RN pretérmino'},
-   {test:c=>c.ageMonths<=1, range:[8,26], label:'0-1 mes'},
-   {test:c=>c.ageYears<15, range:[15,38], label:'2-15 años'},
-   {test:c=>true, range:[17,45], label:'Adulto'}
-  ]},
- {key:'vitb12', name:'Vitamina B12', unit:'pg/mL',
-  rules:[{test:c=>true, range:[200,800], label:'Todas las edades'}]},
- {key:'vitd_calcitriol', name:'Vitamina D (1,25-dihidroxicolecalciferol/calcitriol)', unit:'pg/mL',
-  rules:[{test:c=>true, range:[25,65], label:'Todas las edades'}]},
- {key:'vitd_25oh', name:'Vitamina D (25-hidroxicolecalciferol)', unit:'ng/mL',
-  rules:[{test:c=>true, range:[15,80], label:'Todas las edades'}]}
+   {test:c=>true, min:null, max:149.9, refText:'< 150 mg/dL (deseable)', label:'Población general'}
+  ]}
 ];
 
 function initLabSelect() {
-  var sel = document.getElementById('lab-analito');
-  sel.innerHTML = LABS.map(function(l,i){ return '<option value="'+i+'">'+l.name+'</option>'; }).join('');
-  updateLabUnidad();
-  sel.onchange = updateLabUnidad;
+  renderLabGrid();
 }
-function updateLabUnidad() {
-  var i = parseInt(gv('lab-analito'));
-  document.getElementById('lab-unidad').textContent = LABS[i] ? LABS[i].unit : '—';
+function renderLabGrid() {
+  var grid = document.getElementById('lab-grid');
+  grid.innerHTML = LABS.map(function(l,i){
+    return '<div class="lg-row">'+
+      '<span class="lg-name">'+l.name+'</span>'+
+      '<span class="lg-unit">'+l.unit+'</span>'+
+      '<input class="lg-input" type="number" step="0.01" placeholder="—" id="lg-'+i+'">'+
+      '</div>';
+  }).join('');
 }
 
 function calcEdadLab() {
@@ -1224,47 +1153,141 @@ function setTrim(t){
 
 function resolverRango(lab, ctx) {
   if(ctx.emb && lab.preg && lab.preg[ctx.trim]) {
-    return {range: lab.preg[ctx.trim], label: 'Embarazo · '+ctx.trim+'º trimestre (ref. aproximada)'};
+    return lab.preg[ctx.trim];
   }
   for(var i=0;i<lab.rules.length;i++){
-    if(lab.rules[i].test(ctx)) return {range: lab.rules[i].range, label: lab.rules[i].label};
+    if(lab.rules[i].test(ctx)) return lab.rules[i];
   }
   return null;
 }
 
-function agregarLab() {
-  var idx = parseInt(gv('lab-analito'));
-  var lab = LABS[idx];
-  var valor = parseFloat(gv('lab-valor'));
-  if(isNaN(valor)){ return; }
-  if(labCtx.ageYears===undefined){ alert('Primero captura la fecha de nacimiento del paciente.'); return; }
+function interpretarValor(lab, valor) {
   var r = resolverRango(lab, labCtx);
-  if(!r) return;
-  var min=r.range[0], max=r.range[1], interp, tag;
+  if(!r) return null;
+  var min = (r.min===null||r.min===undefined) ? -Infinity : r.min;
+  var max = (r.max===null||r.max===undefined) ? Infinity : r.max;
+  var interp, tag;
   if(valor<min){ interp='Bajo'; tag='bajo'; }
   else if(valor>max){ interp='Alto'; tag='alto'; }
   else { interp='Normal'; tag='normal'; }
-  labResultados.unshift({name:lab.name, unit:lab.unit, valor:valor, min:min, max:max, label:r.label, interp:interp, tag:tag});
-  sv('lab-valor','');
-  document.getElementById('lab-valor').value='';
+  return {key:lab.key, name:lab.name, unit:lab.unit, valor:valor, refText:r.refText, label:r.label, interp:interp, tag:tag};
+}
+
+function agregarLabs() {
+  if(labCtx.ageYears===undefined){ alert('Primero captura la fecha de nacimiento del paciente.'); return; }
+  var nuevos = [];
+  for(var i=0;i<LABS.length;i++){
+    var input = document.getElementById('lg-'+i);
+    var valor = parseFloat(input.value);
+    if(isNaN(valor)) continue;
+    var res = interpretarValor(LABS[i], valor);
+    if(res) nuevos.push(res);
+    input.value='';
+  }
+  if(nuevos.length===0){ alert('Captura al menos un valor.'); return; }
+  labResultados = nuevos.concat(labResultados);
   renderLabs();
 }
 
 function renderLabs() {
   var sec = document.getElementById('lab-results-sec');
   var list = document.getElementById('lab-results-list');
-  if(labResultados.length===0){ sec.style.display='none'; return; }
+  if(labResultados.length===0){ sec.style.display='none'; document.getElementById('lab-interp-sec').style.display='none'; return; }
   sec.style.display='block';
   list.innerHTML = labResultados.map(function(r,i){
     return '<div class="lab-row">'+
       '<div class="lab-row-top"><span class="lab-name">'+r.name+'</span><button class="lab-del" onclick="quitarLab('+i+')">✕</button></div>'+
       '<div class="lab-vals"><span>Valor: <b style="color:var(--text)">'+r.valor+' '+r.unit+'</b></span><span class="lab-tag '+r.tag+'">'+r.interp+'</span></div>'+
-      '<div class="lab-ref">Ref. ('+r.label+'): '+r.min+' – '+r.max+' '+r.unit+'</div>'+
+      '<div class="lab-ref">Ref. ('+r.label+'): '+r.refText+'</div>'+
       '</div>';
   }).join('');
+  renderInterpretacion();
 }
 function quitarLab(i){ labResultados.splice(i,1); renderLabs(); }
 function limpiarLabs(){ labResultados=[]; renderLabs(); }
+
+function findLab(key){ return labResultados.find(function(r){ return r.key===key; }); }
+
+function generarInterpretacion() {
+  var notas = [];
+  var hb=findLab('hb'), hto=findLab('hto'), fer=findLab('ferritina');
+  var gAy=findLab('glucosa_ayuno'), g1h=findLab('glucosa_1h');
+  var col=findLab('col_tot'), tg=findLab('trigliceridos');
+  var creat=findLab('creatinina'), auric=findLab('ac_urico');
+  var leuco=findLab('leucocitos'), plaq=findLab('plaquetas');
+
+  // Serie roja / anemia
+  var hbBaja = hb && hb.tag==='bajo', htoBajo = hto && hto.tag==='bajo';
+  if(hbBaja || htoBajo){
+    if(fer && fer.tag==='bajo'){
+      notas.push({t:'alto', txt:'Anemia con reservas de hierro depletadas — patrón compatible con <b>anemia ferropénica</b>. Valorar aporte de hierro en el plan nutricional.'});
+    } else if(fer){
+      notas.push({t:'alto', txt:'Anemia sin depleción evidente de ferritina — considerar otras causas (megaloblástica, inflamatoria, dilucional en embarazo, etc.). Correlacionar con clínica.'});
+    } else {
+      notas.push({t:'alto', txt:'Datos compatibles con anemia (Hb y/o Hto bajos). Se recomienda solicitar ferritina para tipificar la causa.'});
+    }
+  } else if(fer && fer.tag==='bajo'){
+    notas.push({t:'medio', txt:'Reservas de hierro bajas (ferritina) sin anemia manifiesta aún — riesgo de progresión a anemia ferropénica.'});
+  }
+
+  // Glucosa
+  [{r:gAy, tipo:'ayuno'}, {r:g1h, tipo:'poscarga (1h)'}].forEach(function(o){
+    if(!o.r) return;
+    if(labCtx.emb && o.r.tag==='normal'){
+      notas.push({t:'alto', txt:'Glucosa '+o.tipo+' dentro del rango diagnóstico OMS para <b>diabetes gestacional</b>. No interpretar como "normal" pese a la etiqueta — sugiere DMG y amerita valoración médica.'});
+    } else if(o.r.tag==='alto'){
+      notas.push({t:'alto', txt:'Glucosa '+o.tipo+' elevada por encima del criterio diagnóstico — sugestivo de hiperglucemia franca. Correlacionar clínicamente.'});
+    }
+  });
+
+  // Lípidos
+  if(col && col.tag==='alto' && tg && tg.tag==='alto'){
+    notas.push({t:'medio', txt:'Dislipidemia mixta (colesterol total y triglicéridos elevados). Valorar ajuste de lípidos y carbohidratos simples en el plan.'});
+  } else if(col && col.tag==='alto'){
+    notas.push({t:'medio', txt:'Hipercolesterolemia aislada.'});
+  } else if(tg && tg.tag==='alto'){
+    notas.push({t:'medio', txt:'Hipertrigliceridemia aislada — valorar ingesta de azúcares simples y alcohol si aplica.'});
+  }
+
+  // Renal
+  if(creat && creat.tag==='alto'){
+    notas.push({t:'alto', txt:'Creatinina elevada — vigilar función renal; puede requerir ajuste de proteína en el plan nutricional.'});
+  } else if(creat && creat.tag==='bajo'){
+    notas.push({t:'bajo', txt:'Creatinina baja — puede reflejar baja masa muscular; valorar en el contexto del estado nutricional.'});
+  }
+
+  // Ácido úrico
+  if(auric && auric.tag==='alto'){
+    notas.push({t:'medio', txt:'Hiperuricemia — considerar en plan si hay antecedente de gota o riesgo cardiometabólico.'});
+  }
+
+  // Leucocitos / plaquetas
+  if(leuco && leuco.tag==='alto'){
+    notas.push({t:'alto', txt:'Leucocitosis — sugestivo de proceso infeccioso/inflamatorio activo; puede aumentar requerimientos energético-proteicos.'});
+  } else if(leuco && leuco.tag==='bajo'){
+    notas.push({t:'medio', txt:'Leucopenia — vigilar, correlacionar con cuadro clínico.'});
+  }
+  if(plaq && plaq.tag==='alto'){
+    notas.push({t:'medio', txt:'Trombocitosis.'});
+  } else if(plaq && plaq.tag==='bajo'){
+    notas.push({t:'medio', txt:'Trombocitopenia — vigilar riesgo de sangrado.'});
+  }
+
+  return notas;
+}
+
+function renderInterpretacion() {
+  var sec = document.getElementById('lab-interp-sec');
+  var box = document.getElementById('lab-interp-list');
+  var notas = generarInterpretacion();
+  if(notas.length===0){ sec.style.display='none'; return; }
+  sec.style.display='block';
+  box.innerHTML = notas.map(function(n){
+    return '<div class="lab-interp-item '+n.t+'">'+n.txt+'</div>';
+  }).join('');
+}
+
+
 
 // Init
 setLact(false);
