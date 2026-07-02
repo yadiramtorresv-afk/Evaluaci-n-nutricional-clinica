@@ -328,7 +328,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
   <div class="section">
     <div class="sec-title pink">Kilocalorías</div>
-    <div class="field"><label>Kcal base</label><div class="res" id="e-kcalb">—</div><p class="note">Bajo peso/Normopeso: peso actual×30 · Sobrepeso/Obesidad: peso pregestacional×25</p></div>
+    <div class="field"><label>Kcal base</label><div class="res" id="e-kcalb">—</div><p class="note">Bajo peso: peso ideal×30 · Normopeso: peso actual×30 · Sobrepeso/Obesidad: peso pregestacional×25</p></div>
     <div class="field"><label>Incremento por trimestre / lactancia</label><div class="res" id="e-inc">—</div></div>
     <div class="field">
       <label>Total kcal/día <span class="trim-badge" id="e-trim">—</span></label>
@@ -703,13 +703,14 @@ function calcE() {
 
   // Kcal
   var kcalBase;
-  if(clsP==='bajo'||clsP==='normal') kcalBase=pActual*30;
-  else kcalBase=pPreg*25;
+  if(clsP==='bajo')        kcalBase=pideal*30;
+  else if(clsP==='normal') kcalBase=pActual*30;
+  else                      kcalBase=pPreg*25;
   setR('e-kcalb', r0(kcalBase)+' kcal/día');
 
   var inc=0, trimLbl='1° Trimestre';
   if(sdg>=14&&sdg<=27){ inc=340; trimLbl='2° Trimestre'; }
-  else if(sdg>=28)    { inc=450; trimLbl='3° Trimestre'; }
+  else if(sdg>=28)    { inc=340+450; trimLbl='3° Trimestre (2°+3° acumulado)'; }
   if(lactancia){ inc+=500; trimLbl+=' + Lactancia'; }
 
   setR('e-inc', inc>0?'+'+inc+' kcal ('+trimLbl+')':'Sin incremento ('+trimLbl+')', inc===0?'neutral':'');
