@@ -17,7 +17,8 @@
 <style>
 :root {
   --bg:#0f1117; --surface:#1a1d27; --card:#21253a; --border:#2e3350;
-  --accent:#4f8ef7; --accent2:#7c6af7; --pink:#f76fa8;
+  --accent:#832d51; --accent2:#40826d; --pink:#f8cae4;
+  --cyclamen:#ea6993; --teagreen:#cfdd9d;
   --green:#3ecf8e; --yellow:#f5c842; --red:#f56565;
   --text:#e8eaf0; --muted:#8891aa; --radius:10px;
   --font:'Segoe UI',system-ui,sans-serif;
@@ -33,10 +34,10 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:0 0 auto;min-width:74px;padding:9px 10px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:.73rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.tab.t-emb.active{background:var(--pink);border-color:var(--pink)}
+.tab.t-emb.active{background:var(--pink);border-color:var(--pink);color:#0f1117}
 .tab.t-lab.active{background:var(--accent2);border-color:var(--accent2)}
-.tab.t-plan.active{background:#e08a3c;border-color:#e08a3c}
-.tab.t-pac.active{background:var(--green);border-color:var(--green);color:#0f1117}
+.tab.t-plan.active{background:var(--teagreen);border-color:var(--teagreen);color:#0f1117}
+.tab.t-pac.active{background:var(--cyclamen);border-color:var(--cyclamen)}
 .tab-content{display:none}
 .tab-content.active{display:block}
 
@@ -77,14 +78,14 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .lab-interp-item.bajo{background:#1a2a4a;border-color:#7ab3f7;color:#b8d8ff}
 
 /* PLAN DE ALIMENTOS */
-.sec-title.orange{color:#e08a3c}
+.sec-title.orange{color:var(--teagreen)}
 .pg-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)}
 .pg-row:last-child{border-bottom:none}
 .pg-info{flex:1}
 .pg-name{font-size:.82rem;font-weight:700}
 .pg-macros{font-size:.68rem;color:var(--muted);margin-top:1px}
 .pg-input{width:64px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 6px;font-size:.85rem;text-align:center}
-.pg-input:focus{outline:none;border-color:#e08a3c}
+.pg-input:focus{outline:none;border-color:var(--teagreen)}
 .pg-sub{width:78px;text-align:right;font-size:.72rem;color:var(--muted)}
 
 .plan-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
@@ -126,7 +127,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .pb-wrap{display:flex;gap:6px;flex-wrap:wrap}
 .pb{flex:1;min-width:50px;padding:7px 4px;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-size:.83rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
 .pb.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.pb.on-pink{background:var(--pink);border-color:var(--pink);color:#fff}
+.pb.on-pink{background:var(--pink);border-color:var(--pink);color:#0f1117}
 
 /* MACROS */
 .mac-grid{display:flex;flex-direction:column;gap:8px}
