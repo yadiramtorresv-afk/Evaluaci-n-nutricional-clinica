@@ -16,7 +16,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <style>
 :root {
-  --bg:#0f1117; --surface:#1a1d27; --card:#21253a; --border:#2e3350;
+  --bg:#0f1117; --surface:#1a1d27; --card:#21253a; --card2:#262b42; --border:#2e3350;
   --accent:#832d51; --accent2:#40826d; --pink:#f8cae4;
   --cyclamen:#ea6993; --teagreen:#cfdd9d;
   --green:#3ecf8e; --yellow:#f5c842; --red:#f56565;
@@ -183,6 +183,14 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .pac-v.g{color:var(--green)}
 .pac-v.p{color:var(--pink)}
 .pac-del{margin-top:10px;padding:6px 12px;background:transparent;border:1px solid #3a1515;border-radius:6px;color:#f56565;font-size:.74rem;cursor:pointer;font-family:var(--font);transition:all .15s}
+
+.pac-actions{display:flex;gap:8px;margin-top:12px}
+.pac-btn{flex:1;padding:8px 6px;border-radius:7px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--font);text-align:center}
+.pac-btn.labs{border-color:var(--accent2);color:var(--accent2)}
+.pac-btn.pdf{border-color:var(--cyclamen);color:var(--cyclamen)}
+.pac-labs-block{margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)}
+.pac-labs-title{font-size:.7rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.pac-labs-form{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
 .pac-del:hover{background:#3a1515}
 
 /* MISC */
@@ -205,9 +213,28 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:var(--font);border:none}
 .m-confirm{background:var(--red);color:#fff}
 .m-cancel{background:var(--card);color:var(--text)}
+#print-area{display:none}
+@media print{
+  body>*:not(#print-area){display:none !important}
+  #print-area{display:block !important;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;padding:10px}
+  .pr-header{text-align:center;border-bottom:2px solid #832d51;padding-bottom:10px;margin-bottom:16px}
+  .pr-header h1{font-size:1.3rem;color:#832d51;margin-bottom:4px}
+  .pr-header p{font-size:.8rem;color:#555}
+  #print-area h3{font-size:.95rem;color:#832d51;border-bottom:1px solid #ccc;padding-bottom:4px;margin:16px 0 8px}
+  .pr-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:6px}
+  .pr-table td,.pr-table th{border:1px solid #ccc;padding:5px 8px;text-align:left}
+  .pr-k{background:#f2f2f2;font-weight:700;width:22%}
+  .pr-labs th{background:#e8e8e8}
+  .pr-notas{font-size:.82rem;line-height:1.6;padding-left:18px}
+  .pr-firma{margin-top:50px;text-align:center}
+  .pr-firma-line{border-top:1px solid #333;width:260px;margin:0 auto 6px}
+  .pr-firma p{font-size:.8rem;color:#444}
+  @page{margin:1.5cm}
+}
 </style>
 </head>
 <body>
+<div id="print-area"></div>
 
 <header>
   <h1>🏥 Calculadora Nutricional</h1>
@@ -969,7 +996,7 @@ function guardar(tipo) {
       prot:document.getElementById('g-pg').textContent+' · '+document.getElementById('g-pkcal').textContent+' · '+document.getElementById('g-ppct').textContent,
       lip:document.getElementById('g-lipkcal').textContent+' · '+document.getElementById('g-lipg').textContent,
       hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-      id:Date.now()
+      id:Date.now(), labs:null, labCtx:null
     };
   } else {
     if(!gv('e-peso')||!gv('e-talla')){ showToast('⚠️ Completa peso y talla primero',true); return; }
@@ -986,7 +1013,7 @@ function guardar(tipo) {
       prot:document.getElementById('e-pg').textContent+' · '+document.getElementById('e-pkcal').textContent+' · '+document.getElementById('e-ppct').textContent,
       lip:document.getElementById('e-lipkcal').textContent+' · '+document.getElementById('e-lipg').textContent,
       hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-      id:Date.now()
+      id:Date.now(), labs:null, labCtx:null
     };
   }
   var list=getPacs(); list.push(data); savePacs(list);
@@ -1030,11 +1057,32 @@ function renderPacs(){
         '</div>'+
       '</div>'+
       '<div class="pac-detail" id="det-'+p.id+'">'+rows+
+        renderPacLabsSummary(p)+
+        '<div class="pac-actions">'+
+          '<button class="pac-btn labs" onclick="toggleLabsForm('+p.id+')">🧪 Laboratorios</button>'+
+          '<button class="pac-btn pdf" onclick="imprimirPaciente('+p.id+')">🖨️ Generar PDF</button>'+
+        '</div>'+
+        '<div id="labform-'+p.id+'" style="display:none"></div>'+
         '<button class="pac-del" onclick="delPac('+p.id+')">✕ Eliminar</button>'+
       '</div>'+
     '</div>';
   }
   container.innerHTML=html;
+}
+
+function renderPacLabsSummary(p){
+  if(!p.labs || p.labs.length===0) return '';
+  var rowsHtml = p.labs.map(function(r){
+    return '<div class="lab-row"><div class="lab-row-top"><span class="lab-name">'+r.name+'</span><span class="lab-tag '+r.tag+'">'+r.interp+'</span></div>'+
+      '<div class="lab-vals"><span>Valor: <b style="color:var(--text)">'+r.valor+' '+r.unit+'</b></span></div>'+
+      '<div class="lab-ref">Ref. ('+r.label+'): '+r.refText+'</div></div>';
+  }).join('');
+  var notas = generarInterpretacion(p.labs, p.labCtx||{});
+  var notasHtml = notas.length ? '<div class="lab-interp-item '+notas[0].t+'" style="margin-top:8px"></div>' : '';
+  notasHtml = notas.map(function(n){ return '<div class="lab-interp-item '+n.t+'">'+n.txt+'</div>'; }).join('');
+  return '<div class="pac-labs-block"><div class="pac-labs-title">🧪 Laboratorios registrados</div>'+rowsHtml+
+    (notas.length ? '<div class="pac-labs-title" style="margin-top:10px">🧠 Interpretación</div>'+notasHtml : '')+
+    '</div>';
 }
 
 function row(k,v){ return '<div class="pac-row"><span class="pac-k">'+k+'</span><span class="pac-v">'+v+'</span></div>'; }
@@ -1052,6 +1100,142 @@ function delPac(id){
   savePacs(getPacs().filter(function(p){ return p.id!==id; }));
   renderPacs();
   showToast('Paciente eliminado');
+}
+
+// ===== LABORATORIOS POR PACIENTE =====
+function deriveEmbCtx(p){
+  var sdgNum = parseInt(p.sdg)||0;
+  var trim = sdgNum>=28 ? 3 : (sdgNum>=14 ? 2 : 1);
+  return {sexo:'F', emb:true, trim:trim};
+}
+
+function toggleLabsForm(id){
+  var el = document.getElementById('labform-'+id);
+  if(!el) return;
+  var isOpen = el.style.display!=='none';
+  if(isOpen){ el.style.display='none'; return; }
+  var p = getPacs().find(function(x){ return x.id===id; });
+  if(!p) return;
+  var existing = {};
+  (p.labs||[]).forEach(function(r){ existing[r.key]=r.valor; });
+
+  var ctxBlock;
+  if(p.tipo==='general'){
+    var sx = (p.labCtx&&p.labCtx.sexo)||'F';
+    window._pacSexoTemp = window._pacSexoTemp||{};
+    window._pacSexoTemp[id] = sx;
+    ctxBlock = '<div class="field" style="margin-bottom:10px"><label>Sexo (para interpretación de ácido úrico)</label>'+
+      '<div class="pb-wrap"><div class="pb'+(sx==='F'?' on':'')+'" id="pacsexo-'+id+'-F" onclick="setPacSexo('+id+',\'F\')">Femenino</div>'+
+      '<div class="pb'+(sx==='M'?' on':'')+'" id="pacsexo-'+id+'-M" onclick="setPacSexo('+id+',\'M\')">Masculino</div></div></div>';
+  } else {
+    var c = deriveEmbCtx(p);
+    ctxBlock = '<p class="note" style="margin-bottom:10px">Contexto automático: Femenino · Embarazo · '+c.trim+'° trimestre (derivado de las SDG guardadas)</p>';
+  }
+
+  var gridHtml = LABS.map(function(l,i){
+    var val = existing[l.key]!==undefined ? existing[l.key] : '';
+    return '<div class="lg-row"><span class="lg-name">'+l.name+'</span><span class="lg-unit">'+l.unit+'</span>'+
+      '<input class="lg-input" type="number" step="0.01" placeholder="—" id="paclab-'+id+'-'+i+'" value="'+val+'"></div>';
+  }).join('');
+
+  el.innerHTML = '<div class="pac-labs-form">'+ctxBlock+
+    '<div>'+gridHtml+'</div>'+
+    '<button class="btn-save" style="background:var(--accent2);margin-top:10px" onclick="guardarPacLabs('+id+')">➕ Interpretar y guardar</button>'+
+    '</div>';
+  el.style.display='block';
+}
+
+function setPacSexo(id, sx){
+  var f=document.getElementById('pacsexo-'+id+'-F'), m=document.getElementById('pacsexo-'+id+'-M');
+  if(f) f.className='pb'+(sx==='F'?' on':'');
+  if(m) m.className='pb'+(sx==='M'?' on':'');
+  window._pacSexoTemp = window._pacSexoTemp||{};
+  window._pacSexoTemp[id] = sx;
+}
+
+function guardarPacLabs(id){
+  var list = getPacs();
+  var idx = list.findIndex(function(x){ return x.id===id; });
+  if(idx<0) return;
+  var p = list[idx];
+  var ctx;
+  if(p.tipo==='general'){
+    var sx = (window._pacSexoTemp && window._pacSexoTemp[id]) || (p.labCtx&&p.labCtx.sexo) || 'F';
+    ctx = {sexo:sx, emb:false, trim:1};
+  } else {
+    ctx = deriveEmbCtx(p);
+  }
+  var nuevos = [];
+  for(var i=0;i<LABS.length;i++){
+    var input = document.getElementById('paclab-'+id+'-'+i);
+    if(!input) continue;
+    var valor = parseFloat(input.value);
+    if(isNaN(valor)) continue;
+    var res = interpretarValor(LABS[i], valor, ctx);
+    if(res) nuevos.push(res);
+  }
+  if(nuevos.length===0){ alert('Captura al menos un valor.'); return; }
+  p.labs = nuevos; p.labCtx = ctx;
+  list[idx] = p; savePacs(list);
+  showToast('✓ Laboratorios guardados');
+  renderPacs();
+  setTimeout(function(){ togCard(id); }, 60);
+}
+
+// ===== GENERAR PDF POR PACIENTE (impresión del navegador) =====
+function imprimirPaciente(id){
+  var p = getPacs().find(function(x){ return x.id===id; });
+  if(!p) return;
+  var isE = p.tipo==='embarazo';
+  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
+
+  var datosHtml = '<table class="pr-table">'+
+    '<tr><td class="pr-k">Cama</td><td class="pr-v">'+(p.cama||'—')+'</td>'+
+    '<td class="pr-k">Nombre</td><td class="pr-v">'+(p.nombre||'—')+'</td></tr>'+
+    '<tr><td class="pr-k">Diagnóstico</td><td class="pr-v" colspan="3">'+(p.dx||'—')+'</td></tr>'+
+    '<tr><td class="pr-k">Tipo de dieta</td><td class="pr-v" colspan="3">'+(p.dieta||'—')+'</td></tr>'+
+    '</table>';
+
+  var calcHtml;
+  if(isE){
+    calcHtml = '<table class="pr-table">'+
+      '<tr><td class="pr-k">SDG</td><td class="pr-v">'+p.sdg+'</td><td class="pr-k">IMC pregestacional</td><td class="pr-v">'+p.imcp+'</td></tr>'+
+      '<tr><td class="pr-k">Peso esperado SDG</td><td class="pr-v">'+p.pesoe+'</td><td class="pr-k">Diferencia de peso</td><td class="pr-v">'+p.dif+'</td></tr>'+
+      '<tr><td class="pr-k">Peso a usar</td><td class="pr-v">'+p.pusar+'</td><td class="pr-k">Kcal base</td><td class="pr-v">'+p.kcalb+'</td></tr>'+
+      '<tr><td class="pr-k">Kcal totales</td><td class="pr-v"><b>'+p.kcalt+'</b></td><td class="pr-k"></td><td class="pr-v"></td></tr>'+
+      '<tr><td class="pr-k">Hidratos de carbono</td><td class="pr-v">'+p.hc+'</td><td class="pr-k">Proteínas</td><td class="pr-v">'+p.prot+'</td></tr>'+
+      '<tr><td class="pr-k">Lípidos</td><td class="pr-v" colspan="3">'+p.lip+'</td></tr>'+
+      '</table>';
+  } else {
+    calcHtml = '<table class="pr-table">'+
+      '<tr><td class="pr-k">Edad</td><td class="pr-v">'+p.edad+'</td><td class="pr-k">IMC</td><td class="pr-v">'+p.imc+'</td></tr>'+
+      '<tr><td class="pr-k">Peso a usar</td><td class="pr-v">'+p.pusar+'</td><td class="pr-k">Kilocalorías</td><td class="pr-v"><b>'+p.kcal+'</b></td></tr>'+
+      '<tr><td class="pr-k">Hidratos de carbono</td><td class="pr-v">'+p.hc+'</td><td class="pr-k">Proteínas</td><td class="pr-v">'+p.prot+'</td></tr>'+
+      '<tr><td class="pr-k">Lípidos</td><td class="pr-v" colspan="3">'+p.lip+'</td></tr>'+
+      '</table>';
+  }
+
+  var labsHtml = '';
+  if(p.labs && p.labs.length){
+    var labRows = p.labs.map(function(r){
+      return '<tr><td class="pr-v">'+r.name+'</td><td class="pr-v">'+r.valor+' '+r.unit+'</td>'+
+        '<td class="pr-v">'+r.refText+'</td><td class="pr-v"><b>'+r.interp+'</b></td></tr>';
+    }).join('');
+    var notas = generarInterpretacion(p.labs, p.labCtx||{});
+    var notasHtml = notas.length ? '<ul class="pr-notas">'+notas.map(function(n){ return '<li>'+n.txt.replace(/<\/?b>/g,'')+'</li>'; }).join('')+'</ul>' : '';
+    labsHtml = '<h3>Laboratorios</h3>'+
+      '<table class="pr-table pr-labs"><tr><th>Analito</th><th>Valor</th><th>Referencia</th><th>Interpretación</th></tr>'+labRows+'</table>'+
+      (notasHtml ? '<h3>Interpretación global</h3>'+notasHtml : '');
+  }
+
+  var html = '<div class="pr-header"><h1>Valoración Nutricional</h1><p>'+fecha+'</p></div>'+
+    '<h3>Datos del paciente</h3>'+datosHtml+
+    '<h3>'+(isE?'Valoración obstétrica':'Valoración general')+'</h3>'+calcHtml+
+    labsHtml+
+    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
+
+  document.getElementById('print-area').innerHTML = html;
+  setTimeout(function(){ window.print(); }, 100);
 }
 
 function confirmarLimpiar(){ document.getElementById('modal-bg').classList.add('show'); }
@@ -1234,8 +1418,9 @@ function resolverRango(lab, ctx) {
   return null;
 }
 
-function interpretarValor(lab, valor) {
-  var r = resolverRango(lab, labCtx);
+function interpretarValor(lab, valor, ctxParam) {
+  var ctx = ctxParam || labCtx;
+  var r = resolverRango(lab, ctx);
   if(!r) return null;
   var min = (r.min===null||r.min===undefined) ? -Infinity : r.min;
   var max = (r.max===null||r.max===undefined) ? Infinity : r.max;
@@ -1279,15 +1464,18 @@ function renderLabs() {
 function quitarLab(i){ labResultados.splice(i,1); renderLabs(); }
 function limpiarLabs(){ labResultados=[]; renderLabs(); }
 
-function findLab(key){ return labResultados.find(function(r){ return r.key===key; }); }
+function findLabIn(resultados, key){ return resultados.find(function(r){ return r.key===key; }); }
+function findLab(key){ return findLabIn(labResultados, key); }
 
-function generarInterpretacion() {
+function generarInterpretacion(resultados, ctx) {
+  resultados = resultados || labResultados;
+  ctx = ctx || labCtx;
   var notas = [];
-  var hb=findLab('hb'), hto=findLab('hto'), fer=findLab('ferritina');
-  var gAy=findLab('glucosa_ayuno'), g1h=findLab('glucosa_1h');
-  var col=findLab('col_tot'), tg=findLab('trigliceridos');
-  var creat=findLab('creatinina'), auric=findLab('ac_urico');
-  var leuco=findLab('leucocitos'), plaq=findLab('plaquetas');
+  var hb=findLabIn(resultados,'hb'), hto=findLabIn(resultados,'hto'), fer=findLabIn(resultados,'ferritina');
+  var gAy=findLabIn(resultados,'glucosa_ayuno'), g1h=findLabIn(resultados,'glucosa_1h');
+  var col=findLabIn(resultados,'col_tot'), tg=findLabIn(resultados,'trigliceridos');
+  var creat=findLabIn(resultados,'creatinina'), auric=findLabIn(resultados,'ac_urico');
+  var leuco=findLabIn(resultados,'leucocitos'), plaq=findLabIn(resultados,'plaquetas');
 
   // Serie roja / anemia
   var hbBaja = hb && hb.tag==='bajo', htoBajo = hto && hto.tag==='bajo';
@@ -1306,7 +1494,7 @@ function generarInterpretacion() {
   // Glucosa
   [{r:gAy, tipo:'ayuno'}, {r:g1h, tipo:'poscarga (1h)'}].forEach(function(o){
     if(!o.r) return;
-    if(labCtx.emb && o.r.tag==='normal'){
+    if(ctx.emb && o.r.tag==='normal'){
       notas.push({t:'alto', txt:'Glucosa '+o.tipo+' dentro del rango diagnóstico OMS para <b>diabetes gestacional</b>. No interpretar como "normal" pese a la etiqueta — sugiere DMG y amerita valoración médica.'});
     } else if(o.r.tag==='alto'){
       notas.push({t:'alto', txt:'Glucosa '+o.tipo+' elevada por encima del criterio diagnóstico — sugestivo de hiperglucemia franca. Correlacionar clínicamente.'});
@@ -1352,7 +1540,7 @@ function generarInterpretacion() {
 function renderInterpretacion() {
   var sec = document.getElementById('lab-interp-sec');
   var box = document.getElementById('lab-interp-list');
-  var notas = generarInterpretacion();
+  var notas = generarInterpretacion(labResultados, labCtx);
   if(notas.length===0){ sec.style.display='none'; return; }
   sec.style.display='block';
   box.innerHTML = notas.map(function(n){
