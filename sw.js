@@ -1,10 +1,9 @@
-const CACHE_NAME = 'nutri-calc-v19';
+const CACHE_NAME = 'nutri-calc-v17';
 const ASSETS = [
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png',
-  './logo.webp'
+  './icon-512.png'
 ];
 
 self.addEventListener('install', function(event) {

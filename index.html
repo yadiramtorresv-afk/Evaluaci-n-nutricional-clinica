@@ -27,7 +27,6 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding:12px}
 header{text-align:center;padding:16px 0 18px;border-bottom:1px solid var(--border);margin-bottom:14px}
-header .header-logo{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 8px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 header h1{font-size:1.2rem;font-weight:700;letter-spacing:.04em;color:var(--accent)}
 header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 
@@ -40,7 +39,6 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .tab.t-lab.active{background:var(--accent2);border-color:var(--accent2)}
 .tab.t-plan.active{background:var(--teagreen);border-color:var(--teagreen);color:#0f1117}
 .tab.t-pac.active{background:var(--cyclamen);border-color:var(--cyclamen)}
-.tab.t-gas.active{background:var(--green);border-color:var(--green);color:#0f1117}
 .tab-content{display:none}
 .tab-content.active{display:block}
 
@@ -103,8 +101,9 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 /* FIELDS */
 .field{margin-bottom:10px}
 label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:4px;font-weight:500}
-input[type=text],input[type=number],select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:.9rem;padding:8px 11px;outline:none;transition:border-color .15s;font-family:var(--font)}
-input:focus,select:focus{border-color:var(--accent)}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:.9rem;padding:8px 11px;outline:none;transition:border-color .15s;font-family:var(--font)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;line-height:1.5}
 select option{background:var(--card)}
 .row{display:flex;gap:8px}
 .row .field{flex:1}
@@ -168,7 +167,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .pac-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:9px;overflow:hidden}
 .pac-card.gc{border-left:3px solid var(--accent)}
 .pac-card.ec{border-left:3px solid var(--pink)}
-.pac-card.gac{border-left:3px solid var(--green)}
 .pac-hdr{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;cursor:pointer}
 .pac-hdr:hover{background:#262a3e}
 .pac-name{font-weight:700;font-size:.88rem}
@@ -176,7 +174,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .pac-badge{font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:5px}
 .pac-badge.gb{background:#1a2a4a;color:var(--accent)}
 .pac-badge.eb{background:#2a1030;color:var(--pink)}
-.pac-badge.gab{background:#153a2c;color:var(--green)}
 .pac-arr{font-size:.72rem;color:var(--muted);transition:transform .2s;margin-left:6px}
 .pac-arr.open{transform:rotate(180deg)}
 .pac-detail{display:none;border-top:1px solid var(--border);padding:11px 13px}
@@ -218,25 +215,11 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:var(--font);border:none}
 .m-confirm{background:var(--red);color:#fff}
 .m-cancel{background:var(--card);color:var(--text)}
-
-/* SOAP MODAL */
-.modal.soap-box{max-width:640px;width:92%;max-height:88vh;overflow-y:auto;text-align:left}
-.soap-fecha{font-size:.75rem;color:var(--muted);margin-bottom:14px}
-.soap-sec{margin-bottom:14px}
-.soap-sec-title{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:7px;color:var(--muted)}
-.soap-ltr{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;color:#fff;font-size:.68rem;font-weight:800;flex:0 0 auto}
-.soap-sec-title.s .soap-ltr{background:var(--pink);color:#0f1117}
-.soap-sec-title.o .soap-ltr{background:var(--accent2)}
-.soap-sec-title.a .soap-ltr{background:var(--cyclamen)}
-.soap-sec-title.p .soap-ltr{background:var(--teagreen);color:#0f1117}
-.soap-edit{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.83rem;line-height:1.6;min-height:56px;outline:none;white-space:pre-wrap;font-family:var(--font);color:var(--text)}
-.soap-edit:focus{border-color:var(--accent)}
 #print-area{display:none}
 @media print{
   body>*:not(#print-area){display:none !important}
   #print-area{display:block !important;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;padding:10px}
   .pr-header{text-align:center;border-bottom:2px solid #832d51;padding-bottom:10px;margin-bottom:16px}
-  .pr-logo{width:70px;height:70px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 8px}
   .pr-header h1{font-size:1.3rem;color:#832d51;margin-bottom:4px}
   .pr-header p{font-size:.8rem;color:#555}
   #print-area h3{font-size:.95rem;color:#832d51;border-bottom:1px solid #ccc;padding-bottom:4px;margin:16px 0 8px}
@@ -245,7 +228,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   .pr-k{background:#f2f2f2;font-weight:700;width:22%}
   .pr-labs th{background:#e8e8e8}
   .pr-notas{font-size:.82rem;line-height:1.6;padding-left:18px}
-  .pr-soap{font-size:.85rem;line-height:1.7;white-space:pre-line;margin:0 0 14px;padding:8px 0}
   .pr-firma{margin-top:50px;text-align:center}
   .pr-firma-line{border-top:1px solid #333;width:260px;margin:0 auto 6px}
   .pr-firma p{font-size:.8rem;color:#444}
@@ -257,7 +239,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 <div id="print-area"></div>
 
 <header>
-  <img src="logo.webp" alt="Michel Torres V. — Nutrición" class="header-logo">
   <h1>🏥 Calculadora Nutricional</h1>
   <p>Valoración rápida · Uso hospitalario</p>
 </header>
@@ -267,8 +248,8 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   <div class="tab t-emb" onclick="switchTab('embarazo')">🤰 Embarazo</div>
   <div class="tab t-lab" onclick="switchTab('labs')">🧪 Labs</div>
   <div class="tab t-plan" onclick="switchTab('plan')">🍽️ Plan</div>
+  <div class="tab t-soap" onclick="switchTab('soap')">📝 SOAP</div>
   <div class="tab t-pac" onclick="switchTab('pacientes')">📋 Pacientes</div>
-  <div class="tab t-gas" onclick="switchTab('gasto')">⚡ Energía</div>
 </div>
 
 <!-- ======= TAB GENERAL ======= -->
@@ -302,12 +283,15 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     <div class="sec-title">Antropometría</div>
     <div class="row">
       <div class="field"><label>Peso actual (kg)</label><input type="number" id="peso" placeholder="0.0" step="0.1" oninput="calcG()"></div>
-      <div class="field"><label>Peso habitual (kg)</label><input type="number" id="pesoH" placeholder="0.0" step="0.1"></div>
+      <div class="field"><label>Peso habitual (kg)</label><input type="number" id="pesoH" placeholder="0.0" step="0.1" oninput="calcG()"></div>
     </div>
     <div class="field"><label>Talla (m)</label><input type="number" id="talla" placeholder="1.60" step="0.01" oninput="calcG()"></div>
     <div class="field"><label>IMC (kg/m²)</label><div class="res" id="g-imc">—</div></div>
     <div class="field"><label>Peso ideal (kg)</label><div class="res" id="g-pideal">—</div></div>
     <div class="field"><label>Peso ajustado (kg)</label><div class="res" id="g-paj">—</div></div>
+    <div class="field"><label>% Cambio de peso</label><div class="res" id="g-pcambio">—</div><p class="note">(Peso actual − habitual) / habitual × 100 · positivo = ganancia, negativo = pérdida</p></div>
+    <div class="field"><label>% Peso habitual</label><div class="res" id="g-phab">—</div></div>
+    <div class="field"><label>% Peso ideal</label><div class="res" id="g-pidealpct">—</div></div>
     <div class="field"><label>Peso a usar en cálculos</label><div class="res" id="g-pusar">—</div></div>
   </div>
 
@@ -423,6 +407,9 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     <div class="field"><label>Diferencia: ganado real vs esperado</label><div class="res" id="e-dif">—</div></div>
     <div class="field"><label>Peso ideal (talla²×22)</label><div class="res" id="e-pideal">—</div></div>
     <div class="field"><label>Peso ajustado (si obesidad)</label><div class="res" id="e-paj">—</div></div>
+    <div class="field"><label>% Cambio de peso</label><div class="res" id="e-pcambio">—</div><p class="note">(Peso actual − pregestacional) / pregestacional × 100 · positivo = ganancia, negativo = pérdida</p></div>
+    <div class="field"><label>% Peso pregestacional</label><div class="res" id="e-phab">—</div></div>
+    <div class="field"><label>% Peso ideal</label><div class="res" id="e-pidealpct">—</div></div>
     <div class="field"><label>Peso a usar en cálculos</label><div class="res" id="e-pusar">—</div></div>
   </div>
 
@@ -621,6 +608,53 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 </div>
 
+<!-- ======= TAB SOAP ======= -->
+<div id="tab-soap" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title">Datos del paciente</div>
+    <div class="row">
+      <div class="field"><label>Cama</label><input type="text" id="soap-cama" placeholder="Ej. 12-A"></div>
+      <div class="field"><label>Nombre</label><input type="text" id="soap-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">S — Subjetivo</div>
+    <div class="field"><label>Datos socioeconómicos</label><textarea id="soap-s-socio" rows="3" placeholder="Ocupación, escolaridad, dependientes económicos, acceso a alimentos, seguridad social..."></textarea></div>
+    <div class="field"><label>Síntomas referidos</label><textarea id="soap-s-sintomas" rows="3" placeholder="Náusea, dolor abdominal, saciedad temprana, apetito, hábito intestinal..."></textarea></div>
+    <div class="field"><label>Antecedentes</label><textarea id="soap-s-antec" rows="4" placeholder="Personales patológicos, no patológicos, heredofamiliares, alérgicos, quirúrgicos..."></textarea></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">O — Objetivo</div>
+    <div class="row">
+      <button class="btn-reset" style="flex:1;font-size:.72rem" onclick="soapFromTab('g')">↙ Traer de General</button>
+      <button class="btn-reset" style="flex:1;font-size:.72rem" onclick="soapFromTab('e')">↙ Traer de Embarazo</button>
+    </div>
+    <div class="field" style="margin-top:10px"><label>Datos nutricionales objetivos</label><textarea id="soap-o" rows="6" placeholder="Antropometría, IMC, % cambio de peso, kilocalorías, macronutrientes, laboratorios relevantes..."></textarea></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">A — Análisis (Diagnóstico nutricional PES)</div>
+    <div class="field">
+      <label>Selecciona un diagnóstico (eNCPT / NANDA-I)</label>
+      <select id="soap-pes-select"></select>
+    </div>
+    <button class="btn-save" style="background:var(--accent);margin-top:8px" onclick="agregarPES()">➕ Agregar diagnóstico al análisis</button>
+    <div class="field" style="margin-top:10px"><label>Diagnóstico(s) — edita libremente etiología y signos</label><textarea id="soap-a" rows="6" placeholder="Se llenará automáticamente al agregar un PES. Completa 'relacionado con...' y 'evidenciado por...' según el caso."></textarea></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">P — Plan</div>
+    <div class="field"><label>Plan de intervención</label><textarea id="soap-p" rows="6" placeholder="Se sugiere automáticamente según el/los diagnóstico(s) seleccionados. Edítalo según el caso."></textarea></div>
+  </div>
+
+  <button class="btn-reset" onclick="limpiarSOAP()">↺ Limpiar SOAP</button>
+  <button class="pac-btn pdf" style="width:100%;margin-top:8px;padding:11px" onclick="imprimirSOAP()">🖨️ Generar PDF SOAP</button>
+
+</div>
+
 <!-- ======= TAB PACIENTES ======= -->
 <div id="tab-pacientes" class="tab-content">
   <div class="section">
@@ -633,156 +667,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   <button class="btn-danger" onclick="confirmarLimpiar()">🗑 Limpiar todos los pacientes del día</button>
 </div>
 
-<!-- ======= TAB GASTO ENERGÉTICO ======= -->
-<div id="tab-gasto" class="tab-content">
-
-  <div class="section">
-    <div class="sec-title green">Datos del paciente</div>
-    <div class="field"><label>Número de cama</label><input type="text" id="ge-cama" placeholder="Ej. 12-A"></div>
-    <div class="field"><label>Nombre de la paciente</label><input type="text" id="ge-nombre" placeholder="Apellidos, Nombre"></div>
-    <div class="field"><label>Diagnóstico</label><input type="text" id="ge-dx" placeholder="Diagnóstico principal"></div>
-    <div class="field">
-      <label>Tipo de dieta</label>
-      <select id="ge-dieta">
-        <option value="">-- Seleccionar --</option>
-        <option value="IB">IB — Normal</option>
-        <option value="IIB">IIB — Blanda</option>
-        <option value="III">III — Diabética</option>
-        <option value="IV">IV — Hiposódica</option>
-        <option value="III-IV">III-IV — Diabética-Hiposódica</option>
-        <option value="VA">VA — Sin colesterol</option>
-        <option value="VIA">VIA — Líquida</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="sec-title green">Antropometría</div>
-    <label>Sexo</label>
-    <div class="pb-wrap">
-      <div class="pb on" id="ge-sexo-F" onclick="setSexoGasto('F')">Femenino</div>
-      <div class="pb" id="ge-sexo-M" onclick="setSexoGasto('M')">Masculino</div>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <div class="field"><label>Peso actual (kg)</label><input type="number" id="ge-peso" placeholder="0.0" step="0.1" oninput="calcGasto()"></div>
-      <div class="field"><label>Talla (cm)</label><input type="number" id="ge-talla" placeholder="0" step="0.1" oninput="calcGasto()"></div>
-    </div>
-    <div class="field"><label>Edad (años)</label><input type="number" id="ge-edad" placeholder="0" oninput="calcGasto()"></div>
-    <div class="field"><label>IMC (kg/m²)</label><div class="res" id="ge-imc">—</div></div>
-    <div class="field"><label>Peso ideal (kg)</label><div class="res" id="ge-pideal">—</div></div>
-    <div class="field"><label>Peso ajustado (kg)</label><div class="res" id="ge-paj">—</div></div>
-    <div class="field"><label>Peso a usar en el cálculo de TMB</label><div class="res" id="ge-pusar">—</div></div>
-    <button class="btn-reset" style="margin-bottom:0" onclick="copiarDeGeneral()">↺ Copiar peso/talla de la pestaña General</button>
-  </div>
-
-  <div class="section">
-    <div class="sec-title green">Fórmula y actividad</div>
-    <div class="field">
-      <label>Fórmula de TMB</label>
-      <select id="ge-formula" onchange="calcGasto()">
-        <option value="mifflin">Mifflin-St Jeor (recomendada)</option>
-        <option value="harris">Harris-Benedict (1984)</option>
-        <option value="fao">FAO/OMS/ONU</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Nivel de actividad física</label>
-      <select id="ge-actividad" onchange="calcGasto()">
-        <option value="1.2">Sedentario</option>
-        <option value="1.375">Ligero (1-3 días/sem)</option>
-        <option value="1.55">Moderado (3-5 días/sem)</option>
-        <option value="1.725">Intenso (6-7 días/sem)</option>
-        <option value="1.9">Muy intenso / atleta</option>
-      </select>
-    </div>
-    <p class="note">El peso usado en la fórmula se ajusta automáticamente según la clasificación de IMC (igual que en la pestaña General).</p>
-  </div>
-
-  <div class="section">
-    <div class="sec-title green">Contexto clínico (opcional)</div>
-    <div class="field">
-      <label>Condición / factor de estrés</label>
-      <select id="ge-estres" onchange="calcGasto()">
-        <option value="1">Sin ajuste</option>
-        <option value="1.05">Cirugía menor</option>
-        <option value="1.15">Cirugía mayor</option>
-        <option value="1.3">Sepsis / trauma</option>
-        <option value="1.5">Quemadura leve (&lt;20% SCQ)</option>
-        <option value="1.75">Quemadura moderada (20-40%)</option>
-        <option value="2">Quemadura grave (&gt;40%)</option>
-      </select>
-    </div>
-    <div class="field"><label>Temperatura corporal (°C)</label><input type="number" id="ge-temp" placeholder="37.0" step="0.1" oninput="calcGasto()"></div>
-    <p class="note">Fiebre: se suma ~11.5% al gasto por cada °C sobre 37°C.</p>
-  </div>
-
-  <div class="section">
-    <div class="sec-title green">Kilocalorías</div>
-    <div class="field"><label>TMB</label><div class="res" id="ge-tmb">—</div></div>
-    <div class="field"><label>GET (con actividad)</label><div class="res" id="ge-get">—</div></div>
-    <div class="field"><label>GET ajustado (clínico + fiebre)</label><div class="res" id="ge-final">—</div></div>
-    <p class="note" id="ge-breakdown">Ingresa peso, talla y edad para calcular.</p>
-  </div>
-
-  <div class="section">
-    <div class="sec-title green">Macronutrientes</div>
-    <div class="field">
-      <label>Hidratos de carbono — % kcal (45–60%)</label>
-      <div class="sl-row"><input type="range" id="ge-hcpct" min="45" max="60" value="55" oninput="sl('ge-hcpct','ge-hcsv');calcGasto()"><div class="sl-val" id="ge-hcsv">55%</div></div>
-    </div>
-    <div class="field" style="margin-top:10px">
-      <label>Lípidos — % kcal (25–35%)</label>
-      <div class="sl-row"><input type="range" id="ge-lippct" min="25" max="35" value="30" oninput="sl('ge-lippct','ge-lipsv');calcGasto()"><div class="sl-val" id="ge-lipsv">30%</div></div>
-    </div>
-    <div class="field" style="margin-top:12px">
-      <label>Proteínas — modo de cálculo</label>
-      <div class="pb-wrap" id="ge-protmode-wrap">
-        <div class="pb on" onclick="setProtModeGasto('gkg',this)">g/kg peso</div>
-        <div class="pb" onclick="setProtModeGasto('pct',this)">% kcal</div>
-      </div>
-    </div>
-    <div class="field" style="margin-top:10px" id="ge-prot-gkg-box">
-      <label>Factor (g/kg) · el peso se asigna automáticamente según IMC</label>
-      <div class="pb-wrap" id="ge-pb">
-        <div class="pb on" onclick="selProtGasto(this,1.2)">1.2</div>
-        <div class="pb" onclick="selProtGasto(this,1.3)">1.3</div>
-        <div class="pb" onclick="selProtGasto(this,1.4)">1.4</div>
-        <div class="pb" onclick="selProtGasto(this,1.5)">1.5</div>
-      </div>
-      <div class="res neutral" id="ge-prot-peso" style="margin-top:7px;font-size:.8rem">—</div>
-    </div>
-    <div class="field" style="margin-top:10px;display:none" id="ge-prot-pct-box">
-      <label>Proteínas — % kcal (10–35%)</label>
-      <div class="sl-row"><input type="range" id="ge-protpct" min="10" max="35" value="15" oninput="sl('ge-protpct','ge-protpctsv');calcGasto()"><div class="sl-val" id="ge-protpctsv">15%</div></div>
-      <div class="res neutral" id="ge-prot-gkg-eq" style="margin-top:7px;font-size:.8rem">—</div>
-    </div>
-    <div class="mac-grid" style="margin-top:13px">
-      <div class="mac-card"><div class="mac-lbl">Hidratos de carbono</div><div class="mac-vals"><div class="mv" id="ge-hckcal">—<span>kcal</span></div><div class="mv2" id="ge-hcg">—<span>g</span></div></div></div>
-      <div class="mac-card"><div class="mac-lbl">Proteínas</div><div class="mac-vals"><div class="mv" id="ge-pg">—<span>g</span></div><div class="mv2" id="ge-pkcal">—<span>kcal</span></div><div class="mv2" id="ge-ppct">—<span>%</span></div></div></div>
-      <div class="mac-card"><div class="mac-lbl">Lípidos</div><div class="mac-vals"><div class="mv" id="ge-lipkcal">—<span>kcal</span></div><div class="mv2" id="ge-lipg">—<span>g</span></div></div></div>
-    </div>
-  </div>
-
-  <div class="sum-box" id="ge-sum" style="display:none">
-    <div class="sum-title">📋 Resumen del paciente</div>
-    <div class="sum-row"><span class="sum-k">Cama</span><span class="sum-v" id="ges-cama">—</span></div>
-    <div class="sum-row"><span class="sum-k">Paciente</span><span class="sum-v" id="ges-nom">—</span></div>
-    <div class="sum-row"><span class="sum-k">Diagnóstico</span><span class="sum-v" id="ges-dx">—</span></div>
-    <div class="sum-row"><span class="sum-k">Dieta</span><span class="sum-v" id="ges-dieta">—</span></div>
-    <div class="sum-row"><span class="sum-k">IMC</span><span class="sum-v" id="ges-imc">—</span></div>
-    <div class="sum-row"><span class="sum-k">Peso a usar</span><span class="sum-v" id="ges-pusar">—</span></div>
-    <div class="sum-row"><span class="sum-k">TMB</span><span class="sum-v" id="ges-tmb">—</span></div>
-    <div class="sum-row"><span class="sum-k">GET ajustado</span><span class="sum-v big" id="ges-final">—</span></div>
-    <div class="sum-row"><span class="sum-k">HC</span><span class="sum-v" id="ges-hc">—</span></div>
-    <div class="sum-row"><span class="sum-k">Proteínas</span><span class="sum-v" id="ges-prot">—</span></div>
-    <div class="sum-row"><span class="sum-k">Lípidos</span><span class="sum-v" id="ges-lip">—</span></div>
-  </div>
-
-  <button class="btn-save" onclick="guardar('gasto')">💾 Guardar paciente</button>
-  <button class="btn-reset" onclick="resetGasto()">↺ Limpiar formulario</button>
-</div>
-
-
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -794,23 +678,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     <div class="modal-btns">
       <button class="m-cancel" onclick="cerrarModal()">Cancelar</button>
       <button class="m-confirm" onclick="limpiarTodos()">Limpiar todo</button>
-    </div>
-  </div>
-</div>
-
-<!-- SOAP MODAL -->
-<div class="modal-bg" id="soap-modal">
-  <div class="modal soap-box">
-    <h3>📝 Nota de evaluación (SOAP)</h3>
-    <p class="soap-fecha" id="soap-fecha">—</p>
-    <div id="soap-body"></div>
-    <div class="soap-sec">
-      <label style="display:block;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Nombre del responsable (firma)</label>
-      <input type="text" id="soap-firma" placeholder="Ej. Yadira Michelle Torres V. — Pasante de Nutrición">
-    </div>
-    <div class="modal-btns" style="margin-top:16px">
-      <button class="m-cancel" onclick="cerrarSoap()">Cancelar</button>
-      <button class="m-confirm" style="background:var(--green);color:#0f1117" onclick="imprimirSoap()">🖨️ Generar PDF</button>
     </div>
   </div>
 </div>
@@ -830,8 +697,8 @@ function switchTab(t) {
   else if(t==='embarazo') tabs[1].classList.add('active');
   else if(t==='labs') tabs[2].classList.add('active');
   else if(t==='plan') { tabs[3].classList.add('active'); renderPlanGrid(); }
-  else if(t==='pacientes') { tabs[4].classList.add('active'); renderPacs(); }
-  else { tabs[5].classList.add('active'); calcGasto(); }
+  else if(t==='soap') { tabs[4].classList.add('active'); initPesSelect(); }
+  else { tabs[5].classList.add('active'); renderPacs(); }
 }
 
 // ===== HELPERS =====
@@ -914,7 +781,7 @@ function calcG() {
   var edadTxt = gt('edadRes'), edadN = parseInt(edadTxt), esAM = !isNaN(edadN)&&edadN>=60;
 
   if(!peso||!talla||talla<0.5){
-    ['g-imc','g-pideal','g-paj','g-pusar','g-kcal'].forEach(function(id){ setR(id,'—'); });
+    ['g-imc','g-pideal','g-paj','g-pcambio','g-phab','g-pidealpct','g-pusar','g-kcal'].forEach(function(id){ setR(id,'—'); });
     clearGMacs(); return;
   }
 
@@ -930,6 +797,22 @@ function calcG() {
 
   if(c.cls==='obesidad') setR('g-paj', r1(paj)+' kg');
   else setR('g-paj','— (no aplica)','neutral');
+
+  var pesoH = parseFloat(gv('pesoH'));
+  if(pesoH && pesoH>0){
+    var pctCambio = ((peso-pesoH)/pesoH)*100;
+    var etiqueta = pctCambio>0 ? 'Ganancia de peso' : (pctCambio<0 ? 'Pérdida de peso' : 'Sin cambio');
+    setR('g-pcambio', (pctCambio>0?'+':'')+r1(pctCambio)+'% — '+etiqueta, pctCambio<0?'warn':'neutral');
+    setR('g-phab', r1((peso/pesoH)*100)+'%');
+  } else {
+    setR('g-pcambio','—','neutral');
+    setR('g-phab','—','neutral');
+  }
+  if(pideal>0){
+    setR('g-pidealpct', r1((peso/pideal)*100)+'%');
+  } else {
+    setR('g-pidealpct','—','neutral');
+  }
 
   var pusar, pusarLbl;
   if(c.cls==='bajo')     { pusar=pideal; pusarLbl='Peso ideal (bajo peso)'; }
@@ -1004,7 +887,7 @@ function calcE() {
   var hcpct=parseInt(gv('e-hcpct')), lippct=parseInt(gv('e-lippct'));
 
   if(!pPreg||!talla||talla<0.5){
-    ['e-imcp','e-imca','e-pesoe','e-dif','e-pideal','e-paj','e-pusar','e-kcalb','e-inc','e-kcalt'].forEach(function(id){ setR(id,'—'); });
+    ['e-imcp','e-imca','e-pesoe','e-dif','e-pideal','e-paj','e-pcambio','e-phab','e-pidealpct','e-pusar','e-kcalb','e-inc','e-kcalt'].forEach(function(id){ setR(id,'—'); });
     document.getElementById('e-ganref').style.display='none';
     clearEMacs(); return;
   }
@@ -1036,6 +919,21 @@ function calcE() {
     paj=(pActual-pideal)*0.25+pideal;
     setR('e-paj', r1(paj)+' kg');
   } else { setR('e-paj','— (no aplica)','neutral'); }
+
+  if(pActual && pPreg>0){
+    var pctCambioE = ((pActual-pPreg)/pPreg)*100;
+    var etiquetaE = pctCambioE>0 ? 'Ganancia de peso' : (pctCambioE<0 ? 'Pérdida de peso' : 'Sin cambio');
+    setR('e-pcambio', (pctCambioE>0?'+':'')+r1(pctCambioE)+'% — '+etiquetaE, pctCambioE<0?'warn':'neutral');
+    setR('e-phab', r1((pActual/pPreg)*100)+'%');
+  } else {
+    setR('e-pcambio','—','neutral');
+    setR('e-phab','—','neutral');
+  }
+  if(pActual && pideal>0){
+    setR('e-pidealpct', r1((pActual/pideal)*100)+'%');
+  } else {
+    setR('e-pidealpct','—','neutral');
+  }
 
   var pesoUsar, pusarLbl;
   if(clsP==='obesidad'){ pesoUsar=paj||pActual; pusarLbl='Peso ajustado'; }
@@ -1143,7 +1041,7 @@ function resetG(){
   document.getElementById('g-protpct').value=15; document.getElementById('g-protpctsv').textContent='15%';
   setR('edadRes','—','neutral');
   setR('g-prot-peso','—','neutral');
-  ['g-imc','g-pideal','g-paj','g-pusar','g-kcal'].forEach(function(id){ setR(id,'—'); });
+  ['g-imc','g-pideal','g-paj','g-pcambio','g-phab','g-pidealpct','g-pusar','g-kcal'].forEach(function(id){ setR(id,'—'); });
   clearGMacs();
 }
 
@@ -1159,7 +1057,7 @@ function resetE(){
   document.getElementById('e-prot-pct-box').style.display='none';
   document.getElementById('e-protpct').value=15; document.getElementById('e-protpctsv').textContent='15%';
   setLact(false);
-  ['e-imcp','e-imca','e-pesoe','e-dif','e-pideal','e-paj','e-pusar','e-kcalb','e-inc','e-kcalt'].forEach(function(id){ setR(id,'—'); });
+  ['e-imcp','e-imca','e-pesoe','e-dif','e-pideal','e-paj','e-pcambio','e-phab','e-pidealpct','e-pusar','e-kcalb','e-inc','e-kcalt'].forEach(function(id){ setR(id,'—'); });
   document.getElementById('e-ganref').style.display='none';
   document.getElementById('e-trim').textContent='—';
   setR('e-prot-peso','—','neutral');
@@ -1188,7 +1086,7 @@ function guardar(tipo) {
       hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
       id:Date.now(), labs:null, labCtx:null
     };
-  } else if(tipo==='embarazo') {
+  } else {
     if(!gv('e-peso')||!gv('e-talla')){ showToast('⚠️ Completa peso y talla primero',true); return; }
     if(document.getElementById('e-sum').style.display==='none'){ showToast('⚠️ Completa los cálculos primero',true); return; }
     var dietaEl2=document.getElementById('e-dieta');
@@ -1202,21 +1100,6 @@ function guardar(tipo) {
       hc:document.getElementById('e-hckcal').textContent+' · '+document.getElementById('e-hcg').textContent,
       prot:document.getElementById('e-pg').textContent+' · '+document.getElementById('e-pkcal').textContent+' · '+document.getElementById('e-ppct').textContent,
       lip:document.getElementById('e-lipkcal').textContent+' · '+document.getElementById('e-lipg').textContent,
-      hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-      id:Date.now(), labs:null, labCtx:null
-    };
-  } else {
-    if(!gv('ge-peso')||!gv('ge-talla')||!gv('ge-edad')){ showToast('⚠️ Completa peso, talla y edad primero',true); return; }
-    if(document.getElementById('ge-sum').style.display==='none'){ showToast('⚠️ Completa los cálculos primero',true); return; }
-    var dietaEl3=document.getElementById('ge-dieta');
-    data={
-      tipo:'gasto',
-      cama:gv('ge-cama')||'—', nombre:gv('ge-nombre')||'—', dx:gv('ge-dx')||'—',
-      dieta:dietaEl3.value?dietaEl3.options[dietaEl3.selectedIndex].text:'—',
-      imc:gt('ge-imc'), pusar:gt('ge-pusar'), tmb:gt('ge-tmb'), kcal:gt('ge-final'),
-      hc:document.getElementById('ge-hckcal').textContent+' · '+document.getElementById('ge-hcg').textContent,
-      prot:document.getElementById('ge-pg').textContent+' · '+document.getElementById('ge-pkcal').textContent+' · '+document.getElementById('ge-ppct').textContent,
-      lip:document.getElementById('ge-lipkcal').textContent+' · '+document.getElementById('ge-lipg').textContent,
       hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
       id:Date.now(), labs:null, labCtx:null
     };
@@ -1236,7 +1119,7 @@ function renderPacs(){
   }
   var html='';
   for(var i=0;i<list.length;i++){
-    var p=list[i], isE=p.tipo==='embarazo', isGas=p.tipo==='gasto';
+    var p=list[i], isE=p.tipo==='embarazo';
     var rows='';
     if(isE){
       rows+=row('Diagnóstico',p.dx)+row('Dieta',p.dieta)+row('SDG',p.sdg)+
@@ -1244,25 +1127,20 @@ function renderPacs(){
             row('Diferencia peso',p.dif)+row('Peso a usar',p.pusar)+
             row('Kcal base',p.kcalb)+rowH('Kcal totales',p.kcalt,'p')+
             row('HC',p.hc)+row('Proteínas',p.prot)+row('Lípidos',p.lip);
-    } else if(isGas){
-      rows+=row('Diagnóstico',p.dx)+row('Dieta',p.dieta)+
-            row('IMC',p.imc)+row('Peso a usar',p.pusar)+row('TMB',p.tmb)+
-            rowH('GET ajustado',p.kcal,'g')+
-            row('HC',p.hc)+row('Proteínas',p.prot)+row('Lípidos',p.lip);
     } else {
       rows+=row('Diagnóstico',p.dx)+row('Dieta',p.dieta)+row('Edad',p.edad)+
             row('IMC',p.imc)+row('Peso a usar',p.pusar)+
             rowH('Kilocalorías',p.kcal,'g')+
             row('HC',p.hc)+row('Proteínas',p.prot)+row('Lípidos',p.lip);
     }
-    html+='<div class="pac-card '+(isE?'ec':(isGas?'gac':'gc'))+'" id="pac-'+p.id+'">'+
+    html+='<div class="pac-card '+(isE?'ec':'gc')+'" id="pac-'+p.id+'">'+
       '<div class="pac-hdr" onclick="togCard('+p.id+')">'+
         '<div>'+
           '<div class="pac-name">'+(p.cama!=='—'?'Cama '+p.cama+' · ':'')+p.nombre+'</div>'+
           '<div class="pac-meta">Guardado: '+p.hora+'</div>'+
         '</div>'+
         '<div style="display:flex;align-items:center;gap:8px">'+
-          '<span class="pac-badge '+(isE?'eb':(isGas?'gab':'gb'))+'">'+(isE?'🤰':(isGas?'⚡':'🏥'))+'</span>'+
+          '<span class="pac-badge '+(isE?'eb':'gb')+'">'+(isE?'🤰':'🏥')+'</span>'+
           '<span class="pac-arr" id="arr-'+p.id+'">▼</span>'+
         '</div>'+
       '</div>'+
@@ -1270,7 +1148,7 @@ function renderPacs(){
         renderPacLabsSummary(p)+
         '<div class="pac-actions">'+
           '<button class="pac-btn labs" onclick="toggleLabsForm('+p.id+')">🧪 Laboratorios</button>'+
-          '<button class="pac-btn pdf" onclick="abrirSoap('+p.id+')">🖨️ Generar PDF</button>'+
+          '<button class="pac-btn pdf" onclick="imprimirPaciente('+p.id+')">🖨️ Generar PDF</button>'+
         '</div>'+
         '<div id="labform-'+p.id+'" style="display:none"></div>'+
         '<button class="pac-del" onclick="delPac('+p.id+')">✕ Eliminar</button>'+
@@ -1393,136 +1271,58 @@ function guardarPacLabs(id){
 }
 
 // ===== GENERAR PDF POR PACIENTE (impresión del navegador) =====
-// ===== NOTA SOAP (editable, con todos los datos del paciente) =====
-var soapCurrentId = null;
-
-function escHtml(s){
-  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function soapLtr(l){ return '<span class="soap-ltr">'+l+'</span>'; }
-
-function buildSoapO(p){
-  var isE = p.tipo==='embarazo', isGas = p.tipo==='gasto';
-  var txt = '';
-  if(isE){
-    txt += 'SDG: '+p.sdg+'\n'+
-           'IMC pregestacional: '+p.imcp+'\n'+
-           'Peso esperado para SDG: '+p.pesoe+'\n'+
-           'Diferencia de peso: '+p.dif+'\n'+
-           'Peso a usar: '+p.pusar;
-  } else if(isGas){
-    txt += 'IMC: '+p.imc+'\n'+
-           'Peso a usar: '+p.pusar+'\n'+
-           'TMB: '+p.tmb;
-  } else {
-    txt += 'Edad: '+p.edad+'\n'+
-           'IMC: '+p.imc+'\n'+
-           'Peso a usar: '+p.pusar;
-  }
-  if(p.labs && p.labs.length){
-    txt += '\n\nLaboratorios:\n';
-    p.labs.forEach(function(r){ txt += '- '+r.name+': '+r.valor+' '+r.unit+' ('+r.interp+')\n'; });
-    txt = txt.replace(/\n$/,'');
-  }
-  return txt;
-}
-
-function buildSoapP(p){
-  var isE = p.tipo==='embarazo';
-  var kcalLbl = isE ? p.kcalt : p.kcal;
-  return 'Tipo de dieta: '+p.dieta+'\n'+
-         'Kilocalorías totales: '+kcalLbl+'\n'+
-         'Hidratos de carbono: '+p.hc+'\n'+
-         'Proteínas: '+p.prot+'\n'+
-         'Lípidos: '+p.lip;
-}
-
-function abrirSoap(id){
+function imprimirPaciente(id){
   var p = getPacs().find(function(x){ return x.id===id; });
   if(!p) return;
-  soapCurrentId = id;
-
+  var isE = p.tipo==='embarazo';
   var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
-  document.getElementById('soap-fecha').textContent =
-    (p.cama!=='—'?'Cama '+p.cama+' · ':'')+p.nombre+' — '+fecha;
 
-  var sVal = p.soapS!=null ? p.soapS : '(Sin datos subjetivos registrados. Edite este campo: síntomas, apetito, tolerancia a la vía oral, síntomas gastrointestinales, etc.)';
-  var oVal = p.soapO!=null ? p.soapO : buildSoapO(p);
-  var aVal = p.soapA!=null ? p.soapA : '(Escriba el diagnóstico nutricio en formato PES: problema relacionado con etiología, evidenciado por signos/síntomas.)';
-  var pVal = p.soapP!=null ? p.soapP : buildSoapP(p);
+  var datosHtml = '<table class="pr-table">'+
+    '<tr><td class="pr-k">Cama</td><td class="pr-v">'+(p.cama||'—')+'</td>'+
+    '<td class="pr-k">Nombre</td><td class="pr-v">'+(p.nombre||'—')+'</td></tr>'+
+    '<tr><td class="pr-k">Diagnóstico</td><td class="pr-v" colspan="3">'+(p.dx||'—')+'</td></tr>'+
+    '<tr><td class="pr-k">Tipo de dieta</td><td class="pr-v" colspan="3">'+(p.dieta||'—')+'</td></tr>'+
+    '</table>';
 
-  document.getElementById('soap-body').innerHTML =
-    '<div class="soap-sec"><div class="soap-sec-title s">'+soapLtr('S')+' Subjetivo</div>'+
-      '<div class="soap-edit" id="soap-s" contenteditable="true"></div></div>'+
-    '<div class="soap-sec"><div class="soap-sec-title o">'+soapLtr('O')+' Objetivo</div>'+
-      '<div class="soap-edit" id="soap-o" contenteditable="true"></div></div>'+
-    '<div class="soap-sec"><div class="soap-sec-title a">'+soapLtr('A')+' Análisis (diagnóstico nutricio)</div>'+
-      '<div class="soap-edit" id="soap-a" contenteditable="true"></div></div>'+
-    '<div class="soap-sec"><div class="soap-sec-title p">'+soapLtr('P')+' Plan</div>'+
-      '<div class="soap-edit" id="soap-p" contenteditable="true"></div></div>';
-
-  // Se asigna como texto (no HTML) para que el CSS pre-wrap respete los saltos de línea
-  document.getElementById('soap-s').textContent = sVal;
-  document.getElementById('soap-o').textContent = oVal;
-  document.getElementById('soap-a').textContent = aVal;
-  document.getElementById('soap-p').textContent = pVal;
-
-  var firmaGuardada = p.soapFirma!=null ? p.soapFirma : (localStorage.getItem('firmaResponsable')||'');
-  document.getElementById('soap-firma').value = firmaGuardada;
-
-  document.getElementById('soap-modal').classList.add('show');
-}
-
-function cerrarSoap(){
-  document.getElementById('soap-modal').classList.remove('show');
-  soapCurrentId = null;
-}
-
-function imprimirSoap(){
-  var p = getPacs().find(function(x){ return x.id===soapCurrentId; });
-  if(!p) return;
-
-  var sTxt = document.getElementById('soap-s').innerText.trim();
-  var oTxt = document.getElementById('soap-o').innerText.trim();
-  var aTxt = document.getElementById('soap-a').innerText.trim();
-  var pTxt = document.getElementById('soap-p').innerText.trim();
-  var firmaTxt = document.getElementById('soap-firma').value.trim();
-
-  // Guarda las ediciones en el registro del paciente (persisten si se reabre la nota)
-  var list = getPacs();
-  var idx = list.findIndex(function(x){ return x.id===soapCurrentId; });
-  if(idx>-1){
-    list[idx].soapS = sTxt; list[idx].soapO = oTxt; list[idx].soapA = aTxt; list[idx].soapP = pTxt;
-    list[idx].soapFirma = firmaTxt;
-    savePacs(list);
+  var calcHtml;
+  if(isE){
+    calcHtml = '<table class="pr-table">'+
+      '<tr><td class="pr-k">SDG</td><td class="pr-v">'+p.sdg+'</td><td class="pr-k">IMC pregestacional</td><td class="pr-v">'+p.imcp+'</td></tr>'+
+      '<tr><td class="pr-k">Peso esperado SDG</td><td class="pr-v">'+p.pesoe+'</td><td class="pr-k">Diferencia de peso</td><td class="pr-v">'+p.dif+'</td></tr>'+
+      '<tr><td class="pr-k">Peso a usar</td><td class="pr-v">'+p.pusar+'</td><td class="pr-k">Kcal base</td><td class="pr-v">'+p.kcalb+'</td></tr>'+
+      '<tr><td class="pr-k">Kcal totales</td><td class="pr-v"><b>'+p.kcalt+'</b></td><td class="pr-k"></td><td class="pr-v"></td></tr>'+
+      '<tr><td class="pr-k">Hidratos de carbono</td><td class="pr-v">'+p.hc+'</td><td class="pr-k">Proteínas</td><td class="pr-v">'+p.prot+'</td></tr>'+
+      '<tr><td class="pr-k">Lípidos</td><td class="pr-v" colspan="3">'+p.lip+'</td></tr>'+
+      '</table>';
+  } else {
+    calcHtml = '<table class="pr-table">'+
+      '<tr><td class="pr-k">Edad</td><td class="pr-v">'+p.edad+'</td><td class="pr-k">IMC</td><td class="pr-v">'+p.imc+'</td></tr>'+
+      '<tr><td class="pr-k">Peso a usar</td><td class="pr-v">'+p.pusar+'</td><td class="pr-k">Kilocalorías</td><td class="pr-v"><b>'+p.kcal+'</b></td></tr>'+
+      '<tr><td class="pr-k">Hidratos de carbono</td><td class="pr-v">'+p.hc+'</td><td class="pr-k">Proteínas</td><td class="pr-v">'+p.prot+'</td></tr>'+
+      '<tr><td class="pr-k">Lípidos</td><td class="pr-v" colspan="3">'+p.lip+'</td></tr>'+
+      '</table>';
   }
-  if(firmaTxt) localStorage.setItem('firmaResponsable', firmaTxt);
 
-  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
-
-  var notasHtml = '';
+  var labsHtml = '';
   if(p.labs && p.labs.length){
+    var labRows = p.labs.map(function(r){
+      return '<tr><td class="pr-v">'+r.name+'</td><td class="pr-v">'+r.valor+' '+r.unit+'</td>'+
+        '<td class="pr-v">'+r.refText+'</td><td class="pr-v"><b>'+r.interp+'</b></td></tr>';
+    }).join('');
     var notas = generarInterpretacion(p.labs, p.labCtx||{});
-    notasHtml = notas.length ? '<h3>Interpretación global de laboratorios</h3><ul class="pr-notas">'+notas.map(function(n){ return '<li>'+n.txt.replace(/<\/?b>/g,'')+'</li>'; }).join('')+'</ul>' : '';
+    var notasHtml = notas.length ? '<ul class="pr-notas">'+notas.map(function(n){ return '<li>'+n.txt.replace(/<\/?b>/g,'')+'</li>'; }).join('')+'</ul>' : '';
+    labsHtml = '<h3>Laboratorios</h3>'+
+      '<table class="pr-table pr-labs"><tr><th>Analito</th><th>Valor</th><th>Referencia</th><th>Interpretación</th></tr>'+labRows+'</table>'+
+      (notasHtml ? '<h3>Interpretación global</h3>'+notasHtml : '');
   }
 
-  var html = '<div class="pr-header"><img src="logo.webp" class="pr-logo" alt="Logo"><h1>Nota de Evaluación Nutricional — SOAP</h1><p>'+fecha+'</p></div>'+
-    '<table class="pr-table">'+
-      '<tr><td class="pr-k">Cama</td><td class="pr-v">'+escHtml(p.cama)+'</td>'+
-      '<td class="pr-k">Nombre</td><td class="pr-v">'+escHtml(p.nombre)+'</td></tr>'+
-      '<tr><td class="pr-k">Diagnóstico médico</td><td class="pr-v" colspan="3">'+escHtml(p.dx)+'</td></tr>'+
-      '<tr><td class="pr-k">Tipo de dieta</td><td class="pr-v" colspan="3">'+escHtml(p.dieta)+'</td></tr>'+
-    '</table>'+
-    '<h3>S — Subjetivo</h3><p class="pr-soap">'+escHtml(sTxt)+'</p>'+
-    '<h3>O — Objetivo</h3><p class="pr-soap">'+escHtml(oTxt)+'</p>'+
-    '<h3>A — Análisis (diagnóstico nutricio)</h3><p class="pr-soap">'+escHtml(aTxt)+'</p>'+
-    '<h3>P — Plan</h3><p class="pr-soap">'+escHtml(pTxt)+'</p>'+
-    notasHtml+
-    '<div class="pr-firma"><div class="pr-firma-line"></div><p>'+(firmaTxt ? escHtml(firmaTxt) : 'Nombre y firma del responsable')+'</p></div>';
+  var html = '<div class="pr-header"><h1>Valoración Nutricional</h1><p>'+fecha+'</p></div>'+
+    '<h3>Datos del paciente</h3>'+datosHtml+
+    '<h3>'+(isE?'Valoración obstétrica':'Valoración general')+'</h3>'+calcHtml+
+    labsHtml+
+    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
 
   document.getElementById('print-area').innerHTML = html;
-  cerrarSoap();
   setTimeout(function(){ window.print(); }, 100);
 }
 
@@ -1980,193 +1780,110 @@ function setPlanCard(id, actual, target, dec){
 
 
 
-// ===== GASTO ENERGÉTICO =====
-var geSexo = 'F', geProt = 1.2, geProtMode = 'gkg';
+// ===== SOAP / DIAGNÓSTICO NUTRICIONAL (PES) =====
+// Catálogo representativo eNCPT / NANDA-I por dominio: NI (Ingesta), NC (Clínico), NB (Conductual-ambiental)
+var PES_CATALOG = [
+ {code:'NI-1.2', problema:'Ingesta excesiva de energía', plan:'Ajustar plan de alimentación a los requerimientos calóricos calculados; fraccionar dieta; educación sobre tamaño de porciones y densidad energética.'},
+ {code:'NI-1.4', problema:'Ingesta inadecuada de energía', plan:'Incrementar aporte calórico de forma progresiva; considerar suplementación oral; fraccionar en tomas pequeñas y frecuentes.'},
+ {code:'NI-2.1', problema:'Ingesta oral de alimentos/bebidas inadecuada', plan:'Favorecer vía oral con modificación de consistencia y frecuencia; valorar suplementos nutricionales orales; monitorear tolerancia.'},
+ {code:'NI-2.3', problema:'Ingesta enteral inadecuada', plan:'Ajustar volumen/velocidad de infusión enteral según tolerancia; revalorar fórmula y vía de administración con el equipo tratante.'},
+ {code:'NI-3.1', problema:'Ingesta inadecuada de líquidos', plan:'Establecer meta de líquidos según requerimiento; ofrecer líquidos con cada tiempo de comida; vigilar signos de deshidratación.'},
+ {code:'NI-5.1', problema:'Aumento de los requerimientos de nutrientes (especificar)', plan:'Ajustar plan de alimentación para cubrir el requerimiento aumentado; priorizar fuentes de alta densidad nutricional.'},
+ {code:'NI-5.2', problema:'Desnutrición (evidencia clínica/antropométrica)', plan:'Iniciar plan de recuperación nutricional progresivo; monitoreo antropométrico y bioquímico periódico; considerar interconsulta.'},
+ {code:'NI-5.6.2', problema:'Ingesta excesiva de grasa', plan:'Reducir fuentes de grasa saturada/trans; educación en lectura de etiquetado y técnicas de cocción bajas en grasa.'},
+ {code:'NI-5.6.3', problema:'Ingesta inadecuada de grasa', plan:'Incorporar fuentes de grasas esenciales de buena calidad de forma gradual según tolerancia.'},
+ {code:'NI-5.7.1', problema:'Ingesta inadecuada de proteína', plan:'Aumentar aporte proteico priorizando alimentos de alto valor biológico; considerar módulo proteico si aplica.'},
+ {code:'NI-5.8.1', problema:'Ingesta inadecuada de carbohidratos', plan:'Ajustar aporte de hidratos de carbono complejos distribuidos en el día; evitar ayunos prolongados.'},
+ {code:'NI-5.8.2', problema:'Ingesta excesiva de carbohidratos', plan:'Reducir azúcares simples y ultraprocesados; priorizar carbohidratos de bajo índice glucémico.'},
+ {code:'NI-5.10.1', problema:'Ingesta inadecuada de minerales (especificar: hierro/calcio/etc.)', plan:'Incrementar fuentes alimentarias del micronutriente deficiente; valorar suplementación con el equipo médico.'},
+ {code:'NC-1.1', problema:'Dificultad de deglución (disfagia)', plan:'Modificar consistencia de dieta según nivel de disfagia; coordinar valoración con terapia de lenguaje/deglución.'},
+ {code:'NC-1.4', problema:'Alteración de la función gastrointestinal', plan:'Ajustar consistencia y fraccionamiento de la dieta; identificar y evitar alimentos que exacerban síntomas.'},
+ {code:'NC-2.1', problema:'Utilización alterada de nutrientes', plan:'Ajustar plan de alimentación según la condición clínica de base; monitoreo bioquímico estrecho.'},
+ {code:'NC-2.2', problema:'Alteración de valores de laboratorio relacionados con nutrición', plan:'Plan de alimentación dirigido a corregir el parámetro alterado; reevaluación bioquímica en el seguimiento.'},
+ {code:'NC-3.1', problema:'Bajo peso', plan:'Plan de alimentación hipercalórico/hiperproteico progresivo; monitoreo semanal de peso.'},
+ {code:'NC-3.2', problema:'Pérdida de peso involuntaria', plan:'Identificar causa de la pérdida; ajustar aporte calórico-proteico; vigilancia estrecha de ingesta y peso.'},
+ {code:'NC-3.3', problema:'Sobrepeso/obesidad', plan:'Plan de alimentación hipocalórico moderado; fomentar actividad física según indicación médica; educación en hábitos.'},
+ {code:'NC-3.4', problema:'Ganancia de peso involuntaria/excesiva', plan:'Revisar composición y volumen de la dieta actual; ajustar aporte calórico según meta de ganancia esperada.'},
+ {code:'NB-1.1', problema:'Conocimientos insuficientes relacionados con la alimentación y nutrición', plan:'Sesión de educación nutricional individualizada; material de apoyo escrito; verificar comprensión.'},
+ {code:'NB-1.3', problema:'No está listo/disposición para la dieta o cambio de estilo de vida', plan:'Abordaje motivacional; establecer metas pequeñas y alcanzables; reforzar en próximas consultas.'},
+ {code:'NB-1.5', problema:'Alteración en la capacidad para autocontrolarse', plan:'Estrategias de automonitoreo (registro de alimentos); involucrar red de apoyo familiar.'},
+ {code:'NB-2.1', problema:'Actividad física insuficiente', plan:'Fomentar actividad física gradual según condición clínica; coordinar con el equipo médico si hay restricciones.'},
+ {code:'NB-3.1', problema:'Acceso limitado a alimentos', plan:'Adaptar plan de alimentación a recursos disponibles; orientar sobre opciones de bajo costo y programas de apoyo social.'}
+];
 
-function setSexoGasto(s){
-  geSexo = s;
-  document.getElementById('ge-sexo-F').classList.toggle('on', s==='F');
-  document.getElementById('ge-sexo-M').classList.toggle('on', s==='M');
-  calcGasto();
+function initPesSelect(){
+  var sel = document.getElementById('soap-pes-select');
+  if(!sel || sel.dataset.filled) return;
+  sel.innerHTML = PES_CATALOG.map(function(p,i){ return '<option value="'+i+'">'+p.code+' — '+p.problema+'</option>'; }).join('');
+  sel.dataset.filled = '1';
 }
 
-function setProtModeGasto(mode, el){
-  document.querySelectorAll('#ge-protmode-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
-  el.classList.add('on');
-  geProtMode = mode;
-  document.getElementById('ge-prot-gkg-box').style.display = mode==='gkg'?'block':'none';
-  document.getElementById('ge-prot-pct-box').style.display = mode==='pct'?'block':'none';
-  calcGasto();
+function agregarPES(){
+  var idx = parseInt(gv('soap-pes-select'));
+  var p = PES_CATALOG[idx];
+  if(!p) return;
+  var aEl = document.getElementById('soap-a');
+  var linea = p.code+' — '+p.problema+' relacionado con __________ evidenciado por __________.';
+  aEl.value = aEl.value ? (aEl.value+'\n\n'+linea) : linea;
+  var pEl = document.getElementById('soap-p');
+  pEl.value = pEl.value ? (pEl.value+'\n\n• '+p.plan) : '• '+p.plan;
 }
 
-function selProtGasto(el, val){
-  document.querySelectorAll('#ge-pb .pb').forEach(function(b){ b.classList.remove('on'); });
-  el.classList.add('on');
-  geProt = val;
-  calcGasto();
-}
-
-function copiarDeGeneral(){
-  var peso = document.getElementById('peso').value;
-  var tallaM = document.getElementById('talla').value;
-  if(peso) document.getElementById('ge-peso').value = peso;
-  if(tallaM) document.getElementById('ge-talla').value = r0(parseFloat(tallaM)*100);
-  calcGasto();
-  showToast('Peso y talla copiados de General');
-}
-
-function clearGeMacs(){
-  ['ge-hckcal','ge-hcg','ge-pg','ge-pkcal','ge-ppct','ge-lipkcal','ge-lipg'].forEach(function(id){ document.getElementById(id).innerHTML='—'; });
-  document.getElementById('ge-sum').style.display='none';
-}
-
-function calcGasto(){
-  var peso = parseFloat(document.getElementById('ge-peso').value);
-  var talla = parseFloat(document.getElementById('ge-talla').value);
-  var edad = parseFloat(document.getElementById('ge-edad').value);
-  var breakdown = document.getElementById('ge-breakdown');
-  var esAM = !isNaN(edad) && edad>=60;
-
-  if(!peso || !talla || !edad || peso<=0 || talla<=0 || edad<=0){
-    ['ge-imc','ge-pideal','ge-paj','ge-pusar','ge-tmb','ge-get','ge-final'].forEach(function(id){ setR(id,'—'); });
-    breakdown.textContent = 'Ingresa peso, talla y edad para calcular.';
-    clearGeMacs();
-    return;
-  }
-
-  var tallaM = talla/100;
-  var imc = peso/(tallaM*tallaM);
-  var c = clsIMC(imc, esAM);
-  setR('ge-imc', r1(imc)+' <span class="tag '+c.tag+'">'+c.lbl+'</span>');
-
-  var pideal = tallaM*tallaM*22;
-  var paj = (peso-pideal)*0.25+pideal;
-
-  if(c.cls==='normal') setR('ge-pideal','— (no aplica en normopeso)','neutral');
-  else setR('ge-pideal', r1(pideal)+' kg');
-
-  if(c.cls==='obesidad') setR('ge-paj', r1(paj)+' kg');
-  else setR('ge-paj','— (no aplica)','neutral');
-
-  var pusar, pusarLbl;
-  if(c.cls==='bajo')      { pusar=pideal; pusarLbl='Peso ideal (bajo peso)'; }
-  else if(c.cls==='normal'){ pusar=peso; pusarLbl='Peso actual (normopeso)'; }
-  else if(c.cls==='sobre'){ pusar=pideal; pusarLbl='Peso ideal (sobrepeso)'; }
-  else                    { pusar=paj;   pusarLbl='Peso ajustado (obesidad)'; }
-  setR('ge-pusar', r1(pusar)+' kg — '+pusarLbl);
-
-  var formula = document.getElementById('ge-formula').value;
-  var factorAct = parseFloat(document.getElementById('ge-actividad').value);
-  var factorEstres = parseFloat(document.getElementById('ge-estres').value);
-  var temp = parseFloat(document.getElementById('ge-temp').value);
-
-  var tmb, nombreFormula;
-  if(formula==='mifflin'){
-    tmb = geSexo==='M' ? (10*pusar)+(6.25*talla)-(5*edad)+5 : (10*pusar)+(6.25*talla)-(5*edad)-161;
-    nombreFormula = 'Mifflin-St Jeor';
-  } else if(formula==='harris'){
-    tmb = geSexo==='M' ? 88.362+(13.397*pusar)+(4.799*talla)-(5.677*edad) : 447.593+(9.247*pusar)+(3.098*talla)-(4.330*edad);
-    nombreFormula = 'Harris-Benedict';
+function soapFromTab(which){
+  var oEl = document.getElementById('soap-o');
+  var texto = '';
+  if(which==='g'){
+    texto = 'Peso actual: '+(gv('peso')||'—')+' kg · Talla: '+(gv('talla')||'—')+' m\n'+
+      'IMC: '+gt('g-imc').replace(/\s+/g,' ')+'\n'+
+      '% Cambio de peso: '+gt('g-pcambio')+'\n'+
+      '% Peso habitual: '+gt('g-phab')+' · % Peso ideal: '+gt('g-pidealpct')+'\n'+
+      'Peso a usar en cálculos: '+gt('g-pusar')+'\n'+
+      'Kilocalorías: '+gt('g-kcal');
   } else {
-    if(geSexo==='M'){
-      tmb = edad<30 ? (15.3*pusar)+679 : (edad<60 ? (11.6*pusar)+879 : (13.5*pusar)+487);
-    } else {
-      tmb = edad<30 ? (14.7*pusar)+496 : (edad<60 ? (8.7*pusar)+829 : (10.5*pusar)+596);
-    }
-    nombreFormula = 'FAO/OMS/ONU';
+    texto = 'Peso actual: '+(gv('e-peso')||'—')+' kg · Peso pregestacional: '+(gv('e-preg')||'—')+' kg\n'+
+      'IMC pregestacional: '+gt('e-imcp').replace(/\s+/g,' ')+'\n'+
+      '% Cambio de peso: '+gt('e-pcambio')+'\n'+
+      '% Peso pregestacional: '+gt('e-phab')+' · % Peso ideal: '+gt('e-pidealpct')+'\n'+
+      'Peso a usar en cálculos: '+gt('e-pusar')+'\n'+
+      'Kilocalorías totales: '+gt('e-kcalt');
   }
-
-  var get = tmb * factorAct;
-  var getFinal = get * factorEstres;
-  var fiebreTxt = '';
-  if(temp && temp>37){
-    var pct = (temp-37)*11.5;
-    getFinal = getFinal * (1 + pct/100);
-    fiebreTxt = ' × fiebre ('+temp+'°C, +'+r1(pct)+'%)';
-  }
-
-  setR('ge-tmb', r0(tmb)+' kcal/día');
-  setR('ge-get', r0(get)+' kcal/día');
-  setR('ge-final', r0(getFinal)+' kcal/día');
-
-  breakdown.innerHTML = nombreFormula+' (peso: '+pusarLbl.toLowerCase()+'): '+r0(tmb)+' kcal × actividad '+factorAct+
-    (factorEstres!==1 ? ' × factor clínico '+factorEstres : '') + fiebreTxt +
-    ' = <b>'+r0(getFinal)+' kcal/día</b>';
-
-  // ===== MACRONUTRIENTES =====
-  var kcal = getFinal;
-  var hcpct=parseInt(gv('ge-hcpct')), lippct=parseInt(gv('ge-lippct'));
-  var hckcal=kcal*(hcpct/100), hcg=hckcal/4;
-
-  var pProtPeso, pProtLbl;
-  if(c.cls==='bajo'||c.cls==='normal'){ pProtPeso=peso; pProtLbl='peso actual ('+r1(peso)+' kg)'; }
-  else if(c.cls==='sobre')            { pProtPeso=pideal; pProtLbl='peso ideal ('+r1(pideal)+' kg)'; }
-  else                                { pProtPeso=paj; pProtLbl='peso ajustado ('+r1(paj)+' kg)'; }
-
-  var pg, pkcal, ppct;
-  if(geProtMode==='pct'){
-    var geprotpct=parseInt(gv('ge-protpct'));
-    pkcal = kcal*(geprotpct/100); pg = pkcal/4; ppct = geprotpct;
-    var gEqFactor = pProtPeso ? (pg/pProtPeso) : 0;
-    setR('ge-prot-gkg-eq', '≈ '+r1(gEqFactor)+' g/kg × '+pProtLbl, 'neutral');
-    setR('ge-prot-peso', geProt+' g/kg × '+pProtLbl+' (referencia, no se usa en este modo)', 'neutral');
-  } else {
-    setR('ge-prot-peso', geProt+' g × '+pProtLbl, 'neutral');
-    pg = geProt*pProtPeso; pkcal = pg*4; ppct = (pkcal/kcal)*100;
-  }
-  var lipkcal=kcal*(lippct/100), lipg=lipkcal/9;
-
-  document.getElementById('ge-hckcal').innerHTML=r0(hckcal)+'<span>kcal</span>';
-  document.getElementById('ge-hcg').innerHTML=r0(hcg)+'<span>g</span>';
-  document.getElementById('ge-pg').innerHTML=r1(pg)+'<span>g</span>';
-  document.getElementById('ge-pkcal').innerHTML=r0(pkcal)+'<span>kcal</span>';
-  document.getElementById('ge-ppct').innerHTML=r1(ppct)+'<span>%</span>';
-  document.getElementById('ge-lipkcal').innerHTML=r0(lipkcal)+'<span>kcal</span>';
-  document.getElementById('ge-lipg').innerHTML=r0(lipg)+'<span>g</span>';
-
-  // ===== RESUMEN =====
-  var dietaEl=document.getElementById('ge-dieta');
-  var dietaLbl=dietaEl.value?dietaEl.options[dietaEl.selectedIndex].text:'—';
-  sv('ges-cama', gv('ge-cama')||'—');
-  sv('ges-nom',  gv('ge-nombre')||'—');
-  sv('ges-dx',   gv('ge-dx')||'—');
-  sv('ges-dieta',dietaLbl);
-  sv('ges-imc',  r1(imc)+' — '+c.lbl);
-  sv('ges-pusar',r1(pusar)+' kg ('+pusarLbl+')');
-  sv('ges-tmb',  r0(tmb)+' kcal/día ('+nombreFormula+')');
-  sv('ges-final',r0(getFinal)+' kcal/día');
-  sv('ges-hc',   r0(hckcal)+' kcal · '+r0(hcg)+' g');
-  sv('ges-prot', r1(pg)+' g · '+r0(pkcal)+' kcal · '+r1(ppct)+'%');
-  sv('ges-lip',  r0(lipkcal)+' kcal · '+r0(lipg)+' g');
-  document.getElementById('ge-sum').style.display='block';
+  oEl.value = oEl.value ? (oEl.value+'\n\n'+texto) : texto;
 }
 
-function resetGasto(){
-  document.querySelectorAll('#tab-gasto input[type=text],#tab-gasto input[type=number]').forEach(function(i){ i.value=''; });
-  document.getElementById('ge-dieta').value='';
-  document.getElementById('ge-formula').value='mifflin';
-  document.getElementById('ge-actividad').value='1.2';
-  document.getElementById('ge-estres').value='1';
-  document.getElementById('ge-hcpct').value=55; document.getElementById('ge-hcsv').textContent='55%';
-  document.getElementById('ge-lippct').value=30; document.getElementById('ge-lipsv').textContent='30%';
-  geProt=1.2; geProtMode='gkg'; geSexo='F';
-  document.getElementById('ge-sexo-F').classList.add('on');
-  document.getElementById('ge-sexo-M').classList.remove('on');
-  document.querySelectorAll('#ge-pb .pb').forEach(function(b,i){ b.className='pb'+(i===0?' on':''); });
-  document.querySelectorAll('#ge-protmode-wrap .pb').forEach(function(b,i){ b.className='pb'+(i===0?' on':''); });
-  document.getElementById('ge-prot-gkg-box').style.display='block';
-  document.getElementById('ge-prot-pct-box').style.display='none';
-  document.getElementById('ge-protpct').value=15; document.getElementById('ge-protpctsv').textContent='15%';
-  setR('ge-prot-peso','—','neutral');
-  ['ge-imc','ge-pideal','ge-paj','ge-pusar','ge-tmb','ge-get','ge-final'].forEach(function(id){ setR(id,'—'); });
-  document.getElementById('ge-breakdown').textContent='Ingresa peso, talla y edad para calcular.';
-  clearGeMacs();
+function limpiarSOAP(){
+  ['soap-cama','soap-nombre','soap-s-socio','soap-s-sintomas','soap-s-antec','soap-o','soap-a','soap-p'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
 }
+
+function nlToBr(txt){
+  return (txt||'—').replace(/\n/g,'<br>');
+}
+
+function imprimirSOAP(){
+  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
+  var cama = gv('soap-cama')||'—', nombre = gv('soap-nombre')||'—';
+
+  var html = '<div class="pr-header"><h1>Nota SOAP — Valoración Nutricional</h1><p>'+fecha+'</p></div>'+
+    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+cama+'</td>'+
+    '<td class="pr-k">Nombre</td><td class="pr-v">'+nombre+'</td></tr></table>'+
+    '<h3>S — Subjetivo</h3>'+
+    '<p><b>Datos socioeconómicos:</b><br>'+nlToBr(gv('soap-s-socio'))+'</p>'+
+    '<p style="margin-top:8px"><b>Síntomas referidos:</b><br>'+nlToBr(gv('soap-s-sintomas'))+'</p>'+
+    '<p style="margin-top:8px"><b>Antecedentes:</b><br>'+nlToBr(gv('soap-s-antec'))+'</p>'+
+    '<h3>O — Objetivo</h3><p>'+nlToBr(gv('soap-o'))+'</p>'+
+    '<h3>A — Análisis (Diagnóstico nutricional)</h3><p>'+nlToBr(gv('soap-a'))+'</p>'+
+    '<h3>P — Plan</h3><p>'+nlToBr(gv('soap-p'))+'</p>'+
+    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
+
+  document.getElementById('print-area').innerHTML = html;
+  setTimeout(function(){ window.print(); }, 100);
+}
+
 
 // Init
 setLact(false);
 initLabSelect();
-calcGasto();
 
 // Registro del Service Worker (PWA offline)
 if ('serviceWorker' in navigator) {
