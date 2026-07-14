@@ -164,6 +164,9 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 /* PATIENT CARDS */
 .pac-empty{text-align:center;color:var(--muted);font-size:.82rem;padding:28px 16px;line-height:1.7}
 .pac-count{font-size:.72rem;color:var(--muted);margin-bottom:10px;text-align:right}
+.pac-date-hdr{font-size:.72rem;font-weight:700;color:var(--accent2-text);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.pac-date-hdr:first-child{margin-top:0}
+.pac-date-count{color:var(--muted);font-weight:400;text-transform:none;letter-spacing:normal}
 .pac-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:9px;overflow:hidden}
 .pac-card.gc{border-left:3px solid var(--accent)}
 .pac-card.ec{border-left:3px solid var(--pink)}
@@ -1084,7 +1087,7 @@ function guardar(tipo) {
       prot:document.getElementById('g-pg').textContent+' · '+document.getElementById('g-pkcal').textContent+' · '+document.getElementById('g-ppct').textContent,
       lip:document.getElementById('g-lipkcal').textContent+' · '+document.getElementById('g-lipg').textContent,
       hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-      id:Date.now(), labs:null, labCtx:null
+      id:Date.now(), fechaISO:new Date().toISOString().slice(0,10), labs:null, labCtx:null
     };
   } else {
     if(!gv('e-peso')||!gv('e-talla')){ showToast('⚠️ Completa peso y talla primero',true); return; }
@@ -1101,7 +1104,7 @@ function guardar(tipo) {
       prot:document.getElementById('e-pg').textContent+' · '+document.getElementById('e-pkcal').textContent+' · '+document.getElementById('e-ppct').textContent,
       lip:document.getElementById('e-lipkcal').textContent+' · '+document.getElementById('e-lipg').textContent,
       hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-      id:Date.now(), labs:null, labCtx:null
+      id:Date.now(), fechaISO:new Date().toISOString().slice(0,10), labs:null, labCtx:null
     };
   }
   var list=getPacs(); list.push(data); savePacs(list);
@@ -1117,44 +1120,71 @@ function renderPacs(){
     container.innerHTML='<div class="pac-empty">Ningún paciente guardado aún.<br>Completa un formulario y presiona 💾 Guardar.</div>';
     return;
   }
+
+  // Agrupar por fecha (fechaISO si existe, si no se deriva del id/timestamp)
+  var grupos = {};
+  list.forEach(function(p){
+    var iso = p.fechaISO || new Date(p.id).toISOString().slice(0,10);
+    if(!grupos[iso]) grupos[iso] = [];
+    grupos[iso].push(p);
+  });
+  var fechas = Object.keys(grupos).sort().reverse();
+
+  var hoy = new Date().toISOString().slice(0,10);
+  var ayerDate = new Date(); ayerDate.setDate(ayerDate.getDate()-1);
+  var ayer = ayerDate.toISOString().slice(0,10);
+
   var html='';
-  for(var i=0;i<list.length;i++){
-    var p=list[i], isE=p.tipo==='embarazo';
-    var rows='';
-    if(isE){
-      rows+=row('Diagnóstico',p.dx)+row('Dieta',p.dieta)+row('SDG',p.sdg)+
-            row('IMC pregestacional',p.imcp)+row('Peso esperado SDG',p.pesoe)+
-            row('Diferencia peso',p.dif)+row('Peso a usar',p.pusar)+
-            row('Kcal base',p.kcalb)+rowH('Kcal totales',p.kcalt,'p')+
-            row('HC',p.hc)+row('Proteínas',p.prot)+row('Lípidos',p.lip);
-    } else {
-      rows+=row('Diagnóstico',p.dx)+row('Dieta',p.dieta)+row('Edad',p.edad)+
-            row('IMC',p.imc)+row('Peso a usar',p.pusar)+
-            rowH('Kilocalorías',p.kcal,'g')+
-            row('HC',p.hc)+row('Proteínas',p.prot)+row('Lípidos',p.lip);
+  fechas.forEach(function(iso){
+    var grupo = grupos[iso].slice().sort(function(a,b){ return b.id-a.id; });
+    var etiquetaFecha;
+    if(iso===hoy) etiquetaFecha='Hoy';
+    else if(iso===ayer) etiquetaFecha='Ayer';
+    else {
+      var d = new Date(iso+'T00:00:00');
+      etiquetaFecha = d.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      etiquetaFecha = etiquetaFecha.charAt(0).toUpperCase()+etiquetaFecha.slice(1);
     }
-    html+='<div class="pac-card '+(isE?'ec':'gc')+'" id="pac-'+p.id+'">'+
-      '<div class="pac-hdr" onclick="togCard('+p.id+')">'+
-        '<div>'+
-          '<div class="pac-name">'+(p.cama!=='—'?'Cama '+p.cama+' · ':'')+p.nombre+'</div>'+
-          '<div class="pac-meta">Guardado: '+p.hora+'</div>'+
+    html += '<div class="pac-date-hdr">'+etiquetaFecha+' <span class="pac-date-count">('+grupo.length+')</span></div>';
+
+    grupo.forEach(function(p){
+      var isE=p.tipo==='embarazo';
+      var rows='';
+      if(isE){
+        rows+=row('Diagnóstico',p.dx)+row('Dieta',p.dieta)+row('SDG',p.sdg)+
+              row('IMC pregestacional',p.imcp)+row('Peso esperado SDG',p.pesoe)+
+              row('Diferencia peso',p.dif)+row('Peso a usar',p.pusar)+
+              row('Kcal base',p.kcalb)+rowH('Kcal totales',p.kcalt,'p')+
+              row('HC',p.hc)+row('Proteínas',p.prot)+row('Lípidos',p.lip);
+      } else {
+        rows+=row('Diagnóstico',p.dx)+row('Dieta',p.dieta)+row('Edad',p.edad)+
+              row('IMC',p.imc)+row('Peso a usar',p.pusar)+
+              rowH('Kilocalorías',p.kcal,'g')+
+              row('HC',p.hc)+row('Proteínas',p.prot)+row('Lípidos',p.lip);
+      }
+      html+='<div class="pac-card '+(isE?'ec':'gc')+'" id="pac-'+p.id+'">'+
+        '<div class="pac-hdr" onclick="togCard('+p.id+')">'+
+          '<div>'+
+            '<div class="pac-name">'+(p.cama!=='—'?'Cama '+p.cama+' · ':'')+p.nombre+'</div>'+
+            '<div class="pac-meta">Guardado: '+p.hora+'</div>'+
+          '</div>'+
+          '<div style="display:flex;align-items:center;gap:8px">'+
+            '<span class="pac-badge '+(isE?'eb':'gb')+'">'+(isE?'🤰':'🏥')+'</span>'+
+            '<span class="pac-arr" id="arr-'+p.id+'">▼</span>'+
+          '</div>'+
         '</div>'+
-        '<div style="display:flex;align-items:center;gap:8px">'+
-          '<span class="pac-badge '+(isE?'eb':'gb')+'">'+(isE?'🤰':'🏥')+'</span>'+
-          '<span class="pac-arr" id="arr-'+p.id+'">▼</span>'+
+        '<div class="pac-detail" id="det-'+p.id+'">'+rows+
+          renderPacLabsSummary(p)+
+          '<div class="pac-actions">'+
+            '<button class="pac-btn labs" onclick="toggleLabsForm('+p.id+')">🧪 Laboratorios</button>'+
+            '<button class="pac-btn pdf" onclick="imprimirPaciente('+p.id+')">🖨️ Generar PDF</button>'+
+          '</div>'+
+          '<div id="labform-'+p.id+'" style="display:none"></div>'+
+          '<button class="pac-del" onclick="delPac('+p.id+')">✕ Eliminar</button>'+
         '</div>'+
-      '</div>'+
-      '<div class="pac-detail" id="det-'+p.id+'">'+rows+
-        renderPacLabsSummary(p)+
-        '<div class="pac-actions">'+
-          '<button class="pac-btn labs" onclick="toggleLabsForm('+p.id+')">🧪 Laboratorios</button>'+
-          '<button class="pac-btn pdf" onclick="imprimirPaciente('+p.id+')">🖨️ Generar PDF</button>'+
-        '</div>'+
-        '<div id="labform-'+p.id+'" style="display:none"></div>'+
-        '<button class="pac-del" onclick="delPac('+p.id+')">✕ Eliminar</button>'+
-      '</div>'+
-    '</div>';
-  }
+      '</div>';
+    });
+  });
   container.innerHTML=html;
 }
 
