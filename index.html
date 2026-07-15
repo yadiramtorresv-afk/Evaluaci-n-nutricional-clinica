@@ -163,6 +163,15 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 /* PATIENT CARDS */
 .pac-empty{text-align:center;color:var(--muted);font-size:.82rem;padding:28px 16px;line-height:1.7}
+
+.hist-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hist-item-info{flex:1;min-width:0}
+.hist-item-name{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-item-meta{font-size:.7rem;color:var(--muted);margin-top:2px}
+.hist-item-actions{display:flex;gap:6px;flex-shrink:0}
+.hist-btn{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:.7rem;font-weight:700;cursor:pointer;font-family:var(--font)}
+.hist-btn.load{border-color:var(--accent);color:var(--accent)}
+.hist-btn.del{border-color:#e0b3b3;color:#c0392b}
 .pac-count{font-size:.72rem;color:var(--muted);margin-bottom:10px;text-align:right}
 .pac-date-hdr{font-size:.72rem;font-weight:700;color:var(--accent2-text);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
 .pac-date-hdr:first-child{margin-top:0}
@@ -187,7 +196,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .pac-v{font-weight:600;color:var(--text);text-align:right;max-width:58%}
 .pac-v.g{color:var(--green-text)}
 .pac-v.p{color:var(--pink-text)}
-.pac-del{margin-top:10px;padding:6px 12px;background:transparent;border:1px solid #3a1515;border-radius:6px;color:#f56565;font-size:.74rem;cursor:pointer;font-family:var(--font);transition:all .15s}
+.pac-del{margin-top:10px;padding:6px 12px;background:transparent;border:1px solid #e0b3b3;border-radius:6px;color:#c0392b;font-size:.74rem;cursor:pointer;font-family:var(--font);transition:all .15s}
 
 .pac-actions{display:flex;gap:8px;margin-top:12px}
 .pac-btn{flex:1;padding:8px 6px;border-radius:7px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--font);text-align:center}
@@ -251,6 +260,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   <div class="tab t-emb" onclick="switchTab('embarazo')">🤰 Embarazo</div>
   <div class="tab t-lab" onclick="switchTab('labs')">🧪 Labs</div>
   <div class="tab t-plan" onclick="switchTab('plan')">🍽️ Plan</div>
+  <div class="tab t-hist" onclick="switchTab('historia')">🗂️ Historia</div>
   <div class="tab t-soap" onclick="switchTab('soap')">📝 SOAP</div>
   <div class="tab t-pac" onclick="switchTab('pacientes')">📋 Pacientes</div>
 </div>
@@ -611,13 +621,68 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 </div>
 
+<!-- ======= TAB HISTORIA ======= -->
+<div id="tab-historia" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title">Datos del paciente</div>
+    <div class="row">
+      <div class="field"><label>Cama *</label><input type="text" id="hist-cama" placeholder="Ej. 12-A"></div>
+      <div class="field"><label>Nombre</label><input type="text" id="hist-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Alergias</div>
+    <textarea id="hist-alergias" rows="2" placeholder="Alimentarias, medicamentosas, otras..."></textarea>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Datos socioeconómicos</div>
+    <textarea id="hist-socio" rows="3" placeholder="Ocupación, escolaridad, dependientes económicos, acceso a alimentos, seguridad social..."></textarea>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Antecedentes patológicos</div>
+    <textarea id="hist-patologicos" rows="3" placeholder="Enfermedades diagnosticadas, cirugías, hospitalizaciones previas..."></textarea>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Antecedentes heredofamiliares</div>
+    <textarea id="hist-heredo" rows="3" placeholder="Diabetes, hipertensión, obesidad, cardiopatías en familiares directos..."></textarea>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Antecedentes nutricionales</div>
+    <textarea id="hist-nutricionales" rows="3" placeholder="Cambios de peso previos, dietas anteriores, suplementos, hábitos de alimentación..."></textarea>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Recordatorio de 24 horas (R24H)</div>
+    <div class="field"><label>Desayuno</label><textarea id="hist-r24-desayuno" rows="2" placeholder="Alimentos y cantidades..."></textarea></div>
+    <div class="field"><label>Colación matutina</label><textarea id="hist-r24-colmat" rows="2" placeholder="Alimentos y cantidades..."></textarea></div>
+    <div class="field"><label>Comida</label><textarea id="hist-r24-comida" rows="2" placeholder="Alimentos y cantidades..."></textarea></div>
+    <div class="field"><label>Colación vespertina</label><textarea id="hist-r24-colvesp" rows="2" placeholder="Alimentos y cantidades..."></textarea></div>
+    <div class="field"><label>Cena</label><textarea id="hist-r24-cena" rows="2" placeholder="Alimentos y cantidades..."></textarea></div>
+  </div>
+
+  <button class="btn-save" style="background:var(--accent)" onclick="guardarHistoria()">💾 Guardar historia (por cama)</button>
+  <button class="btn-reset" onclick="limpiarHistoriaForm()">↺ Limpiar formulario</button>
+
+  <div class="section" style="margin-top:16px">
+    <div class="sec-title">Historias guardadas</div>
+    <div id="hist-list"></div>
+  </div>
+
+</div>
+
 <!-- ======= TAB SOAP ======= -->
 <div id="tab-soap" class="tab-content">
 
   <div class="section">
     <div class="sec-title">Datos del paciente</div>
     <div class="row">
-      <div class="field"><label>Cama</label><input type="text" id="soap-cama" placeholder="Ej. 12-A"></div>
+      <div class="field"><label>Cama</label><input type="text" id="soap-cama" placeholder="Ej. 12-A" oninput="soapCamaMatch()"></div>
       <div class="field"><label>Nombre</label><input type="text" id="soap-nombre" placeholder="Apellidos, Nombre"></div>
     </div>
   </div>
@@ -700,8 +765,9 @@ function switchTab(t) {
   else if(t==='embarazo') tabs[1].classList.add('active');
   else if(t==='labs') tabs[2].classList.add('active');
   else if(t==='plan') { tabs[3].classList.add('active'); renderPlanGrid(); }
-  else if(t==='soap') { tabs[4].classList.add('active'); initPesSelect(); }
-  else { tabs[5].classList.add('active'); renderPacs(); }
+  else if(t==='historia') { tabs[4].classList.add('active'); renderHistoriaList(); }
+  else if(t==='soap') { tabs[5].classList.add('active'); initPesSelect(); }
+  else { tabs[6].classList.add('active'); renderPacs(); }
 }
 
 // ===== HELPERS =====
@@ -1909,6 +1975,134 @@ function imprimirSOAP(){
   document.getElementById('print-area').innerHTML = html;
   setTimeout(function(){ window.print(); }, 100);
 }
+
+
+// ===== HISTORIA CLÍNICA (localStorage, por cama) =====
+var HK = 'nutriapp_historias_v1';
+function normCama(c){ return (c||'').trim().toLowerCase(); }
+function getHistorias(){ try{ return JSON.parse(localStorage.getItem(HK))||{}; }catch(e){ return {}; } }
+function saveHistorias(obj){ localStorage.setItem(HK, JSON.stringify(obj)); }
+
+function guardarHistoria(){
+  var cama = gv('hist-cama').trim();
+  if(!cama){ showToast('⚠️ Captura el número de cama',true); return; }
+  var key = normCama(cama);
+  var registro = {
+    cama:cama, nombre:gv('hist-nombre')||'—',
+    alergias:gv('hist-alergias'), socioeconomico:gv('hist-socio'),
+    patologicos:gv('hist-patologicos'), heredofamiliares:gv('hist-heredo'),
+    nutricionales:gv('hist-nutricionales'),
+    r24h:{
+      desayuno:gv('hist-r24-desayuno'), colMat:gv('hist-r24-colmat'),
+      comida:gv('hist-r24-comida'), colVesp:gv('hist-r24-colvesp'), cena:gv('hist-r24-cena')
+    },
+    fechaISO:new Date().toISOString().slice(0,10),
+    hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})
+  };
+  var historias = getHistorias();
+  historias[key] = registro;
+  saveHistorias(historias);
+  showToast('✓ Historia guardada');
+  renderHistoriaList();
+}
+
+function limpiarHistoriaForm(){
+  ['hist-cama','hist-nombre','hist-alergias','hist-socio','hist-patologicos','hist-heredo','hist-nutricionales',
+   'hist-r24-desayuno','hist-r24-colmat','hist-r24-comida','hist-r24-colvesp','hist-r24-cena'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+}
+
+function cargarHistoria(key){
+  var h = getHistorias()[key];
+  if(!h) return;
+  sv2('hist-cama', h.cama); sv2('hist-nombre', h.nombre==='—'?'':h.nombre);
+  sv2('hist-alergias', h.alergias); sv2('hist-socio', h.socioeconomico);
+  sv2('hist-patologicos', h.patologicos); sv2('hist-heredo', h.heredofamiliares);
+  sv2('hist-nutricionales', h.nutricionales);
+  var r = h.r24h||{};
+  sv2('hist-r24-desayuno', r.desayuno); sv2('hist-r24-colmat', r.colMat);
+  sv2('hist-r24-comida', r.comida); sv2('hist-r24-colvesp', r.colVesp); sv2('hist-r24-cena', r.cena);
+  showToast('Historia cargada para editar');
+}
+function sv2(id, val){ document.getElementById(id).value = val||''; }
+
+function eliminarHistoria(key){
+  var historias = getHistorias();
+  delete historias[key];
+  saveHistorias(historias);
+  renderHistoriaList();
+  showToast('Historia eliminada');
+}
+
+function renderHistoriaList(){
+  var cont = document.getElementById('hist-list');
+  if(!cont) return;
+  var historias = getHistorias();
+  var keys = Object.keys(historias);
+  if(keys.length===0){ cont.innerHTML = '<div class="pac-empty">Ninguna historia guardada aún.</div>'; return; }
+  keys.sort(function(a,b){ return historias[b].fechaISO.localeCompare(historias[a].fechaISO); });
+  cont.innerHTML = keys.map(function(k){
+    var h = historias[k];
+    return '<div class="hist-item">'+
+      '<div class="hist-item-info"><div class="hist-item-name">Cama '+h.cama+' · '+h.nombre+'</div>'+
+      '<div class="hist-item-meta">'+h.fechaISO+' · '+h.hora+'</div></div>'+
+      '<div class="hist-item-actions">'+
+      '<button class="hist-btn load" onclick="cargarHistoria(\''+k+'\')">Cargar</button>'+
+      '<button class="hist-btn del" onclick="eliminarHistoria(\''+k+'\')">✕</button>'+
+      '</div></div>';
+  }).join('');
+}
+
+function formatHistoriaTexto(h){
+  var partes = [];
+  if(h.alergias) partes.push('Alergias: '+h.alergias);
+  if(h.patologicos) partes.push('Antecedentes patológicos: '+h.patologicos);
+  if(h.heredofamiliares) partes.push('Antecedentes heredofamiliares: '+h.heredofamiliares);
+  if(h.nutricionales) partes.push('Antecedentes nutricionales: '+h.nutricionales);
+  var r = h.r24h||{}, r24Partes=[];
+  if(r.desayuno) r24Partes.push('Desayuno: '+r.desayuno);
+  if(r.colMat) r24Partes.push('Colación matutina: '+r.colMat);
+  if(r.comida) r24Partes.push('Comida: '+r.comida);
+  if(r.colVesp) r24Partes.push('Colación vespertina: '+r.colVesp);
+  if(r.cena) r24Partes.push('Cena: '+r.cena);
+  if(r24Partes.length) partes.push('Recordatorio de 24 horas (R24H):\n'+r24Partes.join('\n'));
+  return partes.join('\n\n');
+}
+
+// ===== AUTOCOMPLETADO DE SOAP AL INGRESAR CAMA =====
+var _lastAutoCama = null;
+function soapCamaMatch(){
+  var cama = gv('soap-cama').trim();
+  if(!cama || cama===_lastAutoCama) return;
+  _lastAutoCama = cama;
+  var encontrado = false;
+
+  if(gv('cama').trim() && normCama(gv('cama'))===normCama(cama) && document.getElementById('g-sum').style.display!=='none'){
+    if(!gv('soap-nombre')) sv2('soap-nombre', gv('nombre'));
+    soapFromTab('g');
+    encontrado = true;
+  }
+  if(gv('e-cama').trim() && normCama(gv('e-cama'))===normCama(cama) && document.getElementById('e-sum').style.display!=='none'){
+    if(!gv('soap-nombre')) sv2('soap-nombre', gv('e-nom'));
+    soapFromTab('e');
+    encontrado = true;
+  }
+  var h = getHistorias()[normCama(cama)];
+  if(h){
+    if(!gv('soap-nombre') && h.nombre && h.nombre!=='—') sv2('soap-nombre', h.nombre);
+    var socioEl = document.getElementById('soap-s-socio');
+    if(h.socioeconomico && !socioEl.value) socioEl.value = h.socioeconomico;
+    var antecEl = document.getElementById('soap-s-antec');
+    var textoHist = formatHistoriaTexto(h);
+    if(textoHist){
+      antecEl.value = antecEl.value ? (antecEl.value+'\n\n'+textoHist) : textoHist;
+    }
+    encontrado = true;
+  }
+  if(encontrado) showToast('✓ Datos encontrados para cama '+cama);
+}
+
 
 
 // Init
