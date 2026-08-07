@@ -21,6 +21,8 @@
   --cyclamen:#ea6993; --teagreen:#cfdd9d;
   --pink-text:#a3336b; --teagreen-text:#4f6b2a; --accent2-text:#2c5c4e; --cyclamen-text:#a83160; --green-text:#1f7a4f;
   --green:#3ecf8e; --yellow:#f5c842; --red:#f56565;
+  --amber:#f0a93a; --amber-text:#96631a;
+  --teal:#2dd4bf; --teal-text:#0f7a6e;
   --text:#2b2c31; --muted:#6b6d76; --radius:10px;
   --font:'Segoe UI',system-ui,sans-serif;
 }
@@ -39,6 +41,14 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .tab.t-lab.active{background:var(--accent2);border-color:var(--accent2)}
 .tab.t-plan.active{background:var(--teagreen);border-color:var(--teagreen);color:#0f1117}
 .tab.t-pac.active{background:var(--cyclamen);border-color:var(--cyclamen)}
+.tab.t-pat.active{background:var(--amber);border-color:var(--amber);color:#0f1117}
+.tab.t-por.active{background:var(--teal);border-color:var(--teal);color:#0f1117}
+.menu-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
+.menu-table th,.menu-table td{border:1px solid var(--border);padding:6px 7px;text-align:left;vertical-align:top}
+.menu-table th{background:var(--card2);color:var(--teal-text);font-size:.72rem}
+.eq-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
+.eq-table th,.eq-table td{border:1px solid var(--border);padding:6px 7px;text-align:left}
+.eq-table th{background:var(--card2);color:var(--teal-text);font-size:.72rem}
 .tab-content{display:none}
 .tab-content.active{display:block}
 
@@ -112,6 +122,11 @@ select option{background:var(--card)}
 .res{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:.9rem;min-height:36px;color:var(--text);font-weight:600;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
 .res.neutral{color:var(--text)}
 .res.warn{color:var(--yellow)}
+.res.ok{color:var(--green-text)}
+.res.danger{color:var(--red)}
+.sub-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px}
+.sub-card h4{font-size:.8rem;color:var(--accent);margin-bottom:9px}
+.pat-tip{font-size:.78rem;line-height:1.55;background:var(--card);border:1px dashed var(--border);border-radius:7px;padding:9px 11px;margin-top:8px}
 span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .tb{background:#2a3a5e;color:#7ab3f7}
 .tn{background:#1a3a2a;color:var(--green)}
@@ -263,6 +278,8 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   <div class="tab t-hist" onclick="switchTab('historia')">🗂️ Historia</div>
   <div class="tab t-soap" onclick="switchTab('soap')">📝 SOAP</div>
   <div class="tab t-pac" onclick="switchTab('pacientes')">📋 Pacientes</div>
+  <div class="tab t-pat" onclick="switchTab('patologias')">🩺 Patologías</div>
+  <div class="tab t-por" onclick="switchTab('porciones')">🍽️ Porciones</div>
 </div>
 
 <!-- ======= TAB GENERAL ======= -->
@@ -733,6 +750,381 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     </div>
   </div>
   <button class="btn-danger" onclick="confirmarLimpiar()">🗑 Limpiar todos los pacientes del día</button>
+
+  <div class="section" style="margin-top:14px">
+    <div class="sec-title green">💾 Respaldo de datos</div>
+    <p class="note">Todo se guarda solo en este navegador/dispositivo. Si cambias de celular, formateas o borras el caché, se pierde. Exporta un respaldo periódicamente.</p>
+    <button class="btn-save" onclick="exportarRespaldo()">⬇️ Exportar respaldo (JSON)</button>
+    <label class="btn-reset" style="display:block;text-align:center;margin-top:8px;cursor:pointer">
+      ⬆️ Importar respaldo (JSON)
+      <input type="file" accept="application/json" id="importFile" style="display:none" onchange="importarRespaldo(this)">
+    </label>
+  </div>
+</div>
+
+<!-- ======= TAB PATOLOGÍAS ======= -->
+<div id="tab-patologias" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">🩺 Módulos por patología</div>
+    <p class="note">Calculadoras específicas de apoyo clínico. Complementan — no sustituyen — la valoración de las pestañas General y Embarazo.</p>
+    <div class="row" style="margin-top:8px">
+      <div class="field"><label>Cama</label><input type="text" id="pat-cama" placeholder="Ej. 12-A" oninput="patCamaMatch()"></div>
+      <div class="field"><label>Nombre del paciente</label><input type="text" id="pat-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
+
+  <!-- NUTRICIÓN INFANTIL -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">👶 Nutrición infantil</div>
+
+    <div class="sub-card">
+      <h4>Datos antropométricos</h4>
+      <div class="row">
+        <div class="field"><label>Edad (meses)</label><input type="number" id="pe-edad" placeholder="0" oninput="calcPediatrico()"></div>
+        <div class="field">
+          <label>Sexo</label>
+          <div class="pb-wrap" id="pe-sexo-wrap">
+            <div class="pb on" onclick="setPeSexo('F',this)">Niña</div>
+            <div class="pb" onclick="setPeSexo('M',this)">Niño</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Peso (kg)</label><input type="number" id="pe-peso" step="0.1" placeholder="0.0" oninput="calcPediatrico()"></div>
+        <div class="field"><label>Talla (cm)</label><input type="number" id="pe-talla" step="0.1" placeholder="0.0" oninput="calcPediatrico()"></div>
+      </div>
+      <div class="field"><label>Edad convertida</label><div class="res neutral" id="pe-edadconv">—</div></div>
+      <div class="field"><label>IMC</label><div class="res neutral" id="pe-imc">—</div><p class="note">Valor de referencia — para clasificación diagnóstica (percentil/z-score) usa las tablas OMS/CDC de IMC-para-edad y sexo específicas.</p></div>
+
+      <h4 style="margin-top:14px">Requerimientos estimados</h4>
+      <div class="field"><label>Energía (kcal/kg/día de referencia)</label><div class="res neutral" id="pe-kcalkg">—</div></div>
+      <div class="field"><label>Energía total estimada</label><div class="res ok" id="pe-kcaltot">—</div></div>
+      <div class="field"><label>Proteína (g/kg/día de referencia)</label><div class="res neutral" id="pe-protkg">—</div></div>
+      <div class="field"><label>Proteína total estimada</label><div class="res neutral" id="pe-prottot">—</div></div>
+      <div class="field"><label>Líquidos (Holliday-Segar)</label><div class="res neutral" id="pe-liq">—</div></div>
+      <div class="pat-tip" id="pe-tip">Completa edad y peso para ver los requerimientos.</div>
+
+      <h4 style="margin-top:14px">Tamizaje por circunferencia de brazo (MUAC)</h4>
+      <div class="field"><label>Circunferencia media de brazo (cm)</label><input type="number" id="pe-muac" step="0.1" placeholder="0.0" oninput="calcMuac()"></div>
+      <div class="field"><label>Clasificación (6–59 meses)</label><div class="res" id="pe-muacres">—</div></div>
+      <p class="note">Puntos de corte OMS/UNICEF: &lt;11.5 cm desnutrición aguda severa · 11.5–12.4 cm moderada · ≥12.5 cm normal. Válido solo en el rango de 6 a 59 meses.</p>
+    </div>
+  </div>
+
+  <!-- DIABETES / DM2 -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">🩹 Diabetes / DM2</div>
+
+    <div class="sub-card">
+      <h4>Antropometría y energía</h4>
+      <div class="row">
+        <div class="field"><label>Peso actual (kg)</label><input type="number" id="db-peso" step="0.1" placeholder="0.0" oninput="calcDiabetes()"></div>
+        <div class="field">
+          <label>Nivel de actividad</label>
+          <select id="db-actividad" onchange="calcDiabetes()">
+            <option value="1.2">Sedentario</option>
+            <option value="1.375">Ligero</option>
+            <option value="1.55">Moderado</option>
+            <option value="1.725">Intenso</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Kcal totales estimadas (peso×25 ajustado por actividad)</label><div class="res ok" id="db-kcal">—</div></div>
+
+      <h4 style="margin-top:14px">Conteo de carbohidratos</h4>
+      <div class="field">
+        <label>Hidratos de carbono — % kcal (45–50% recomendado)</label>
+        <div class="sl-row"><input type="range" id="db-hcpct" min="40" max="55" value="45" oninput="sl('db-hcpct','db-hcsv');calcDiabetes()"><div class="sl-val" id="db-hcsv">45%</div></div>
+      </div>
+      <div class="field"><label>CHO totales por día</label><div class="res neutral" id="db-hctot">—</div></div>
+      <div class="mac-grid" style="margin-top:10px">
+        <div class="mac-card"><div class="mac-lbl">Desayuno (20%)</div><div class="mac-vals"><div class="mv" id="db-des">—<span>g</span></div></div></div>
+        <div class="mac-card"><div class="mac-lbl">Colación AM (10%)</div><div class="mac-vals"><div class="mv" id="db-colam">—<span>g</span></div></div></div>
+        <div class="mac-card"><div class="mac-lbl">Comida (30%)</div><div class="mac-vals"><div class="mv" id="db-comida">—<span>g</span></div></div></div>
+        <div class="mac-card"><div class="mac-lbl">Colación PM (10%)</div><div class="mac-vals"><div class="mv" id="db-colpm">—<span>g</span></div></div></div>
+        <div class="mac-card"><div class="mac-lbl">Cena (30%)</div><div class="mac-vals"><div class="mv" id="db-cena">—<span>g</span></div></div></div>
+      </div>
+      <p class="note">Distribución orientativa por 5 tiempos de comida — ajustar según horario y tratamiento (insulina/hipoglucemiantes) del paciente.</p>
+
+      <h4 style="margin-top:14px">Control glucémico</h4>
+      <div class="row">
+        <div class="field"><label>Glucosa en ayuno (mg/dL)</label><input type="number" id="db-glu-ayuno" placeholder="0" oninput="calcDiabetes()"></div>
+        <div class="field"><label>Glucosa posprandial 2h (mg/dL)</label><input type="number" id="db-glu-pos" placeholder="0" oninput="calcDiabetes()"></div>
+      </div>
+      <div class="field"><label>HbA1c (%)</label><input type="number" id="db-hba1c" step="0.1" placeholder="0.0" oninput="calcDiabetes()"></div>
+      <div class="field"><label>Ayuno</label><div class="res" id="db-r-ayuno">—</div></div>
+      <div class="field"><label>Posprandial</label><div class="res" id="db-r-pos">—</div></div>
+      <div class="field"><label>HbA1c</label><div class="res" id="db-r-hba1c">—</div><p class="note">Meta general ADA: HbA1c &lt;7% (individualizar según edad, comorbilidades y riesgo de hipoglucemia)</p></div>
+      <div class="pat-tip" id="db-tip">Completa peso para calcular energía y conteo de carbohidratos.</div>
+    </div>
+  </div>
+
+  <!-- SOPORTE NUTRICIONAL ENTERAL/PARENTERAL -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">🧪 Soporte nutricional — Enteral</div>
+
+    <div class="sub-card">
+      <h4>Prescripción de fórmula enteral</h4>
+      <div class="row">
+        <div class="field"><label>Peso actual (kg)</label><input type="number" id="en-peso" step="0.1" placeholder="0.0" oninput="calcEnteral()"></div>
+        <div class="field"><label>Kcal objetivo (kcal/día)</label><input type="number" id="en-kcal" step="10" placeholder="0" oninput="calcEnteral()"></div>
+      </div>
+      <div class="field">
+        <label>Proteína objetivo (g/kg)</label>
+        <div class="pb-wrap" id="en-prot-wrap">
+          <div class="pb on" onclick="selEnProt(1.2,this)">1.2</div>
+          <div class="pb" onclick="selEnProt(1.5,this)">1.5</div>
+          <div class="pb" onclick="selEnProt(1.8,this)">1.8</div>
+          <div class="pb" onclick="selEnProt(2.0,this)">2.0</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Densidad calórica de la fórmula (kcal/mL)</label>
+        <select id="en-densidad" onchange="calcEnteral()">
+          <option value="1.0">1.0 (estándar)</option>
+          <option value="1.2">1.2</option>
+          <option value="1.5">1.5 (alta densidad)</option>
+          <option value="2.0">2.0 (restricción de volumen)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Modo de administración</label>
+        <div class="pb-wrap" id="en-modo-wrap">
+          <div class="pb on" onclick="setEnModo('continua',this)">Continua (24h)</div>
+          <div class="pb" onclick="setEnModo('ciclica',this)">Cíclica</div>
+          <div class="pb" onclick="setEnModo('bolo',this)">Bolo</div>
+        </div>
+      </div>
+      <div class="field" id="en-horas-box" style="display:none"><label>Horas de infusión</label><input type="number" id="en-horas" placeholder="12" oninput="calcEnteral()"></div>
+      <div class="field" id="en-tomas-box" style="display:none"><label>Número de tomas por día</label><input type="number" id="en-tomas" placeholder="6" oninput="calcEnteral()"></div>
+      <div class="field"><label>Proteína total</label><div class="res neutral" id="en-prottot">—</div></div>
+      <div class="field"><label>Volumen total de fórmula</label><div class="res ok" id="en-vol">—</div></div>
+      <div class="field"><label>Velocidad / volumen por toma</label><div class="res ok" id="en-vel">—</div></div>
+      <div class="pat-tip" id="en-tip">Completa peso y kcal objetivo para calcular la prescripción.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">💉 Soporte nutricional — Parenteral</div>
+
+    <div class="sub-card">
+      <h4>Distribución de macronutrientes</h4>
+      <div class="row">
+        <div class="field"><label>Peso actual (kg)</label><input type="number" id="pa-peso" step="0.1" placeholder="0.0" oninput="calcParenteral()"></div>
+        <div class="field"><label>Kcal totales objetivo (kcal/día)</label><input type="number" id="pa-kcal" step="10" placeholder="0" oninput="calcParenteral()"></div>
+      </div>
+      <div class="field">
+        <label>Proteína objetivo (g/kg)</label>
+        <div class="pb-wrap" id="pa-prot-wrap">
+          <div class="pb on" onclick="selPaProt(1.2,this)">1.2</div>
+          <div class="pb" onclick="selPaProt(1.5,this)">1.5</div>
+          <div class="pb" onclick="selPaProt(1.8,this)">1.8</div>
+          <div class="pb" onclick="selPaProt(2.0,this)">2.0</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Lípidos — % de kcal no proteicas (20–40%)</label>
+        <div class="sl-row"><input type="range" id="pa-lippct" min="20" max="40" value="30" oninput="sl('pa-lippct','pa-lipsv');calcParenteral()"><div class="sl-val" id="pa-lipsv">30%</div></div>
+      </div>
+      <div class="field"><label>Proteína (aminoácidos)</label><div class="res neutral" id="pa-prot">—</div></div>
+      <div class="field"><label>Lípidos</label><div class="res neutral" id="pa-lip">—</div></div>
+      <div class="field"><label>Dextrosa</label><div class="res neutral" id="pa-dex">—</div></div>
+      <div class="field"><label>Relación kcal no proteicas : g N₂</label><div class="res neutral" id="pa-relacion">—</div><p class="note">Meta habitual 100–150:1 kcal no proteicas por gramo de nitrógeno</p></div>
+      <div class="field"><label>Velocidad de infusión de glucosa (GIR)</label><div class="res" id="pa-gir">—</div><p class="note">Máximo recomendado en adultos ≈ 4–5 mg/kg/min</p></div>
+      <div class="field"><label>Vía de acceso</label><div class="res neutral" id="pa-via">—</div></div>
+      <div class="pat-tip" id="pa-tip">Completa peso y kcal objetivo para calcular la mezcla.</div>
+    </div>
+  </div>
+
+  <!-- OBESIDAD -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">⚖️ Obesidad</div>
+
+    <div class="sub-card">
+      <h4>Antropometría y gasto energético</h4>
+      <div class="row">
+        <div class="field"><label>Edad (años)</label><input type="number" id="ob-edad" placeholder="0" oninput="calcObesidad()"></div>
+        <div class="field">
+          <label>Sexo</label>
+          <div class="pb-wrap" id="ob-sexo-wrap">
+            <div class="pb on" onclick="setObSexo('F',this)">Mujer</div>
+            <div class="pb" onclick="setObSexo('M',this)">Hombre</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Peso actual (kg)</label><input type="number" id="ob-peso" step="0.1" placeholder="0.0" oninput="calcObesidad()"></div>
+        <div class="field"><label>Talla (m)</label><input type="number" id="ob-talla" step="0.01" placeholder="1.60" oninput="calcObesidad()"></div>
+      </div>
+      <div class="field">
+        <label>Nivel de actividad física</label>
+        <select id="ob-actividad" onchange="calcObesidad()">
+          <option value="1.2">Sedentario (poco o nulo ejercicio)</option>
+          <option value="1.375">Ligero (1–3 días/sem)</option>
+          <option value="1.55">Moderado (3–5 días/sem)</option>
+          <option value="1.725">Intenso (6–7 días/sem)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Meta</label>
+        <div class="pb-wrap" id="ob-meta-wrap">
+          <div class="pb on" onclick="setObMeta(0,this)">Mantenimiento</div>
+          <div class="pb" onclick="setObMeta(500,this)">Pérdida moderada (−500 kcal)</div>
+          <div class="pb" onclick="setObMeta(750,this)">Pérdida agresiva (−750 kcal)</div>
+        </div>
+      </div>
+      <div class="field"><label>IMC / clasificación</label><div class="res" id="ob-imc">—</div></div>
+      <div class="field"><label>GEB (Mifflin-St Jeor)</label><div class="res neutral" id="ob-geb">—</div></div>
+      <div class="field"><label>GET (con actividad)</label><div class="res neutral" id="ob-get">—</div></div>
+      <div class="field"><label>Kcal objetivo (con déficit)</label><div class="res ok" id="ob-kcalobj">—</div><p class="note">Déficit de 500–750 kcal/día ≈ 0.5–1 kg de pérdida por semana. No usar déficit &lt;1200 kcal (mujeres) / &lt;1500 kcal (hombres) sin supervisión estrecha.</p></div>
+      <div class="field"><label>Proteína objetivo (preservar masa magra)</label><div class="res neutral" id="ob-prot">—</div><p class="note">1.2–1.5 g/kg peso actual, o hasta 2.0 g/kg si hay entrenamiento de fuerza</p></div>
+      <div class="field"><label>Fibra objetivo</label><div class="res neutral" id="ob-fibra">—</div><p class="note">14 g por cada 1000 kcal (mínimo 25–38 g/día)</p></div>
+      <div class="field"><label>Agua objetivo</label><div class="res neutral" id="ob-agua">—</div></div>
+      <div class="pat-tip" id="ob-tip">Completa los datos para ver recomendaciones.</div>
+    </div>
+  </div>
+
+  <!-- DISLIPIDEMIAS -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">🩸 Dislipidemias</div>
+
+    <div class="sub-card">
+      <h4>Perfil de lípidos</h4>
+      <div class="row">
+        <div class="field"><label>Colesterol total (mg/dL)</label><input type="number" id="di-ct" placeholder="0" oninput="calcDislipidemia()"></div>
+        <div class="field"><label>LDL (mg/dL)</label><input type="number" id="di-ldl" placeholder="0" oninput="calcDislipidemia()"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>HDL (mg/dL)</label><input type="number" id="di-hdl" placeholder="0" oninput="calcDislipidemia()"></div>
+        <div class="field"><label>Triglicéridos (mg/dL)</label><input type="number" id="di-tg" placeholder="0" oninput="calcDislipidemia()"></div>
+      </div>
+      <div class="field">
+        <label>Riesgo cardiovascular adicional</label>
+        <div class="pb-wrap" id="di-riesgo-wrap">
+          <div class="pb on" onclick="setDiRiesgo('bajo',this)">Bajo</div>
+          <div class="pb" onclick="setDiRiesgo('alto',this)">Alto (DM2, ECV, ERC)</div>
+        </div>
+      </div>
+      <div class="field"><label>Colesterol total</label><div class="res" id="di-r-ct">—</div></div>
+      <div class="field"><label>LDL</label><div class="res" id="di-r-ldl">—</div></div>
+      <div class="field"><label>HDL</label><div class="res" id="di-r-hdl">—</div></div>
+      <div class="field"><label>Triglicéridos</label><div class="res" id="di-r-tg">—</div></div>
+      <div class="field"><label>Meta de LDL según riesgo</label><div class="res ok" id="di-meta-ldl">—</div></div>
+      <div class="field"><label>Grasa saturada máxima</label><div class="res neutral" id="di-gsat">—</div><p class="note">&lt;7% del total de kcal · evitar grasas trans</p></div>
+      <div class="field"><label>Fibra soluble objetivo</label><div class="res neutral" id="di-fibsol">—</div><p class="note">10–25 g/día adicionales de fibra soluble (avena, leguminosas, psyllium)</p></div>
+      <div class="field"><label>Colesterol dietético máximo</label><div class="res neutral">&lt; 200 mg/día</div></div>
+      <div class="pat-tip" id="di-tip">Captura al menos un valor del perfil de lípidos.</div>
+    </div>
+  </div>
+
+  <!-- ENFERMEDAD RENAL CRÓNICA -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">🫘 Enfermedad renal crónica (ERC)</div>
+
+    <div class="sub-card">
+      <h4>Etapa y modalidad</h4>
+      <div class="row">
+        <div class="field"><label>Peso actual (kg)</label><input type="number" id="er-peso" step="0.1" placeholder="0.0" oninput="calcERC()"></div>
+        <div class="field"><label>TFG / eGFR (mL/min/1.73m²)</label><input type="number" id="er-tfg" step="1" placeholder="0" oninput="calcERC()"></div>
+      </div>
+      <div class="field">
+        <label>Modalidad</label>
+        <div class="pb-wrap" id="er-modo-wrap">
+          <div class="pb on" onclick="setErModo('nodial',this)">Sin diálisis</div>
+          <div class="pb" onclick="setErModo('hd',this)">Hemodiálisis</div>
+          <div class="pb" onclick="setErModo('dp',this)">Diálisis peritoneal</div>
+        </div>
+      </div>
+      <div class="field"><label>Etapa (por TFG)</label><div class="res" id="er-etapa">—</div></div>
+      <div class="field"><label>Energía objetivo</label><div class="res ok" id="er-kcal">—</div><p class="note">25–35 kcal/kg/día · ajustar por edad, actividad y estado nutricional</p></div>
+      <div class="field"><label>Proteína objetivo</label><div class="res neutral" id="er-prot">—</div></div>
+      <div class="field"><label>Sodio máximo</label><div class="res neutral" id="er-sodio">—</div></div>
+      <div class="field"><label>Potasio objetivo</label><div class="res neutral" id="er-potasio">—</div></div>
+      <div class="field"><label>Fósforo objetivo</label><div class="res neutral" id="er-fosforo">—</div></div>
+      <div class="field"><label>Líquidos</label><div class="res neutral" id="er-liquidos">—</div></div>
+      <div class="pat-tip" id="er-tip">Completa peso y TFG para ver las recomendaciones por etapa.</div>
+    </div>
+  </div>
+
+  <!-- EMBARAZO CON DISLIPIDEMIA -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">🤰🩸 Embarazo con dislipidemia</div>
+    <p class="note">⚠️ Los puntos de corte del módulo de Dislipidemias (ATP III) <strong>no aplican en el embarazo</strong>: colesterol y triglicéridos se elevan de forma fisiológica por efecto estrogénico, sobre todo en 2º y 3er trimestre. Usa este módulo, no el general, para pacientes gestantes.</p>
+
+    <div class="sub-card">
+      <h4>Perfil de lípidos por trimestre</h4>
+      <div class="field">
+        <label>Trimestre</label>
+        <div class="pb-wrap" id="ed-trim-wrap">
+          <div class="pb on" onclick="setEdTrim(1,this)">1º</div>
+          <div class="pb" onclick="setEdTrim(2,this)">2º</div>
+          <div class="pb" onclick="setEdTrim(3,this)">3º</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Colesterol total (mg/dL)</label><input type="number" id="ed-ct" placeholder="0" oninput="calcEmbDislip()"></div>
+        <div class="field"><label>Triglicéridos (mg/dL)</label><input type="number" id="ed-tg" placeholder="0" oninput="calcEmbDislip()"></div>
+      </div>
+      <div class="field"><label>Rango fisiológico orientativo del trimestre</label><div class="res neutral" id="ed-rango">—</div><p class="note">Rangos de referencia obstétrica (Piechota &amp; Staszewski), orientativos — cotejar siempre con los valores de referencia del laboratorio institucional.</p></div>
+      <div class="field"><label>Colesterol total</label><div class="res" id="ed-r-ct">—</div></div>
+      <div class="field"><label>Triglicéridos</label><div class="res" id="ed-r-tg">—</div></div>
+      <div class="field"><label>Grasa total / saturada</label><div class="res neutral" id="ed-grasa">—</div></div>
+      <div class="field"><label>Fibra objetivo</label><div class="res neutral" id="ed-fibra">—</div></div>
+      <div class="pat-tip" id="ed-tip">Selecciona trimestre y captura al menos un valor.</div>
+    </div>
+  </div>
+
+  <button class="btn-save" onclick="imprimirPatologias()">🖨️ Generar PDF — Módulos por patología</button>
+</div>
+
+<!-- ======= TAB PORCIONES ======= -->
+<div id="tab-porciones" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--teal-text)">🍽️ Porciones y menú de ejemplo</div>
+    <p class="note">Material de referencia y educación nutricional. El menú es un ejemplo general para adaptar — no sustituye un plan individualizado según diagnóstico, requerimientos y preferencias del paciente.</p>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--teal-text)">📏 Tabla de equivalentes (SMAE) — ejemplo de 1 porción</div>
+    <table class="eq-table">
+      <tr><th>Grupo</th><th>Ejemplo de 1 porción</th><th>Aprox. kcal</th></tr>
+      <tr><td>Verduras</td><td>1 taza cruda o ½ taza cocida (brócoli, calabacita, jitomate)</td><td>25</td></tr>
+      <tr><td>Frutas</td><td>1 pieza mediana (manzana, naranja) o 1 taza picada</td><td>60</td></tr>
+      <tr><td>Cereales sin grasa</td><td>1 tortilla de maíz (30g) · ½ taza de arroz cocido</td><td>70</td></tr>
+      <tr><td>Cereales con grasa</td><td>1 pan dulce chico · 6 galletas saladas con grasa</td><td>115</td></tr>
+      <tr><td>Leguminosas</td><td>½ taza de frijoles o lentejas cocidas</td><td>120</td></tr>
+      <tr><td>AOA muy bajo en grasa</td><td>30g pechuga de pollo · 3 claras de huevo</td><td>40</td></tr>
+      <tr><td>AOA bajo en grasa</td><td>30g queso panela · 30g pescado blanco</td><td>55</td></tr>
+      <tr><td>AOA moderado en grasa</td><td>1 huevo entero · 30g queso oaxaca</td><td>75</td></tr>
+      <tr><td>AOA alto en grasa</td><td>30g chorizo · 30g costilla</td><td>100</td></tr>
+      <tr><td>Leche descremada</td><td>1 taza (240 mL)</td><td>95</td></tr>
+      <tr><td>Leche semidescremada</td><td>1 taza · 1 yogurt natural</td><td>110</td></tr>
+      <tr><td>Leche entera</td><td>1 taza (240 mL)</td><td>150</td></tr>
+      <tr><td>Aceites sin proteína</td><td>1 cucharadita de aceite · ⅛ de aguacate</td><td>45</td></tr>
+      <tr><td>Aceites con proteína</td><td>8 almendras · 1 cda. crema de cacahuate</td><td>70</td></tr>
+      <tr><td>Azúcares sin grasa</td><td>1 cda. de azúcar o mermelada</td><td>40</td></tr>
+      <tr><td>Azúcares con grasa</td><td>1 cda. de cajeta · 2 galletas dulces</td><td>85</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--teal-text)">📅 Menú de ejemplo — 1 semana</div>
+    <table class="menu-table">
+      <tr><th>Día</th><th>Desayuno</th><th>Col. AM</th><th>Comida</th><th>Col. PM</th><th>Cena</th></tr>
+      <tr><td>Lun</td><td>Claras con verduras + tortilla + fruta</td><td>Yogurt con fresas</td><td>Pollo asado + arroz + ensalada + frijoles</td><td>Almendras</td><td>Quesadilla de panela con verduras</td></tr>
+      <tr><td>Mar</td><td>Avena con leche y plátano</td><td>Manzana</td><td>Pescado a la plancha + verduras al vapor + tortillas</td><td>Zanahoria y jícama</td><td>Sopa de lentejas + ensalada</td></tr>
+      <tr><td>Mié</td><td>Licuado de leche, plátano y avena</td><td>Nueces</td><td>Bistec asado + nopales + frijoles + tortillas</td><td>Yogurt natural</td><td>Tacos de pollo con verduras</td></tr>
+      <tr><td>Jue</td><td>Huevo con champiñones + tortilla</td><td>Fruta picada</td><td>Pechuga al horno + ensalada + arroz</td><td>Palomitas naturales</td><td>Pescado al vapor con verduras</td></tr>
+      <tr><td>Vie</td><td>Chilaquiles verdes con pollo (bajos en aceite)</td><td>Yogurt</td><td>Milanesa de res + puré de papa + verduras</td><td>Fruta</td><td>Sopa de verduras con pollo deshebrado</td></tr>
+      <tr><td>Sáb</td><td>Hot cakes integrales con fruta</td><td>Licuado verde</td><td>Pozole (moderado en grasa) + tostadas</td><td>Verduras con hummus</td><td>Ensalada con atún</td></tr>
+      <tr><td>Dom</td><td>Sándwich integral de pavo y verduras</td><td>Fruta</td><td>Pechuga a la plancha + quinoa + verduras</td><td>Yogurt con granola</td><td>Crema de verduras + quesadilla</td></tr>
+    </table>
+    <p class="note">Ajustar tamaños de porción según el requerimiento energético y los intercambios del plan individual (pestaña Plan).</p>
+  </div>
+
+  <button class="btn-save" style="background:var(--teal-text)" onclick="imprimirPorciones()">🖨️ Generar PDF — Porciones y menú</button>
 </div>
 
 <!-- TOAST -->
@@ -754,6 +1146,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 // ===== STATE =====
 var gProt = 1.2, eProt = 1.2, lactancia = false;
 var gProtMode = 'gkg', eProtMode = 'gkg';
+var obSexo = 'F', obDeficit = 0, diRiesgo = 'bajo';
 
 // ===== TABS =====
 function switchTab(t) {
@@ -767,7 +1160,9 @@ function switchTab(t) {
   else if(t==='plan') { tabs[3].classList.add('active'); renderPlanGrid(); }
   else if(t==='historia') { tabs[4].classList.add('active'); renderHistoriaList(); }
   else if(t==='soap') { tabs[5].classList.add('active'); initPesSelect(); }
-  else { tabs[6].classList.add('active'); renderPacs(); }
+  else if(t==='pacientes') { tabs[6].classList.add('active'); renderPacs(); }
+  else if(t==='patologias') { tabs[7].classList.add('active'); }
+  else { tabs[8].classList.add('active'); }
 }
 
 // ===== HELPERS =====
@@ -1096,6 +1491,418 @@ function clearEMacs(){
   document.getElementById('e-sum').style.display='none';
 }
 
+// ===== PATOLOGÍAS: OBESIDAD =====
+function setObSexo(v, el){
+  document.querySelectorAll('#ob-sexo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); obSexo = v; calcObesidad();
+}
+function setObMeta(v, el){
+  document.querySelectorAll('#ob-meta-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); obDeficit = v; calcObesidad();
+}
+function calcObesidad(){
+  var edad = parseFloat(gv('ob-edad'));
+  var peso = parseFloat(gv('ob-peso'));
+  var talla = parseFloat(gv('ob-talla'));
+  if(!edad || !peso || !talla){
+    ['ob-imc','ob-geb','ob-get','ob-kcalobj','ob-prot','ob-fibra','ob-agua'].forEach(function(id){ setR(id,'—'); });
+    sv('ob-tip','Completa los datos para ver recomendaciones.');
+    return;
+  }
+  var imc = peso/(talla*talla);
+  var cls = clsIMC(imc, false);
+  setR('ob-imc', r1(imc)+' kg/m² — <span class="tag '+cls.tag+'">'+cls.lbl+'</span>');
+
+  var geb = obSexo==='F' ? (10*peso + 6.25*(talla*100) - 5*edad - 161)
+                          : (10*peso + 6.25*(talla*100) - 5*edad + 5);
+  setR('ob-geb', r0(geb)+' kcal/día', 'neutral');
+
+  var fa = parseFloat(gv('ob-actividad'));
+  var get = geb*fa;
+  setR('ob-get', r0(get)+' kcal/día', 'neutral');
+
+  var kcalObj = get - obDeficit;
+  var pisoMin = obSexo==='F' ? 1200 : 1500;
+  var alerta = '';
+  if(kcalObj < pisoMin){ kcalObj = pisoMin; alerta = ' ⚠️ Ajustado al mínimo seguro ('+pisoMin+' kcal) — valorar supervisión estrecha.'; }
+  setR('ob-kcalobj', r0(kcalObj)+' kcal/día'+alerta, alerta?'warn':'ok');
+
+  var protG = r1(peso*1.2)+' – '+r1(peso*1.5)+' g/día';
+  setR('ob-prot', protG, 'neutral');
+
+  var fibra = Math.max(25, r0(kcalObj/1000*14));
+  setR('ob-fibra', fibra+' g/día', 'neutral');
+
+  var agua = r1(peso*30/1000)+' – '+r1(peso*35/1000)+' L/día';
+  setR('ob-agua', agua, 'neutral');
+
+  var tip = '';
+  if(imc>=30) tip = 'IMC compatible con obesidad. Priorizar déficit sostenible, actividad física progresiva y preservación de masa muscular con proteína adecuada. Evaluar comorbilidades (dislipidemia, HTA, DM2).';
+  else if(imc>=25) tip = 'Sobrepeso. Un déficit moderado (500 kcal) suele ser suficiente; enfatizar cambios de hábito sostenibles antes que restricciones agresivas.';
+  else tip = 'IMC en rango normal o bajo peso — revisar si la meta de pérdida de peso es clínicamente indicada.';
+  sv('ob-tip', tip);
+}
+
+// ===== PATOLOGÍAS: DISLIPIDEMIAS =====
+function setDiRiesgo(v, el){
+  document.querySelectorAll('#di-riesgo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); diRiesgo = v; calcDislipidemia();
+}
+function calcDislipidemia(){
+  var ct = parseFloat(gv('di-ct'));
+  var ldl = parseFloat(gv('di-ldl'));
+  var hdl = parseFloat(gv('di-hdl'));
+  var tg = parseFloat(gv('di-tg'));
+  var any = !isNaN(ct)||!isNaN(ldl)||!isNaN(hdl)||!isNaN(tg);
+
+  if(!isNaN(ct)) setR('di-r-ct', r0(ct)+' mg/dL — '+(ct<200?'Deseable':ct<240?'Limítrofe alto':'Alto'), ct<200?'ok':ct<240?'warn':'danger');
+  else setR('di-r-ct','—');
+
+  if(!isNaN(ldl)) setR('di-r-ldl', r0(ldl)+' mg/dL — '+(ldl<100?'Óptimo':ldl<130?'Cercano a óptimo':ldl<160?'Limítrofe alto':ldl<190?'Alto':'Muy alto'), ldl<130?'ok':ldl<160?'warn':'danger');
+  else setR('di-r-ldl','—');
+
+  if(!isNaN(hdl)) setR('di-r-hdl', r0(hdl)+' mg/dL — '+((obSexo==='F'?hdl<50:hdl<40)?'Bajo (factor de riesgo)':'Adecuado'), (obSexo==='F'?hdl<50:hdl<40)?'danger':'ok');
+  else setR('di-r-hdl','—');
+
+  if(!isNaN(tg)) setR('di-r-tg', r0(tg)+' mg/dL — '+(tg<150?'Normal':tg<200?'Limítrofe alto':tg<500?'Alto':'Muy alto'), tg<150?'ok':tg<200?'warn':'danger');
+  else setR('di-r-tg','—');
+
+  var metaLdl = diRiesgo==='alto' ? '< 100 mg/dL (< 70 mg/dL si muy alto riesgo)' : '< 130 mg/dL (ideal < 100 mg/dL)';
+  setR('di-meta-ldl', metaLdl, 'ok');
+
+  setR('di-gsat', '< 7% del total de kcal (grasa total 25–30%)', 'neutral');
+
+  var fibsol = (!isNaN(tg) && tg>=200) ? '15–25 g/día' : '10–20 g/día';
+  setR('di-fibsol', fibsol, 'neutral');
+
+  var tip = 'Captura al menos un valor del perfil de lípidos.';
+  if(any){
+    tip = 'Enfatizar patrón tipo mediterráneo/DASH: grasas insaturadas (aceite de oliva, aguacate, nueces), pescado 2×/semana (omega-3), fibra soluble diaria y limitar azúcares simples.';
+    if(!isNaN(tg) && tg>=500) tip += ' ⚠️ TG ≥500 mg/dL: riesgo de pancreatitis — restricción de grasa total más estricta y valoración médica urgente.';
+    else if(!isNaN(ldl) && ldl>=190) tip += ' ⚠️ LDL muy alto — descartar causa secundaria/genética (hipercolesterolemia familiar).';
+  }
+  sv('di-tip', tip);
+}
+
+// ===== PATOLOGÍAS: NUTRICIÓN INFANTIL =====
+var peSexo = 'F';
+function setPeSexo(v, el){
+  document.querySelectorAll('#pe-sexo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); peSexo = v; calcPediatrico();
+}
+function kcalKgRef(meses){
+  if(meses<=6) return 108;
+  if(meses<=12) return 98;
+  if(meses<=36) return 102;
+  if(meses<=72) return 90;
+  if(meses<=120) return 70;
+  if(meses<=168) return peSexo==='M' ? 55 : 47;
+  return peSexo==='M' ? 45 : 40;
+}
+function protKgRef(meses){
+  if(meses<=6) return 2.2;
+  if(meses<=12) return 1.6;
+  if(meses<=36) return 1.05;
+  if(meses<=96) return 0.95;
+  if(meses<=156) return 0.95;
+  return 0.85;
+}
+function liquidosHS(peso){
+  if(peso<=10) return peso*100;
+  if(peso<=20) return 1000 + (peso-10)*50;
+  return 1500 + (peso-20)*20;
+}
+function calcPediatrico(){
+  var meses = parseFloat(gv('pe-edad'));
+  var peso = parseFloat(gv('pe-peso'));
+  var tallaCm = parseFloat(gv('pe-talla'));
+
+  if(!meses || meses<=0 || !peso){
+    ['pe-imc','pe-kcalkg','pe-kcaltot','pe-protkg','pe-prottot','pe-liq'].forEach(function(id){ setR(id,'—'); });
+    sv('pe-edadconv','—');
+    sv('pe-tip','Completa edad y peso para ver los requerimientos.');
+    return;
+  }
+
+  var anios = Math.floor(meses/12), mRest = Math.round(meses%12);
+  sv('pe-edadconv', anios>0 ? (anios+' año'+(anios!==1?'s':'')+(mRest>0?' '+mRest+' mes'+(mRest!==1?'es':''):'')) : (meses+' meses'));
+
+  if(tallaCm && tallaCm>0){
+    var tallaM = tallaCm/100;
+    var imc = peso/(tallaM*tallaM);
+    setR('pe-imc', r1(imc)+' kg/m²', 'neutral');
+  } else {
+    setR('pe-imc','—','neutral');
+  }
+
+  var kkg = kcalKgRef(meses);
+  setR('pe-kcalkg', kkg+' kcal/kg/día', 'neutral');
+  setR('pe-kcaltot', r0(kkg*peso)+' kcal/día', 'ok');
+
+  var pkg = protKgRef(meses);
+  setR('pe-protkg', pkg+' g/kg/día', 'neutral');
+  setR('pe-prottot', r1(pkg*peso)+' g/día', 'neutral');
+
+  var liq = liquidosHS(peso);
+  setR('pe-liq', r0(liq)+' mL/día ('+r1(liq/1000)+' L)', 'neutral');
+
+  var tip = 'Valores de referencia (FAO/OMS y Holliday-Segar) para orientación general — individualizar según estado nutricional, actividad y patología de base.';
+  if(meses<=6) tip += ' Lactante &lt;6 meses: la lactancia materna exclusiva cubre estos requerimientos; usar esta cifra solo como referencia comparativa.';
+  else if(meses>168) tip += ' En adolescentes, ajustar por velocidad de crecimiento puberal y nivel de actividad física.';
+  sv('pe-tip', tip);
+}
+
+function calcMuac(){
+  var muac = parseFloat(gv('pe-muac'));
+  var meses = parseFloat(gv('pe-edad'));
+  if(isNaN(muac)){ setR('pe-muacres','—'); return; }
+  var fueraRango = !meses || meses<6 || meses>59;
+  var lbl, cls;
+  if(muac<11.5){ lbl='Desnutrición aguda severa'; cls='danger'; }
+  else if(muac<12.5){ lbl='Desnutrición aguda moderada'; cls='warn'; }
+  else { lbl='Normal'; cls='ok'; }
+  setR('pe-muacres', r1(muac)+' cm — '+lbl+(fueraRango?' ⚠️ fuera del rango validado (6–59 meses)':''), fueraRango?'warn':cls);
+}
+
+// ===== PATOLOGÍAS: DIABETES / DM2 =====
+function calcDiabetes(){
+  var peso = parseFloat(gv('db-peso'));
+  var fa = parseFloat(gv('db-actividad'));
+  var hcpct = parseInt(gv('db-hcpct'));
+
+  if(!peso){
+    ['db-kcal','db-hctot','db-des','db-colam','db-comida','db-colpm','db-cena'].forEach(function(id){ setR(id,'—'); });
+    sv('db-tip','Completa peso para calcular energía y conteo de carbohidratos.');
+  } else {
+    var kcal = peso*25*fa;
+    setR('db-kcal', r0(kcal)+' kcal/día', 'ok');
+
+    var hcg = (kcal*(hcpct/100))/4;
+    setR('db-hctot', r0(hcg)+' g/día', 'neutral');
+
+    sv('db-des',    r0(hcg*0.20));
+    sv('db-colam',  r0(hcg*0.10));
+    sv('db-comida', r0(hcg*0.30));
+    sv('db-colpm',  r0(hcg*0.10));
+    sv('db-cena',   r0(hcg*0.30));
+
+    sv('db-tip', 'Priorizar carbohidratos complejos y fibra (bajo índice glucémico), distribuir de forma constante entre comidas y ajustar horarios según esquema de insulina/hipoglucemiantes.');
+  }
+
+  var ayuno = parseFloat(gv('db-glu-ayuno'));
+  if(!isNaN(ayuno)){
+    var lblA = ayuno<70?'Hipoglucemia':ayuno<=99?'Normal':ayuno<=125?'Glucosa alterada en ayuno':'En rango diabético';
+    setR('db-r-ayuno', r0(ayuno)+' mg/dL — '+lblA, ayuno<70?'danger':ayuno<=99?'ok':ayuno<=125?'warn':'danger');
+  } else setR('db-r-ayuno','—');
+
+  var pos = parseFloat(gv('db-glu-pos'));
+  if(!isNaN(pos)){
+    var lblP = pos<140?'Normal':pos<=199?'Intolerancia a la glucosa':'En rango diabético';
+    setR('db-r-pos', r0(pos)+' mg/dL — '+lblP, pos<140?'ok':pos<=199?'warn':'danger');
+  } else setR('db-r-pos','—');
+
+  var hba1c = parseFloat(gv('db-hba1c'));
+  if(!isNaN(hba1c)){
+    var lblH = hba1c<5.7?'Normal':hba1c<6.5?'Prediabetes':hba1c<7?'Meta de control alcanzada':hba1c<9?'Fuera de meta':'Descontrol severo';
+    setR('db-r-hba1c', r1(hba1c)+'% — '+lblH, hba1c<7?'ok':hba1c<9?'warn':'danger');
+  } else setR('db-r-hba1c','—');
+}
+
+// ===== PATOLOGÍAS: ENFERMEDAD RENAL CRÓNICA =====
+var erModo = 'nodial';
+function setErModo(v, el){
+  document.querySelectorAll('#er-modo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); erModo = v; calcERC();
+}
+function clasificarERC(tfg){
+  if(tfg>=90) return 'G1 — Normal/alta (con daño renal)';
+  if(tfg>=60) return 'G2 — Levemente disminuida';
+  if(tfg>=45) return 'G3a — Leve a moderadamente disminuida';
+  if(tfg>=30) return 'G3b — Moderada a severamente disminuida';
+  if(tfg>=15) return 'G4 — Severamente disminuida';
+  return 'G5 — Falla renal';
+}
+function calcERC(){
+  var peso = parseFloat(gv('er-peso'));
+  var tfg = parseFloat(gv('er-tfg'));
+
+  if(!peso){
+    ['er-etapa','er-kcal','er-prot','er-sodio','er-potasio','er-fosforo','er-liquidos'].forEach(function(id){ setR(id,'—'); });
+    sv('er-tip','Completa peso y TFG para ver las recomendaciones por etapa.');
+    return;
+  }
+
+  var etapaTxt = '—', etapaNum = null;
+  if(!isNaN(tfg)){
+    etapaTxt = clasificarERC(tfg);
+    etapaNum = tfg>=90?1:tfg>=60?2:tfg>=45?3:tfg>=30?3.5:tfg>=15?4:5;
+    setR('er-etapa', etapaTxt, etapaNum>=4?'danger':etapaNum>=3?'warn':'ok');
+  } else setR('er-etapa','— (captura TFG)','neutral');
+
+  setR('er-kcal', r0(peso*30)+' kcal/día (rango '+r0(peso*25)+'–'+r0(peso*35)+')', 'ok');
+
+  // Proteína según modalidad y etapa
+  var protLbl, sodio='< 2000 mg/día (≈ 5 g de sal)', potasio, fosforo, liquidos;
+  if(erModo==='hd'){
+    protLbl = r1(peso*1.0)+' – '+r1(peso*1.2)+' g/día (compensar pérdidas por diálisis)';
+    potasio = '< 2000–2500 mg/día';
+    fosforo = '800–1000 mg/día (valorar quelantes)';
+    liquidos = 'Diuresis residual + 500–750 mL/día (ajustar por ganancia interdialítica)';
+  } else if(erModo==='dp'){
+    protLbl = r1(peso*1.2)+' – '+r1(peso*1.3)+' g/día (pérdidas de proteína al líquido dializante)';
+    potasio = 'Generalmente sin restricción estricta — monitorizar (el líquido de DP puede facilitar depleción)';
+    fosforo = '800–1000 mg/día (valorar quelantes)';
+    liquidos = 'Según diuresis residual + ultrafiltración — individualizar';
+  } else {
+    if(etapaNum!==null && etapaNum>=3){
+      protLbl = r1(peso*0.6)+' – '+r1(peso*0.8)+' g/día (restricción — sin diálisis, etapa 3–5)';
+    } else {
+      protLbl = r1(peso*0.8)+' – '+r1(peso*1.0)+' g/día (sin restricción específica en etapas 1–2)';
+    }
+    potasio = (etapaNum!==null && etapaNum>=4) ? '< 2000–2500 mg/día' : 'Sin restricción estricta salvo hiperkalemia — monitorizar';
+    fosforo = (etapaNum!==null && etapaNum>=4) ? '800–1000 mg/día' : 'Sin restricción específica salvo hiperfosfatemia';
+    liquidos = (etapaNum!==null && etapaNum>=4) ? 'Individualizar según diuresis y edema' : 'Libre, salvo edema/HTA/oliguria';
+  }
+  setR('er-prot', protLbl, 'neutral');
+  setR('er-sodio', sodio, 'neutral');
+  setR('er-potasio', potasio, 'neutral');
+  setR('er-fosforo', fosforo, 'neutral');
+  setR('er-liquidos', liquidos, 'neutral');
+
+  var tip = 'La proteína y el potasio se ajustan según modalidad (diálisis eleva el requerimiento proteico por pérdidas). No aplicar restricción proteica severa en etapas 1–2 sin indicación médica.';
+  if(erModo==='nodial' && etapaNum!==null && etapaNum>=5) tip += ' ⚠️ Etapa G5 sin diálisis: valorar inicio de terapia de reemplazo renal con el equipo médico.';
+  sv('er-tip', tip);
+}
+
+// ===== SOPORTE NUTRICIONAL: ENTERAL =====
+var enProt = 1.2, enModo = 'continua';
+function selEnProt(v, el){
+  document.querySelectorAll('#en-prot-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); enProt = v; calcEnteral();
+}
+function setEnModo(v, el){
+  document.querySelectorAll('#en-modo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); enModo = v;
+  document.getElementById('en-horas-box').style.display = v==='ciclica' ? 'block' : 'none';
+  document.getElementById('en-tomas-box').style.display = v==='bolo' ? 'block' : 'none';
+  calcEnteral();
+}
+function calcEnteral(){
+  var peso = parseFloat(gv('en-peso'));
+  var kcal = parseFloat(gv('en-kcal'));
+  var dens = parseFloat(gv('en-densidad'));
+
+  if(!peso || !kcal){
+    ['en-prottot','en-vol','en-vel'].forEach(function(id){ setR(id,'—'); });
+    sv('en-tip','Completa peso y kcal objetivo para calcular la prescripción.');
+    return;
+  }
+
+  setR('en-prottot', r1(peso*enProt)+' g/día', 'neutral');
+
+  var vol = kcal/dens;
+  setR('en-vol', r0(vol)+' mL/día', 'ok');
+
+  var velTxt = '', tip = 'Iniciar a 20–25 mL/h (o ~50% de la meta) y progresar 10–20 mL/h cada 8–12 h según tolerancia hasta alcanzar el objetivo. Mantener cabecera a 30–45° y verificar tolerancia (distensión, residuo, evacuaciones).';
+  if(enModo==='continua'){
+    velTxt = r0(vol/24)+' mL/h (24 h)';
+  } else if(enModo==='ciclica'){
+    var horas = parseFloat(gv('en-horas'))||12;
+    velTxt = r0(vol/horas)+' mL/h ('+horas+' h)';
+  } else {
+    var tomas = parseFloat(gv('en-tomas'))||6;
+    velTxt = r0(vol/tomas)+' mL por toma ('+tomas+' tomas/día)';
+    tip = 'En bolo: administrar en 15–30 min por gravedad o jeringa, con el paciente semisentado; verificar residuo gástrico antes de cada toma.';
+  }
+  setR('en-vel', velTxt, 'ok');
+  sv('en-tip', tip);
+}
+
+// ===== SOPORTE NUTRICIONAL: PARENTERAL =====
+var paProt = 1.2;
+function selPaProt(v, el){
+  document.querySelectorAll('#pa-prot-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); paProt = v; calcParenteral();
+}
+function calcParenteral(){
+  var peso = parseFloat(gv('pa-peso'));
+  var kcalTot = parseFloat(gv('pa-kcal'));
+  var lipPct = parseInt(gv('pa-lippct'));
+
+  if(!peso || !kcalTot){
+    ['pa-prot','pa-lip','pa-dex','pa-relacion','pa-gir','pa-via'].forEach(function(id){ setR(id,'—'); });
+    sv('pa-tip','Completa peso y kcal objetivo para calcular la mezcla.');
+    return;
+  }
+
+  var protG = peso*paProt;
+  var protKcal = protG*4;
+  setR('pa-prot', r1(protG)+' g/día ('+r0(protKcal)+' kcal)', 'neutral');
+
+  var kcalNoProt = kcalTot - protKcal;
+  var lipKcal = kcalNoProt*(lipPct/100);
+  var lipG = lipKcal/9;
+  var lipGkg = lipG/peso;
+  setR('pa-lip', r1(lipG)+' g/día ('+r1(lipGkg)+' g/kg)'+(lipGkg>1.5?' ⚠️ excede 1.5 g/kg':''), lipGkg>1.5?'danger':'neutral');
+
+  var dexKcal = kcalNoProt - lipKcal;
+  var dexG = dexKcal/3.4;
+  setR('pa-dex', r1(dexG)+' g/día ('+r0(dexKcal)+' kcal)', 'neutral');
+
+  var nitrogeno = protG/6.25;
+  var relacion = nitrogeno>0 ? r0(kcalNoProt/nitrogeno) : 0;
+  setR('pa-relacion', relacion+' : 1', (relacion>=100 && relacion<=150)?'ok':'warn');
+
+  var gir = (dexG*1000)/(peso*1440);
+  setR('pa-gir', r1(gir)+' mg/kg/min'+(gir>5?' ⚠️ por arriba del máximo recomendado':''), gir>5?'danger':gir>4?'warn':'ok');
+
+  var viaTxt = (kcalTot/peso > 25 || dexG/peso*100 > 12.5) ? 'Probable osmolaridad >900 mOsm/L — requiere acceso venoso central' : 'Podría tolerarse por vía periférica si la mezcla final queda <900 mOsm/L — valorar con farmacia/mezcla real';
+  setR('pa-via', viaTxt, 'neutral');
+
+  var tip = 'Iniciar de forma progresiva (25–50% de la meta el primer día) y avanzar en 24–48 h según tolerancia metabólica (glucosa, triglicéridos, electrolitos). Vigilar síndrome de realimentación si hay desnutrición severa previa.';
+  if(gir>5) tip += ' ⚠️ GIR elevado: riesgo de hiperglucemia — redistribuir kcal o fraccionar el aporte de dextrosa.';
+  sv('pa-tip', tip);
+}
+
+// ===== PATOLOGÍAS: EMBARAZO CON DISLIPIDEMIA =====
+var edTrim = 1;
+function setEdTrim(v, el){
+  document.querySelectorAll('#ed-trim-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); edTrim = v; calcEmbDislip();
+}
+// Rangos orientativos por trimestre (Piechota & Staszewski, ref. obstétrica clásica) — mg/dL
+var EMB_RANGOS = {
+  1: {ct:[141,210], tg:[40,150]},
+  2: {ct:[176,299], tg:[75,382]},
+  3: {ct:[219,349], tg:[131,453]}
+};
+function calcEmbDislip(){
+  var ct = parseFloat(gv('ed-ct'));
+  var tg = parseFloat(gv('ed-tg'));
+  var r = EMB_RANGOS[edTrim];
+
+  setR('ed-rango', 'CT: '+r.ct[0]+'–'+r.ct[1]+' mg/dL · TG: '+r.tg[0]+'–'+r.tg[1]+' mg/dL', 'neutral');
+
+  if(!isNaN(ct)){
+    var ctEst = ct<r.ct[0] ? 'Por debajo de lo esperado para el trimestre' : ct<=r.ct[1] ? 'Dentro de lo esperado para el trimestre' : 'Por arriba de lo esperado para el trimestre';
+    setR('ed-r-ct', r0(ct)+' mg/dL — '+ctEst, ct>r.ct[1]?'warn':'ok');
+  } else setR('ed-r-ct','—');
+
+  if(!isNaN(tg)){
+    var tgEst = tg<r.tg[0] ? 'Por debajo de lo esperado para el trimestre' : tg<=r.tg[1] ? 'Dentro de lo esperado para el trimestre' : 'Por arriba de lo esperado para el trimestre';
+    var tgCls = tg>1000 ? 'danger' : (tg>r.tg[1] ? 'warn' : 'ok');
+    setR('ed-r-tg', r0(tg)+' mg/dL — '+tgEst+(tg>1000?' ⚠️ riesgo de pancreatitis':''), tgCls);
+  } else setR('ed-r-tg','—');
+
+  setR('ed-grasa', 'Grasa total 25–30% kcal · saturada &lt;7% · priorizar omega-3 (pescado, chía, linaza)', 'neutral');
+  setR('ed-fibra', '25–30 g/día (fibra soluble incluida) — apoya control glucémico y lipídico', 'neutral');
+
+  var tip = 'Un ascenso moderado de colesterol y triglicéridos es fisiológico en el embarazo y no debe tratarse con las metas de un adulto no gestante.';
+  if(!isNaN(tg) && tg>1000) tip = '⚠️ TG >1000 mg/dL en embarazo: riesgo real de pancreatitis aguda — requiere valoración médica urgente y restricción estricta de grasa total, además del manejo nutricional.';
+  else if((!isNaN(ct)&&ct>r.ct[1]) || (!isNaN(tg)&&tg>r.tg[1])) tip = 'Valor(es) por arriba del rango esperado para el trimestre. Descartar diabetes gestacional/preeclampsia asociadas y reforzar calidad de grasas y fibra; no se recomienda restricción calórica agresiva durante el embarazo.';
+  sv('ed-tip', tip);
+}
+
 // ===== RESET =====
 function resetG(){
   document.querySelectorAll('#tab-general input[type=text],#tab-general input[type=number]').forEach(function(i){ i.value=''; });
@@ -1416,7 +2223,54 @@ function imprimirPaciente(id){
     '<h3>Datos del paciente</h3>'+datosHtml+
     '<h3>'+(isE?'Valoración obstétrica':'Valoración general')+'</h3>'+calcHtml+
     labsHtml+
+    bloqueHistoriaSoap(p.cama)+
     '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
+
+  document.getElementById('print-area').innerHTML = html;
+  setTimeout(function(){ window.print(); }, 100);
+}
+
+function imprimirPorciones(){
+  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
+  var eqRows = [
+    ['Verduras','1 taza cruda o ½ taza cocida (brócoli, calabacita, jitomate)','25'],
+    ['Frutas','1 pieza mediana (manzana, naranja) o 1 taza picada','60'],
+    ['Cereales sin grasa','1 tortilla de maíz (30g) · ½ taza de arroz cocido','70'],
+    ['Cereales con grasa','1 pan dulce chico · 6 galletas saladas con grasa','115'],
+    ['Leguminosas','½ taza de frijoles o lentejas cocidas','120'],
+    ['AOA muy bajo en grasa','30g pechuga de pollo · 3 claras de huevo','40'],
+    ['AOA bajo en grasa','30g queso panela · 30g pescado blanco','55'],
+    ['AOA moderado en grasa','1 huevo entero · 30g queso oaxaca','75'],
+    ['AOA alto en grasa','30g chorizo · 30g costilla','100'],
+    ['Leche descremada','1 taza (240 mL)','95'],
+    ['Leche semidescremada','1 taza · 1 yogurt natural','110'],
+    ['Leche entera','1 taza (240 mL)','150'],
+    ['Aceites sin proteína','1 cucharadita de aceite · ⅛ de aguacate','45'],
+    ['Aceites con proteína','8 almendras · 1 cda. crema de cacahuate','70'],
+    ['Azúcares sin grasa','1 cda. de azúcar o mermelada','40'],
+    ['Azúcares con grasa','1 cda. de cajeta · 2 galletas dulces','85']
+  ];
+  var eqHtml = '<table class="pr-table pr-labs"><tr><th>Grupo</th><th>Ejemplo de 1 porción</th><th>Kcal aprox.</th></tr>'+
+    eqRows.map(function(r){ return '<tr><td class="pr-v">'+r[0]+'</td><td class="pr-v">'+r[1]+'</td><td class="pr-v">'+r[2]+'</td></tr>'; }).join('')+
+    '</table>';
+
+  var menuRows = [
+    ['Lunes','Claras con verduras + tortilla + fruta','Yogurt con fresas','Pollo asado + arroz + ensalada + frijoles','Almendras','Quesadilla de panela con verduras'],
+    ['Martes','Avena con leche y plátano','Manzana','Pescado a la plancha + verduras al vapor + tortillas','Zanahoria y jícama','Sopa de lentejas + ensalada'],
+    ['Miércoles','Licuado de leche, plátano y avena','Nueces','Bistec asado + nopales + frijoles + tortillas','Yogurt natural','Tacos de pollo con verduras'],
+    ['Jueves','Huevo con champiñones + tortilla','Fruta picada','Pechuga al horno + ensalada + arroz','Palomitas naturales','Pescado al vapor con verduras'],
+    ['Viernes','Chilaquiles verdes con pollo (bajos en aceite)','Yogurt','Milanesa de res + puré de papa + verduras','Fruta','Sopa de verduras con pollo deshebrado'],
+    ['Sábado','Hot cakes integrales con fruta','Licuado verde','Pozole (moderado en grasa) + tostadas','Verduras con hummus','Ensalada con atún'],
+    ['Domingo','Sándwich integral de pavo y verduras','Fruta','Pechuga a la plancha + quinoa + verduras','Yogurt con granola','Crema de verduras + quesadilla']
+  ];
+  var menuHtml = '<table class="pr-table pr-labs"><tr><th>Día</th><th>Desayuno</th><th>Col. AM</th><th>Comida</th><th>Col. PM</th><th>Cena</th></tr>'+
+    menuRows.map(function(r){ return '<tr><td class="pr-v">'+r[0]+'</td><td class="pr-v">'+r[1]+'</td><td class="pr-v">'+r[2]+'</td><td class="pr-v">'+r[3]+'</td><td class="pr-v">'+r[4]+'</td><td class="pr-v">'+r[5]+'</td></tr>'; }).join('')+
+    '</table>';
+
+  var html = '<div class="pr-header"><h1>Porciones y Menú de Ejemplo</h1><p>'+fecha+'</p></div>'+
+    '<h3>Tabla de equivalentes (SMAE) — ejemplo de 1 porción</h3>'+eqHtml+
+    '<h3>Menú de ejemplo — 1 semana</h3>'+menuHtml+
+    '<p class="pr-notas">Material de referencia y educación nutricional. Ajustar porciones y alimentos según el plan individual del paciente.</p>';
 
   document.getElementById('print-area').innerHTML = html;
   setTimeout(function(){ window.print(); }, 100);
@@ -1958,10 +2812,10 @@ function nlToBr(txt){
 
 function imprimirSOAP(){
   var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
-  var cama = gv('soap-cama')||'—', nombre = gv('soap-nombre')||'—';
+  var cama = gv('soap-cama')||'', nombre = gv('soap-nombre')||'—';
 
   var html = '<div class="pr-header"><h1>Nota SOAP — Valoración Nutricional</h1><p>'+fecha+'</p></div>'+
-    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+cama+'</td>'+
+    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+(cama||'—')+'</td>'+
     '<td class="pr-k">Nombre</td><td class="pr-v">'+nombre+'</td></tr></table>'+
     '<h3>S — Subjetivo</h3>'+
     '<p><b>Datos socioeconómicos:</b><br>'+nlToBr(gv('soap-s-socio'))+'</p>'+
@@ -1970,6 +2824,167 @@ function imprimirSOAP(){
     '<h3>O — Objetivo</h3><p>'+nlToBr(gv('soap-o'))+'</p>'+
     '<h3>A — Análisis (Diagnóstico nutricional)</h3><p>'+nlToBr(gv('soap-a'))+'</p>'+
     '<h3>P — Plan</h3><p>'+nlToBr(gv('soap-p'))+'</p>'+
+    bloqueHistoria(cama)+
+    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
+
+  document.getElementById('print-area').innerHTML = html;
+  setTimeout(function(){ window.print(); }, 100);
+}
+
+
+function bloqueHistoria(cama){
+  var html = '';
+  var hist = cama ? getHistorias()[normCama(cama)] : null;
+
+  if(hist){
+    html += '<h3>📋 Historia clínica nutricional</h3>'+
+      '<table class="pr-table">'+
+      '<tr><td class="pr-k">Alergias</td><td class="pr-v" colspan="3">'+(hist.alergias||'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Datos socioeconómicos</td><td class="pr-v" colspan="3">'+(hist.socioeconomico||'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Antecedentes patológicos</td><td class="pr-v" colspan="3">'+(hist.patologicos||'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Heredofamiliares</td><td class="pr-v" colspan="3">'+(hist.heredofamiliares||'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Antecedentes nutricionales</td><td class="pr-v" colspan="3">'+(hist.nutricionales||'—')+'</td></tr>'+
+      '</table>'+
+      '<h3 style="font-size:.85rem">Recordatorio de 24 horas</h3>'+
+      '<table class="pr-table">'+
+      '<tr><td class="pr-k">Desayuno</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.desayuno||'—':'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Colación matutina</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.colMat||'—':'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Comida</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.comida||'—':'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Colación vespertina</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.colVesp||'—':'—')+'</td></tr>'+
+      '<tr><td class="pr-k">Cena</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.cena||'—':'—')+'</td></tr>'+
+      '</table><p class="pr-notas">Historia registrada el '+(hist.fechaISO||'—')+' '+(hist.hora||'')+'</p>';
+  } else if(cama){
+    html += '<p class="pr-notas">⚠️ No se encontró una historia clínica guardada para la cama "'+cama+'". Captúrala en la pestaña Historia y presiona "Guardar historia (por cama)" para que aparezca automáticamente en este reporte.</p>';
+  }
+  return html;
+}
+
+function bloqueHistoriaSoap(cama){
+  var html = bloqueHistoria(cama);
+
+  var soapCama = gv('soap-cama').trim();
+  if(cama && soapCama && normCama(soapCama)===normCama(cama)){
+    var s1=gv('soap-s-socio'), s2=gv('soap-s-sintomas'), s3=gv('soap-s-antec'), o=gv('soap-o'), a=gv('soap-a'), p=gv('soap-p');
+    if(s1||s2||s3||o||a||p){
+      html += '<h3>📝 Nota SOAP</h3>'+
+        '<table class="pr-table">'+
+        '<tr><td class="pr-k">S — Síntomas referidos</td><td class="pr-v" colspan="3">'+(s2||'—')+'</td></tr>'+
+        '<tr><td class="pr-k">S — Datos socioeconómicos</td><td class="pr-v" colspan="3">'+(s1||'—')+'</td></tr>'+
+        '<tr><td class="pr-k">S — Antecedentes</td><td class="pr-v" colspan="3">'+(s3||'—')+'</td></tr>'+
+        '<tr><td class="pr-k">O — Objetivo</td><td class="pr-v" colspan="3">'+(o||'—')+'</td></tr>'+
+        '<tr><td class="pr-k">A — Diagnóstico (PES)</td><td class="pr-v" colspan="3">'+(a||'—')+'</td></tr>'+
+        '<tr><td class="pr-k">P — Plan</td><td class="pr-v" colspan="3">'+(p||'—')+'</td></tr>'+
+        '</table>';
+    }
+  }
+  return html;
+}
+
+function imprimirPatologias(){
+  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
+  var cama = gv('pat-cama')||'', nombre = gv('pat-nombre')||'—';
+
+  var historias = getHistorias();
+  var hist = cama ? historias[normCama(cama)] : null;
+  if(hist && nombre==='—') nombre = hist.nombre||'—';
+
+  var html = '<div class="pr-header"><h1>Historia clínica nutricional</h1><p>'+fecha+'</p></div>'+
+    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+(cama||'—')+'</td>'+
+    '<td class="pr-k">Nombre</td><td class="pr-v">'+nombre+'</td></tr></table>';
+
+  var bloque = bloqueHistoriaSoap(cama);
+  if(bloque) html += bloque;
+  else html += '<p class="pr-notas">Captura la cama arriba para incluir automáticamente su historia clínica y nota SOAP guardadas en este reporte.</p>';
+
+  html += '<h3 style="border-top:2px solid #832d51;padding-top:10px;margin-top:16px">🧮 Evaluación y plan por patología</h3>';
+
+  // Nutrición infantil
+  html += '<h3>👶 Nutrición infantil</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Edad</td><td class="pr-v">'+gt('pe-edadconv')+'</td>'+
+    '<td class="pr-k">Sexo</td><td class="pr-v">'+(peSexo==='F'?'Niña':'Niño')+'</td></tr>'+
+    '<tr><td class="pr-k">Peso / Talla</td><td class="pr-v">'+(gv('pe-peso')||'—')+' kg / '+(gv('pe-talla')||'—')+' cm</td>'+
+    '<td class="pr-k">IMC</td><td class="pr-v">'+gt('pe-imc')+'</td></tr>'+
+    '<tr><td class="pr-k">Energía total</td><td class="pr-v">'+gt('pe-kcaltot')+'</td>'+
+    '<td class="pr-k">Proteína total</td><td class="pr-v">'+gt('pe-prottot')+'</td></tr>'+
+    '<tr><td class="pr-k">Líquidos</td><td class="pr-v">'+gt('pe-liq')+'</td>'+
+    '<td class="pr-k">MUAC</td><td class="pr-v">'+gt('pe-muacres')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('pe-tip')+'</p>';
+
+  // Soporte enteral
+  html += '<h3>🧪 Soporte nutricional — Enteral</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Proteína total</td><td class="pr-v">'+gt('en-prottot')+'</td>'+
+    '<td class="pr-k">Volumen total</td><td class="pr-v">'+gt('en-vol')+'</td></tr>'+
+    '<tr><td class="pr-k">Velocidad/toma</td><td class="pr-v">'+gt('en-vel')+'</td>'+
+    '<td class="pr-k">Modo</td><td class="pr-v">'+(enModo==='continua'?'Continua':enModo==='ciclica'?'Cíclica':'Bolo')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('en-tip')+'</p>';
+
+  // Soporte parenteral
+  html += '<h3>💉 Soporte nutricional — Parenteral</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Proteína</td><td class="pr-v">'+gt('pa-prot')+'</td>'+
+    '<td class="pr-k">Lípidos</td><td class="pr-v">'+gt('pa-lip')+'</td></tr>'+
+    '<tr><td class="pr-k">Dextrosa</td><td class="pr-v">'+gt('pa-dex')+'</td>'+
+    '<td class="pr-k">GIR</td><td class="pr-v">'+gt('pa-gir')+'</td></tr>'+
+    '<tr><td class="pr-k">Relación kcal:N₂</td><td class="pr-v">'+gt('pa-relacion')+'</td>'+
+    '<td class="pr-k">Vía de acceso</td><td class="pr-v">'+gt('pa-via')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('pa-tip')+'</p>';
+
+  // Obesidad
+  html += '<h3>⚖️ Obesidad</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">IMC</td><td class="pr-v">'+gt('ob-imc')+'</td>'+
+    '<td class="pr-k">GET</td><td class="pr-v">'+gt('ob-get')+'</td></tr>'+
+    '<tr><td class="pr-k">Kcal objetivo</td><td class="pr-v">'+gt('ob-kcalobj')+'</td>'+
+    '<td class="pr-k">Proteína objetivo</td><td class="pr-v">'+gt('ob-prot')+'</td></tr>'+
+    '<tr><td class="pr-k">Fibra</td><td class="pr-v">'+gt('ob-fibra')+'</td>'+
+    '<td class="pr-k">Agua</td><td class="pr-v">'+gt('ob-agua')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('ob-tip')+'</p>';
+
+  // Diabetes / DM2
+  html += '<h3>🩹 Diabetes / DM2</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Kcal totales</td><td class="pr-v">'+gt('db-kcal')+'</td>'+
+    '<td class="pr-k">CHO totales</td><td class="pr-v">'+gt('db-hctot')+'</td></tr>'+
+    '<tr><td class="pr-k">Glucosa ayuno</td><td class="pr-v">'+gt('db-r-ayuno')+'</td>'+
+    '<td class="pr-k">Glucosa posprandial</td><td class="pr-v">'+gt('db-r-pos')+'</td></tr>'+
+    '<tr><td class="pr-k">HbA1c</td><td class="pr-v">'+gt('db-r-hba1c')+'</td>'+
+    '<td class="pr-k">—</td><td class="pr-v">—</td></tr>'+
+    '</table><p class="pr-notas">'+gt('db-tip')+'</p>';
+
+  // Dislipidemias
+  html += '<h3>🩸 Dislipidemias</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Colesterol total</td><td class="pr-v">'+gt('di-r-ct')+'</td>'+
+    '<td class="pr-k">LDL</td><td class="pr-v">'+gt('di-r-ldl')+'</td></tr>'+
+    '<tr><td class="pr-k">HDL</td><td class="pr-v">'+gt('di-r-hdl')+'</td>'+
+    '<td class="pr-k">Triglicéridos</td><td class="pr-v">'+gt('di-r-tg')+'</td></tr>'+
+    '<tr><td class="pr-k">Meta LDL</td><td class="pr-v">'+gt('di-meta-ldl')+'</td>'+
+    '<td class="pr-k">Fibra soluble</td><td class="pr-v">'+gt('di-fibsol')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('di-tip')+'</p>';
+
+  // Enfermedad renal crónica
+  html += '<h3>🫘 Enfermedad renal crónica</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Etapa</td><td class="pr-v">'+gt('er-etapa')+'</td>'+
+    '<td class="pr-k">Modalidad</td><td class="pr-v">'+(erModo==='hd'?'Hemodiálisis':erModo==='dp'?'Diálisis peritoneal':'Sin diálisis')+'</td></tr>'+
+    '<tr><td class="pr-k">Energía</td><td class="pr-v">'+gt('er-kcal')+'</td>'+
+    '<td class="pr-k">Proteína</td><td class="pr-v">'+gt('er-prot')+'</td></tr>'+
+    '<tr><td class="pr-k">Sodio</td><td class="pr-v">'+gt('er-sodio')+'</td>'+
+    '<td class="pr-k">Potasio</td><td class="pr-v">'+gt('er-potasio')+'</td></tr>'+
+    '<tr><td class="pr-k">Fósforo</td><td class="pr-v">'+gt('er-fosforo')+'</td>'+
+    '<td class="pr-k">Líquidos</td><td class="pr-v">'+gt('er-liquidos')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('er-tip')+'</p>';
+
+  // Embarazo con dislipidemia
+  html += '<h3>🤰🩸 Embarazo con dislipidemia</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Trimestre</td><td class="pr-v">'+edTrim+'º</td>'+
+    '<td class="pr-k">Rango esperado</td><td class="pr-v">'+gt('ed-rango')+'</td></tr>'+
+    '<tr><td class="pr-k">Colesterol total</td><td class="pr-v">'+gt('ed-r-ct')+'</td>'+
+    '<td class="pr-k">Triglicéridos</td><td class="pr-v">'+gt('ed-r-tg')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('ed-tip')+'</p>'+
     '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
 
   document.getElementById('print-area').innerHTML = html;
@@ -1982,6 +2997,48 @@ var HK = 'nutriapp_historias_v1';
 function normCama(c){ return (c||'').trim().toLowerCase(); }
 function getHistorias(){ try{ return JSON.parse(localStorage.getItem(HK))||{}; }catch(e){ return {}; } }
 function saveHistorias(obj){ localStorage.setItem(HK, JSON.stringify(obj)); }
+
+// ===== RESPALDO (EXPORTAR / IMPORTAR) =====
+function exportarRespaldo(){
+  var data = {
+    version: 1,
+    fecha: new Date().toISOString(),
+    pacientes: getPacs(),
+    historias: getHistorias()
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var fecha = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = 'respaldo-nutricalc-'+fecha+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Respaldo exportado');
+}
+function importarRespaldo(input){
+  var file = input.files && input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var data = JSON.parse(e.target.result);
+      var nPac = (data.pacientes||[]).length;
+      var nHist = Object.keys(data.historias||{}).length;
+      if(!confirm('Se importarán '+nPac+' paciente(s) y '+nHist+' historia(s), reemplazando lo que tengas guardado actualmente. ¿Continuar?')) { input.value=''; return; }
+      savePacs(data.pacientes||[]);
+      saveHistorias(data.historias||{});
+      renderPacs();
+      showToast('⬆️ Respaldo importado correctamente');
+    }catch(err){
+      showToast('⚠️ Archivo inválido o dañado', true);
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
 
 function guardarHistoria(){
   var cama = gv('hist-cama').trim();
@@ -2072,6 +3129,13 @@ function formatHistoriaTexto(h){
 
 // ===== AUTOCOMPLETADO DE SOAP AL INGRESAR CAMA =====
 var _lastAutoCama = null;
+function patCamaMatch(){
+  var cama = gv('pat-cama').trim();
+  if(!cama) return;
+  var hist = getHistorias()[normCama(cama)];
+  if(hist && !gv('pat-nombre')) sv2('pat-nombre', hist.nombre||'');
+}
+
 function soapCamaMatch(){
   var cama = gv('soap-cama').trim();
   if(!cama || cama===_lastAutoCama) return;
