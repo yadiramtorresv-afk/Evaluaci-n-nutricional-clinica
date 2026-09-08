@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Distribuidor de Macros — Nutrición Clínica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f7f5ef;
+    --ink: #1c2b21;
+    --forest: #234533;
+    --forest-deep: #16301f;
+    --gold: #b6852c;
+    --gold-soft: #e9d9b6;
+    --coral: #b2503a;
+    --coral-soft: #f1ddd6;
+    --sage: #7f9a86;
+    --line: #d9d3c4;
+    --card: #ffffff;
+    --radius: 3px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 500; margin: 0; }
+
+  .app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 28px 80px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 32px;
+  }
+
+  header.top h1 {
+    font-size: 28px;
+    color: var(--forest-deep);
+    letter-spacing: -0.01em;
+  }
+
+  header.top p {
+    margin: 6px 0 0;
+    color: #6b6656;
+    font-size: 14px;
+    max-width: 46ch;
+  }
+
+  .status-pill {
+    font-size: 12px;
+    padding: 5px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: #6b6656;
+    white-space: nowrap;
+  }
+  .status-pill.ready { border-color: var(--sage); color: var(--forest); background: #eef3ee; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 880px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .card + .card { margin-top: 20px; }
+
+  .card h2 {
+    font-size: 18px;
+    color: var(--forest-deep);
+    margin-bottom: 4px;
+  }
+  .card .sub {
+    font-size: 13px;
+    color: #857f6c;
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: #6b6656;
+    margin-bottom: 4px;
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #fffdf9;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  input[type="number"]:focus, select:focus, input[type="text"]:focus {
+    outline: 2px solid var(--forest);
+    outline-offset: 1px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .macro-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 52px 34px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .macro-row .name { font-size: 13px; font-weight: 600; }
+  .macro-row .pct-input { width: 100%; text-align: right; padding: 6px 8px; }
+  .macro-row .gr { font-size: 12px; color: #6b6656; text-align: right; }
+  .macro-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--forest); }
+
+  .macro-bar-track {
+    height: 8px;
+    border-radius: 4px;
+    background: #eee9db;
+    overflow: hidden;
+    display: flex;
+    margin: 16px 0 4px;
+  }
+  .macro-bar-seg { height: 100%; }
+  .macro-legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    color: #6b6656;
+    margin-bottom: 8px;
+  }
+  .macro-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  .adequacy-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .adequacy-table th, .adequacy-table td { text-align: right; padding: 6px 8px; border-bottom: 1px solid #efece1; }
+  .adequacy-table th:first-child, .adequacy-table td:first-child { text-align: left; }
+  .adequacy-table th { color: #857f6c; font-weight: 500; font-size: 11px; text-transform: none; }
+  .adequacy-table .ok { color: var(--forest); font-weight: 600; }
+  .adequacy-table .warn { color: var(--gold); font-weight: 600; }
+  .adequacy-table .bad { color: var(--coral); font-weight: 600; }
+
+  .search-wrap { position: relative; margin-bottom: 6px; }
+  .search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 10;
+    box-shadow: 0 8px 20px rgba(20, 30, 20, 0.08);
+  }
+  .search-result-item {
+    padding: 9px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .search-result-item:hover { background: #f2f6f0; }
+  .search-result-item .grp { font-size: 10px; color: #9a9482; }
+  .search-result-item .kc { font-size: 11px; color: #6b6656; white-space: nowrap; }
+
+  table.menu-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 14px; }
+  table.menu-table th {
+    text-align: left; font-size: 11px; color: #857f6c; font-weight: 500;
+    padding: 0 8px 8px; border-bottom: 1px solid var(--line);
+  }
+  table.menu-table td { padding: 8px; border-bottom: 1px solid #f1eee3; vertical-align: middle; }
+  table.menu-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.menu-table input.porciones {
+    width: 56px; padding: 5px 6px; text-align: right;
+  }
+  .del-btn {
+    background: none; border: none; cursor: pointer; color: #b8b2a0;
+    font-size: 15px; padding: 2px 6px; line-height: 1;
+  }
+  .del-btn:hover { color: var(--coral); }
+
+  .empty-menu { color: #9a9482; font-size: 13px; padding: 18px 0; text-align: center; }
+
+  tfoot td { font-weight: 600; border-top: 1px solid var(--line); border-bottom: none; padding-top: 10px; }
+
+  .group-summary { margin-top: 22px; }
+  .group-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 60px;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    margin-bottom: 7px;
+  }
+  .group-row .g-track { height: 6px; background: #eee9db; border-radius: 3px; overflow: hidden; }
+  .group-row .g-fill { height: 100%; background: var(--sage); }
+  .group-row .g-val { text-align: right; color: #6b6656; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div>
+      <h1>Distribuidor de Macros</h1>
+      <p>Motor de cálculo + base de alimentos SMAE 4ª ed. conectados en un solo flujo: energía → macronutrientes → menú real.</p>
+    </div>
+    <div class="status-pill" id="db-status">Cargando base de alimentos…</div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ PANEL IZQUIERDO: META Y MACROS ============ -->
+    <div>
+      <div class="card">
+        <h2>Meta calórica</h2>
+        <div class="sub">Calcula el gasto energético o escribe la meta directamente.</div>
+
+        <div class="field-row">
+          <div>
+            <label for="peso">Peso (kg)</label>
+            <input type="number" id="peso" value="61" min="1" />
+          </div>
+          <div>
+            <label for="talla">Talla (cm)</label>
+            <input type="number" id="talla" value="161" min="1" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label for="edad">Edad</label>
+            <input type="number" id="edad" value="43" min="1" />
+          </div>
+          <div>
+            <label for="sexo">Sexo</label>
+            <select id="sexo">
+              <option value="H">Hombre</option>
+              <option value="M">Mujer</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label for="actividad">Actividad física</label>
+            <select id="actividad">
+              <option value="Muy ligera">Muy ligera (1.2)</option>
+              <option value="Ligera">Ligera (1.375)</option>
+              <option value="Moderada" selected>Moderada (1.55)</option>
+              <option value="Intensa">Intensa (1.725)</option>
+              <option value="Muy intensa">Muy intensa (1.9)</option>
+            </select>
+          </div>
+          <div>
+            <label for="tipoDieta">Tipo de dieta</label>
+            <select id="tipoDieta">
+              <option value="control_peso">Control de peso</option>
+              <option value="mantenimiento" selected>Mantenimiento</option>
+              <option value="ganancia_muscular">Ganancia muscular</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="kcalMeta">Kcal objetivo</label>
+        <input type="number" id="kcalMeta" value="1600" />
+        <div class="sub" id="get-hint" style="margin-top:6px; margin-bottom:0;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Macronutrientes</h2>
+        <div class="sub">Marca <em>fijar</em> en un macro para conservarlo al ajustar los otros dos.</div>
+
+        <div class="macro-row">
+          <div class="name">Proteína</div>
+          <input class="pct-input" type="number" id="pctPro" value="32" min="0" max="100" />
+          <div class="gr" id="grPro">—</div>
+          <input type="checkbox" id="fijarPro" title="Fijar proteína" />
+        </div>
+        <div class="macro-row">
+          <div class="name">Hidratos</div>
+          <input class="pct-input" type="number" id="pctHc" value="44" min="0" max="100" />
+          <div class="gr" id="grHc">—</div>
+          <input type="checkbox" id="fijarHc" title="Fijar hidratos" />
+        </div>
+        <div class="macro-row">
+          <div class="name">Lípidos</div>
+          <input class="pct-input" type="number" id="pctLip" value="24" min="0" max="100" />
+          <div class="gr" id="grLip">—</div>
+          <input type="checkbox" id="fijarLip" title="Fijar lípidos" />
+        </div>
+
+        <div class="macro-bar-track">
+          <div class="macro-bar-seg" id="barPro" style="background:var(--forest)"></div>
+          <div class="macro-bar-seg" id="barHc" style="background:var(--gold)"></div>
+          <div class="macro-bar-seg" id="barLip" style="background:var(--coral)"></div>
+        </div>
+        <div class="macro-legend">
+          <span><span class="swatch" style="background:var(--forest)"></span>Proteína</span>
+          <span><span class="swatch" style="background:var(--gold)"></span>Hidratos</span>
+          <span><span class="swatch" style="background:var(--coral)"></span>Lípidos</span>
+        </div>
+
+        <table class="adequacy-table">
+          <thead>
+            <tr><th></th><th>Kcal</th><th>Pro</th><th>HC</th><th>Lip</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Menú actual</td>
+              <td id="sumKcal">0</td><td id="sumPro">0</td><td id="sumHc">0</td><td id="sumLip">0</td>
+            </tr>
+            <tr>
+              <td>Meta</td>
+              <td id="metaKcal">—</td><td id="metaPro">—</td><td id="metaHc">—</td><td id="metaLip">—</td>
+            </tr>
+            <tr>
+              <td>% adecuación</td>
+              <td id="adqKcal">—</td><td id="adqPro">—</td><td id="adqHc">—</td><td id="adqLip">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ PANEL DERECHO: MENÚ CON ALIMENTOS REALES ============ -->
+    <div class="card">
+      <h2>Menú del día</h2>
+      <div class="sub">Busca en la base SMAE (1,941 alimentos) y agrega porciones al menú.</div>
+
+      <div class="search-wrap">
+        <label for="search">Buscar alimento</label>
+        <input type="text" id="search" placeholder="ej. pechuga de pollo, manzana, frijoles…" autocomplete="off" />
+        <div class="search-results" id="searchResults" hidden></div>
+      </div>
+
+      <table class="menu-table">
+        <thead>
+          <tr>
+            <th>Alimento</th><th>Grupo</th>
+            <th style="text-align:right">Porciones</th>
+            <th style="text-align:right">Kcal</th>
+            <th style="text-align:right">Pro</th>
+            <th style="text-align:right">HC</th>
+            <th style="text-align:right">Lip</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="menuBody">
+          <tr><td colspan="8" class="empty-menu">Aún no hay alimentos en el menú — búscalos arriba.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="group-summary">
+        <h3 style="font-size:14px; color:var(--forest-deep); margin-bottom:10px;">Porciones por grupo en el menú</h3>
+        <div id="groupSummary"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { Energia, PlanAlimentacion } from './calc-engine.js';
+import { cargarBaseDeAlimentos, buscarAlimento, aporteDeAlimento, NOMBRES_GRUPOS } from './food-database.js';
+
+const $ = (id) => document.getElementById(id);
+const round1 = (v) => Math.round(v * 10) / 10;
+
+let db = null;
+let menu = []; // [{ alimento, porciones }]
+let lastFixed = null; // 'pro' | 'hc' | 'lip' | null — el último macro que el usuario fijó
+
+const PRESETS_DIETA = {
+  control_peso:      { pro: 32, hc: 44, lip: 24 },
+  mantenimiento:      { pro: 20, hc: 50, lip: 30 },
+  ganancia_muscular:  { pro: 30, hc: 45, lip: 25 },
+};
+
+// ---------- carga de la base de alimentos ----------
+cargarBaseDeAlimentos('./food-database.json')
+  .then((data) => {
+    db = data;
+    $('db-status').textContent = 'Base de alimentos lista';
+    $('db-status').classList.add('ready');
+  })
+  .catch((err) => {
+    $('db-status').textContent = 'No se pudo cargar food-database.json';
+    console.error(err);
+  });
+
+// ---------- meta calórica ----------
+function actualizarGET() {
+  const peso = parseFloat($('peso').value) || 0;
+  const talla_cm = parseFloat($('talla').value) || 0;
+  const edad = parseFloat($('edad').value) || 0;
+  const sexo = $('sexo').value;
+  const factorNombre = $('actividad').value;
+
+  if (!peso || !talla_cm || !edad) {
+    $('get-hint').textContent = '';
+    return;
+  }
+  const geb = Energia.mifflin({ peso_kg: peso, talla_cm, edad, sexo });
+  const { get } = Energia.gastoEnergeticoTotal(geb, Energia.FACTORES_ACTIVIDAD[factorNombre]);
+  $('get-hint').textContent = `GEB Mifflin: ${geb} kcal · GET estimado: ${get} kcal`;
+}
+
+['peso', 'talla', 'edad', 'sexo', 'actividad'].forEach((id) =>
+  $(id).addEventListener('input', actualizarGET)
+);
+$('tipoDieta').addEventListener('change', () => {
+  const preset = PRESETS_DIETA[$('tipoDieta').value];
+  $('pctPro').value = preset.pro;
+  $('pctHc').value = preset.hc;
+  $('pctLip').value = preset.lip;
+  recalcularMacros();
+});
+
+// ---------- distribución de macros con "fijar" ----------
+function leerPct() {
+  return {
+    pro: parseFloat($('pctPro').value) || 0,
+    hc: parseFloat($('pctHc').value) || 0,
+    lip: parseFloat($('pctLip').value) || 0,
+  };
+}
+
+function rebalancear(cambiado) {
+  const fijado = ['pro', 'hc', 'lip'].find((k) => $(`fijar${cap(k)}`).checked && k !== cambiado);
+  const pct = leerPct();
+  const claves = ['pro', 'hc', 'lip'];
+  const libres = claves.filter((k) => k !== cambiado && k !== fijado);
+
+  if (libres.length === 1) {
+    // Un solo macro libre: absorbe directo el resto para que la suma dé 100.
+    const restante = 100 - pct[cambiado] - (fijado ? pct[fijado] : 0);
+    pct[libres[0]] = Math.max(0, round1(restante));
+  } else if (libres.length === 2) {
+    const restante = 100 - pct[cambiado] - (fijado ? pct[fijado] : 0);
+    const sumaLibresActual = libres.reduce((s, k) => s + pct[k], 0) || 1;
+    libres.forEach((k) => {
+      const proporcion = pct[k] / sumaLibresActual;
+      pct[k] = Math.max(0, round1(restante * proporcion));
+    });
+  }
+  $('pctPro').value = pct.pro;
+  $('pctHc').value = pct.hc;
+  $('pctLip').value = pct.lip;
+}
+
+function cap(k) { return k.charAt(0).toUpperCase() + k.slice(1); }
+
+['pro', 'hc', 'lip'].forEach((k) => {
+  $(`pct${cap(k)}`).addEventListener('input', () => {
+    rebalancear(k);
+    recalcularMacros();
+  });
+  $(`fijar${cap(k)}`).addEventListener('change', recalcularMacros);
+});
+$('kcalMeta').addEventListener('input', recalcularMacros);
+
+function recalcularMacros() {
+  const kcalMeta = parseFloat($('kcalMeta').value) || 0;
+  const pct = leerPct();
+  const macros = Energia.macronutrientes({
+    kcal_totales: kcalMeta,
+    pct_proteina: pct.pro,
+    pct_hc: pct.hc,
+    pct_lipidos: pct.lip,
+  });
+
+  $('grPro').textContent = `${macros.proteina.gr} g`;
+  $('grHc').textContent = `${macros.hc.gr} g`;
+  $('grLip').textContent = `${macros.lipidos.gr} g`;
+
+  const total = pct.pro + pct.hc + pct.lip || 1;
+  $('barPro').style.width = `${(pct.pro / total) * 100}%`;
+  $('barHc').style.width = `${(pct.hc / total) * 100}%`;
+  $('barLip').style.width = `${(pct.lip / total) * 100}%`;
+
+  $('metaKcal').textContent = kcalMeta || '—';
+  $('metaPro').textContent = macros.proteina.gr;
+  $('metaHc').textContent = macros.hc.gr;
+  $('metaLip').textContent = macros.lipidos.gr;
+
+  actualizarAdecuacion();
+}
+
+// ---------- búsqueda de alimentos ----------
+let searchTimeout = null;
+$('search').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  const q = $('search').value.trim();
+  if (!db || q.length < 2) {
+    $('searchResults').hidden = true;
+    return;
+  }
+  searchTimeout = setTimeout(() => {
+    const resultados = buscarAlimento(db, q).slice(0, 30);
+    renderSearchResults(resultados);
+  }, 120);
+});
+
+function renderSearchResults(resultados) {
+  const box = $('searchResults');
+  if (!resultados.length) {
+    box.innerHTML = '<div class="search-result-item">Sin resultados</div>';
+    box.hidden = false;
+    return;
+  }
+  box.innerHTML = resultados
+    .map(
+      (a, i) => `<div class="search-result-item" data-idx="${i}">
+        <span>${a.alimento}<br><span class="grp">${NOMBRES_GRUPOS[a.grupo] || a.grupo} · ${a.cantidad_sugerida} ${a.unidad}</span></span>
+        <span class="kc">${a.kcal} kcal</span>
+      </div>`
+    )
+    .join('');
+  box.hidden = false;
+  box.querySelectorAll('.search-result-item[data-idx]').forEach((el) => {
+    el.addEventListener('click', () => {
+      agregarAlimento(resultados[+el.dataset.idx]);
+      $('search').value = '';
+      box.hidden = true;
+    });
+  });
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) $('searchResults').hidden = true;
+});
+
+// ---------- menú ----------
+function agregarAlimento(alimento) {
+  menu.push({ alimento, porciones: 1 });
+  renderMenu();
+}
+
+function renderMenu() {
+  const body = $('menuBody');
+  if (!menu.length) {
+    body.innerHTML = '<tr><td colspan="8" class="empty-menu">Aún no hay alimentos en el menú — búscalos arriba.</td></tr>';
+  } else {
+    body.innerHTML = menu
+      .map((row, i) => {
+        const aporte = aporteDeAlimento(row.alimento, row.porciones);
+        return `<tr>
+          <td>${row.alimento.alimento}</td>
+          <td style="color:#857f6c; font-size:12px;">${NOMBRES_GRUPOS[row.alimento.grupo] || row.alimento.grupo}</td>
+          <td class="num"><input class="porciones" type="number" min="0" step="0.5" value="${row.porciones}" data-idx="${i}" /></td>
+          <td class="num">${aporte.kcal}</td>
+          <td class="num">${aporte.proteina_g}</td>
+          <td class="num">${aporte.hc_g}</td>
+          <td class="num">${aporte.lipidos_g}</td>
+          <td><button class="del-btn" data-del="${i}" title="Quitar">✕</button></td>
+        </tr>`;
+      })
+      .join('');
+    body.querySelectorAll('input.porciones').forEach((inp) => {
+      inp.addEventListener('input', () => {
+        menu[+inp.dataset.idx].porciones = parseFloat(inp.value) || 0;
+        renderMenu();
+      });
+    });
+    body.querySelectorAll('[data-del]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        menu.splice(+btn.dataset.del, 1);
+        renderMenu();
+      });
+    });
+  }
+  actualizarAdecuacion();
+  renderGroupSummary();
+}
+
+function totalesMenu() {
+  return menu.reduce(
+    (acc, row) => {
+      const a = aporteDeAlimento(row.alimento, row.porciones);
+      acc.kcal += a.kcal;
+      acc.proteina_g += a.proteina_g;
+      acc.hc_g += a.hc_g;
+      acc.lipidos_g += a.lipidos_g;
+      return acc;
+    },
+    { kcal: 0, proteina_g: 0, hc_g: 0, lipidos_g: 0 }
+  );
+}
+
+function claseAdecuacion(pct) {
+  if (pct === null) return '';
+  if (pct >= 90 && pct <= 110) return 'ok';
+  if (pct >= 75 && pct <= 125) return 'warn';
+  return 'bad';
+}
+
+function actualizarAdecuacion() {
+  const t = totalesMenu();
+  $('sumKcal').textContent = round1(t.kcal);
+  $('sumPro').textContent = round1(t.proteina_g);
+  $('sumHc').textContent = round1(t.hc_g);
+  $('sumLip').textContent = round1(t.lipidos_g);
+
+  const metaKcal = parseFloat($('metaKcal').textContent) || 0;
+  const metaPro = parseFloat($('metaPro').textContent) || 0;
+  const metaHc = parseFloat($('metaHc').textContent) || 0;
+  const metaLip = parseFloat($('metaLip').textContent) || 0;
+
+  const pct = (real, meta) => (meta ? round1((real / meta) * 100) : null);
+  const pKcal = pct(t.kcal, metaKcal);
+  const pPro = pct(t.proteina_g, metaPro);
+  const pHc = pct(t.hc_g, metaHc);
+  const pLip = pct(t.lipidos_g, metaLip);
+
+  const set = (id, val) => {
+    const el = $(id);
+    el.textContent = val === null ? '—' : `${val}%`;
+    el.className = claseAdecuacion(val);
+  };
+  set('adqKcal', pKcal);
+  set('adqPro', pPro);
+  set('adqHc', pHc);
+  set('adqLip', pLip);
+}
+
+function renderGroupSummary() {
+  const porGrupo = {};
+  menu.forEach((row) => {
+    const g = row.alimento.grupo;
+    porGrupo[g] = (porGrupo[g] || 0) + row.porciones;
+  });
+  const entries = Object.entries(porGrupo).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...entries.map(([, v]) => v));
+  $('groupSummary').innerHTML = entries.length
+    ? entries
+        .map(
+          ([g, v]) => `<div class="group-row">
+            <div>${NOMBRES_GRUPOS[g] || g}</div>
+            <div class="g-track"><div class="g-fill" style="width:${(v / max) * 100}%"></div></div>
+            <div class="g-val">${round1(v)}</div>
+          </div>`
+        )
+        .join('')
+    : '<div class="empty-menu">—</div>';
+}
+
+// ---------- inicial ----------
+actualizarGET();
+recalcularMacros();
+renderMenu();
+</script>
+</body>
+</html>
