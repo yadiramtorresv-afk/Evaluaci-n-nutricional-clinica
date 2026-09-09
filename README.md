@@ -71,3 +71,41 @@ PlanAlimentacion.calcularAdecuacionMenu(
    kit; el Manual Maestro usa la variante "clásica" (10/6.25/5) —
    dejé ambas como `mifflin()` y `mifflinClasico()` para que decidan cuál
    estandarizar en el software.
+
+## percentiles.js — percentiles y Z-score OMS (0-19 años)
+
+Datos oficiales de la OMS, de dominio público:
+- **0-5 años** (estándar OMS 2006): peso/edad, talla/edad (resolución diaria, día 0-1856), peso/talla (751 puntos, 45-120 cm)
+- **5-19 años** (referencia OMS 2007): IMC/edad, talla/edad (resolución mensual, mes 61-228)
+
+Método LMS oficial (Cole & Green, 1992) — el mismo que usa la calculadora de la OMS.
+
+### Validación
+
+| Caso | Resultado |
+|---|---|
+| Niña 7a2m, IMC 16.67 (caso del manual) | Z=0.67, percentil 75, Normal |
+| Lactante 6 meses, 7.9 kg (cerca de la mediana OMS) | Z=-0.03 ✅ |
+| Niño 75 cm, 9.5 kg (peso/talla) | Z≈0 ✅ |
+| Adolescente 15 años, IMC 30 | Z=2.5, Obesidad ✅ |
+| Verificación matemática pura: Z=0→50%, Z=2→97.7%, Z=-2→2.3% | Exacto ✅ |
+
+### Uso
+
+```js
+import { cargarTablasOMS, Percentiles } from './percentiles.js';
+
+const tablas = await cargarTablasOMS('./who-growth-lms.json');
+
+Percentiles.zScoreIMCedad(tablas, { imc: 16.67, edad_meses: 86, sexo: 'M' });
+// { z: 0.67, percentil: 75, interpretacion: 'Normal' }
+
+Percentiles.zScorePesoEdad(tablas, { peso_kg: 7.9, edad_dias: 182, sexo: 'H' });
+Percentiles.zScoreTallaEdad(tablas, { talla_cm: 175, edad_meses: 180, sexo: 'H' });
+Percentiles.zScorePesoTalla(tablas, { peso_kg: 9.5, talla_cm: 75, sexo: 'H' });
+```
+
+### Qué falta
+
+- **Peso/edad 5-19 años**: la OMS deja de publicar este indicador después de los 10 años a propósito (no distingue talla de masa corporal en el estirón puberal) — usa IMC/edad en su lugar, que sí cubre todo el rango.
+- **Circunferencia cefálica** y **perímetro braquial** (0-5 años): no incluidos, agregable después si se necesita.
