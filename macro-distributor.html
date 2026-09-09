@@ -231,6 +231,60 @@
   .group-row .g-track { height: 6px; background: #eee9db; border-radius: 3px; overflow: hidden; }
   .group-row .g-fill { height: 100%; background: var(--sage); }
   .group-row .g-val { text-align: right; color: #6b6656; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tab-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    background: none;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    color: #857f6c;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--forest-deep); }
+  .tab-btn.active { color: var(--forest-deep); border-bottom-color: var(--forest); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Pediatric result cards */
+  .ped-result-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .ped-result-card .ped-title {
+    font-size: 12px;
+    color: #857f6c;
+    margin-bottom: 6px;
+  }
+  .ped-result-card .ped-main {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .ped-result-card .ped-z { font-size: 22px; font-family: 'Fraunces', serif; color: var(--forest-deep); }
+  .ped-result-card .ped-pct { font-size: 13px; color: #6b6656; }
+  .ped-result-card .ped-tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .ped-tag.ok { background: #eaf1ea; color: var(--forest); }
+  .ped-tag.warn { background: #f6efe0; color: var(--gold); }
+  .ped-tag.bad { background: var(--coral-soft); color: var(--coral); }
 </style>
 </head>
 <body>
@@ -244,6 +298,12 @@
     <div class="status-pill" id="db-status">Cargando base de alimentos…</div>
   </header>
 
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="macros">Macros y menú</button>
+    <button class="tab-btn" data-tab="pediatria">Percentiles (pediatría)</button>
+  </nav>
+
+  <section id="tab-macros" class="tab-panel active">
   <div class="grid">
 
     <!-- ============ PANEL IZQUIERDO: META Y MACROS ============ -->
@@ -392,11 +452,86 @@
     </div>
 
   </div>
+  </section>
+
+  <section id="tab-pediatria" class="tab-panel">
+    <div class="grid">
+
+      <!-- ============ COLUMNA IZQUIERDA: DATOS + RESULTADOS ============ -->
+      <div>
+        <div class="card">
+          <h2>Datos antropométricos</h2>
+          <div class="sub">Calcula Z-score y percentil OMS por edad. Los indicadores disponibles cambian según la edad.</div>
+
+          <div class="field-row">
+            <div>
+              <label for="pedSexo">Sexo</label>
+              <select id="pedSexo">
+                <option value="H">Hombre</option>
+                <option value="M">Mujer</option>
+              </select>
+            </div>
+            <div>
+              <label for="pedFechaNac">Fecha de nacimiento</label>
+              <input type="date" id="pedFechaNac" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label for="pedFechaMed">Fecha de medición</label>
+              <input type="date" id="pedFechaMed" />
+            </div>
+            <div>
+              <label id="pedEdadLabel" style="margin-top:8px;">—</label>
+            </div>
+          </div>
+          <div class="field-row">
+            <div>
+              <label for="pedPeso">Peso (kg)</label>
+              <input type="number" id="pedPeso" step="0.1" placeholder="ej. 24" />
+            </div>
+            <div>
+              <label for="pedTalla">Talla / longitud (cm)</label>
+              <input type="number" id="pedTalla" step="0.1" placeholder="ej. 120" />
+            </div>
+          </div>
+
+          <div class="sub" id="ped-status" style="margin-top:6px; margin-bottom:0;">Cargando tablas OMS…</div>
+        </div>
+
+        <div class="card">
+          <h2>Resultados</h2>
+          <div class="sub">Z-score, percentil e interpretación por indicador aplicable a la edad.</div>
+          <div id="pedResultados">
+            <div class="empty-menu">Completa los datos del paciente para ver resultados.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ COLUMNA DERECHA: GRÁFICA DE CRECIMIENTO ============ -->
+      <div class="card">
+        <h2>Curva de crecimiento</h2>
+        <div class="sub" id="pedChartSub">Elige un indicador para ver la curva con las bandas de referencia OMS (±1, ±2, ±3 DE).</div>
+
+        <div class="field-row" style="grid-template-columns: 1fr;">
+          <div>
+            <label for="pedIndicador">Indicador a graficar</label>
+            <select id="pedIndicador"></select>
+          </div>
+        </div>
+
+        <div id="pedChartWrap" style="margin-top:10px;"></div>
+      </div>
+
+    </div>
+  </section>
+
 </div>
 
 <script type="module">
 import { Energia, PlanAlimentacion } from './calc-engine.js';
 import { cargarBaseDeAlimentos, buscarAlimento, aporteDeAlimento, NOMBRES_GRUPOS } from './food-database.js';
+import { cargarTablasOMS, Percentiles, valorParaZ } from './percentiles.js';
 
 const $ = (id) => document.getElementById(id);
 const round1 = (v) => Math.round(v * 10) / 10;
@@ -683,6 +818,237 @@ function renderGroupSummary() {
 actualizarGET();
 recalcularMacros();
 renderMenu();
+
+// ============================================================================
+// PESTAÑAS
+// ============================================================================
+document.querySelectorAll('.tab-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+    btn.classList.add('active');
+    $(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ============================================================================
+// PESTAÑA PEDIATRÍA — percentiles OMS
+// ============================================================================
+let tablasOMS = null;
+const INDICADORES = [
+  { id: 'imc_edad', label: 'IMC para la edad (5-19 años)' },
+  { id: 'talla_edad', label: 'Talla para la edad' },
+  { id: 'peso_edad', label: 'Peso para la edad (0-5 años)' },
+  { id: 'peso_talla', label: 'Peso para la talla (0-5 años)' },
+];
+INDICADORES.forEach((ind) => {
+  const opt = document.createElement('option');
+  opt.value = ind.id;
+  opt.textContent = ind.label;
+  $('pedIndicador').appendChild(opt);
+});
+
+cargarTablasOMS('./who-growth-lms.json')
+  .then((data) => {
+    tablasOMS = data;
+    $('ped-status').textContent = 'Tablas OMS listas (0-5 años día a día, 5-19 años mes a mes)';
+  })
+  .catch((err) => {
+    $('ped-status').textContent = 'No se pudo cargar who-growth-lms.json';
+    console.error(err);
+  });
+
+// Fecha de medición por defecto: hoy
+$('pedFechaMed').valueAsDate = new Date();
+
+function edadEnDiasYMeses() {
+  const fnac = $('pedFechaNac').value;
+  const fmed = $('pedFechaMed').value;
+  if (!fnac || !fmed) return null;
+  const dNac = new Date(fnac + 'T00:00:00');
+  const dMed = new Date(fmed + 'T00:00:00');
+  const dias = Math.round((dMed - dNac) / 86400000);
+  if (dias < 0) return null;
+  const meses = dias / 30.4375;
+  return { dias, meses };
+}
+
+function formatEdad(dias) {
+  const anios = Math.floor(dias / 365.25);
+  const mesesResto = Math.floor((dias - anios * 365.25) / 30.4375);
+  return `${anios} año${anios !== 1 ? 's' : ''}, ${mesesResto} mes${mesesResto !== 1 ? 'es' : ''} (${dias} días)`;
+}
+
+['pedSexo', 'pedFechaNac', 'pedFechaMed', 'pedPeso', 'pedTalla'].forEach((id) =>
+  $(id).addEventListener('input', recalcularPediatria)
+);
+$('pedIndicador').addEventListener('change', renderGrowthChart);
+
+function recalcularPediatria() {
+  const edad = edadEnDiasYMeses();
+  if (!edad) {
+    $('pedEdadLabel').textContent = '—';
+    return;
+  }
+  $('pedEdadLabel').textContent = formatEdad(edad.dias);
+
+  if (!tablasOMS) return;
+
+  const peso = parseFloat($('pedPeso').value);
+  const talla = parseFloat($('pedTalla').value);
+  const sexo = $('pedSexo').value;
+  const es0a5 = edad.dias <= 1856;
+
+  const resultados = [];
+
+  if (talla) {
+    const r = Percentiles.zScoreTallaEdad(tablasOMS, {
+      talla_cm: talla,
+      edad_dias: edad.dias,
+      edad_meses: edad.meses,
+      sexo,
+    });
+    resultados.push({ nombre: 'Talla para la edad', ...r });
+  }
+
+  if (es0a5) {
+    if (peso) {
+      const r = Percentiles.zScorePesoEdad(tablasOMS, { peso_kg: peso, edad_dias: edad.dias, sexo });
+      resultados.push({ nombre: 'Peso para la edad', ...r });
+    }
+    if (peso && talla) {
+      const r = Percentiles.zScorePesoTalla(tablasOMS, { peso_kg: peso, talla_cm: talla, sexo });
+      resultados.push({ nombre: 'Peso para la talla', ...r });
+    }
+  } else if (peso && talla) {
+    const imc = round1(peso / (talla / 100) ** 2);
+    const r = Percentiles.zScoreIMCedad(tablasOMS, { imc, edad_meses: edad.meses, sexo });
+    resultados.push({ nombre: `IMC para la edad (IMC=${imc})`, ...r });
+  }
+
+  renderPedResultados(resultados, es0a5);
+  renderGrowthChart();
+}
+
+function claseInterpretacion(interpretacion) {
+  const normal = ['Normal'];
+  const alerta = ['Sobrepeso', 'Delgadez', 'Bajo peso', 'Retraso en talla'];
+  if (normal.includes(interpretacion)) return 'ok';
+  if (alerta.some((a) => interpretacion.includes(a))) return 'warn';
+  return 'bad'; // Obesidad, severo, emaciación, etc.
+}
+
+function renderPedResultados(resultados, es0a5) {
+  const box = $('pedResultados');
+  if (!resultados.length) {
+    box.innerHTML = '<div class="empty-menu">Completa los datos del paciente para ver resultados.</div>';
+    return;
+  }
+  box.innerHTML = resultados
+    .map((r) => {
+      const cls = claseInterpretacion(r.interpretacion);
+      return `<div class="ped-result-card">
+        <div class="ped-title">${r.nombre}</div>
+        <div class="ped-main">
+          <span class="ped-z">Z ${r.z >= 0 ? '+' : ''}${r.z}</span>
+          <span class="ped-pct">percentil ${r.percentil}</span>
+          <span class="ped-tag ${cls}">${r.interpretacion}</span>
+        </div>
+      </div>`;
+    })
+    .join('');
+  if (!es0a5) {
+    box.innerHTML +=
+      '<div class="sub" style="margin-top:8px;">Peso/edad no se muestra después de los 5 años: la OMS recomienda IMC/edad en su lugar para no confundir el estirón puberal con sobrepeso.</div>';
+  }
+}
+
+// ---------- gráfica de curva de crecimiento (SVG) ----------
+function tablaParaIndicador(indId, sexo, es0a5) {
+  const grupo = sexo === 'M' ? 'girls' : 'boys';
+  if (indId === 'imc_edad') return { tabla: tablasOMS.bmi_for_age['5_19'][grupo], unidadX: 'months', label: 'IMC' };
+  if (indId === 'peso_edad') return { tabla: tablasOMS.weight_for_age['0_5'][grupo], unidadX: 'days', label: 'Peso (kg)' };
+  if (indId === 'peso_talla') return { tabla: tablasOMS.weight_for_height['0_5'][grupo], unidadX: 'height_cm', label: 'Peso (kg)' };
+  if (indId === 'talla_edad') {
+    return es0a5
+      ? { tabla: tablasOMS.height_for_age['0_5'][grupo], unidadX: 'days', label: 'Talla (cm)' }
+      : { tabla: tablasOMS.height_for_age['5_19'][grupo], unidadX: 'months', label: 'Talla (cm)' };
+  }
+  return null;
+}
+
+function renderGrowthChart() {
+  if (!tablasOMS) return;
+  const edad = edadEnDiasYMeses();
+  const sexo = $('pedSexo').value;
+  const es0a5 = edad ? edad.dias <= 1856 : true;
+  const indId = $('pedIndicador').value || 'imc_edad';
+  const info = tablaParaIndicador(indId, sexo, es0a5);
+  if (!info) {
+    $('pedChartWrap').innerHTML = '<div class="empty-menu">Indicador no disponible.</div>';
+    return;
+  }
+  const { tabla, unidadX, label } = info;
+
+  // Muestreo: tomar ~60 puntos repartidos en la tabla para dibujar curvas suaves.
+  const paso = Math.max(1, Math.floor(tabla.length / 60));
+  const muestras = tabla.filter((_, i) => i % paso === 0);
+  const ejeX = muestras.map((f) => f.x ?? f.month);
+  const zLineas = [-3, -2, 0, 2, 3];
+  const curvas = zLineas.map((z) => muestras.map((f) => valorParaZ(z, f.L, f.M, f.S)));
+
+  const minX = Math.min(...ejeX);
+  const maxX = Math.max(...ejeX);
+  const todosValores = curvas.flat();
+  const minY = Math.min(...todosValores);
+  const maxY = Math.max(...todosValores);
+
+  const W = 640, H = 320, PAD = 40;
+  const escalaX = (x) => PAD + ((x - minX) / (maxX - minX)) * (W - 2 * PAD);
+  const escalaY = (y) => H - PAD - ((y - minY) / (maxY - minY)) * (H - 2 * PAD);
+
+  const colores = ['#c9b89a', '#b6852c', '#234533', '#b6852c', '#c9b89a'];
+  const grosores = [1, 1.5, 2.5, 1.5, 1];
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible;">`;
+  // eje
+  svg += `<line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" stroke="#d9d3c4" />`;
+  svg += `<line x1="${PAD}" y1="${PAD}" x2="${PAD}" y2="${H - PAD}" stroke="#d9d3c4" />`;
+
+  curvas.forEach((serie, i) => {
+    const d = serie.map((y, j) => `${j === 0 ? 'M' : 'L'} ${escalaX(ejeX[j])} ${escalaY(y)}`).join(' ');
+    svg += `<path d="${d}" fill="none" stroke="${colores[i]}" stroke-width="${grosores[i]}" />`;
+  });
+  // etiqueta Z al final de cada curva
+  zLineas.forEach((z, i) => {
+    const ultimoY = curvas[i][curvas[i].length - 1];
+    svg += `<text x="${W - PAD + 4}" y="${escalaY(ultimoY) + 3}" font-size="10" fill="#857f6c">${z > 0 ? '+' : ''}${z}</text>`;
+  });
+
+  // punto del paciente
+  const peso = parseFloat($('pedPeso').value);
+  const talla = parseFloat($('pedTalla').value);
+  let puntoX = null, puntoY = null;
+  if (edad) {
+    if (unidadX === 'days') puntoX = edad.dias;
+    else if (unidadX === 'months') puntoX = edad.meses;
+    else if (unidadX === 'height_cm') puntoX = talla;
+
+    if (indId === 'imc_edad' && peso && talla) puntoY = peso / (talla / 100) ** 2;
+    else if (indId === 'peso_edad') puntoY = peso;
+    else if (indId === 'peso_talla') puntoY = peso;
+    else if (indId === 'talla_edad') puntoY = talla;
+  }
+  if (puntoX != null && puntoY && puntoX >= minX && puntoX <= maxX) {
+    svg += `<circle cx="${escalaX(puntoX)}" cy="${escalaY(puntoY)}" r="5" fill="var(--coral)" stroke="#fff" stroke-width="1.5" />`;
+  }
+
+  svg += `<text x="${PAD}" y="14" font-size="11" fill="#857f6c">${label}</text>`;
+  svg += `</svg>`;
+  $('pedChartWrap').innerHTML = svg;
+}
+
+renderGrowthChart();
 </script>
 </body>
 </html>
