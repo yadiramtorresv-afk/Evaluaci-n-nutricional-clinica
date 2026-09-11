@@ -1,9 +1,16 @@
-const CACHE_NAME = 'nutri-calc-v19';
+const CACHE_NAME = 'nutri-calc-v20';
 const ASSETS = [
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './logo.webp',
+  './calc-engine.js',
+  './food-database.js',
+  './food-database.json',
+  './percentiles.js',
+  './who-growth-lms.json',
+  './macro-distributor.html'
 ];
 
 self.addEventListener('install', function(event) {

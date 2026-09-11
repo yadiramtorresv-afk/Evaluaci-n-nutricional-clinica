@@ -23,6 +23,7 @@
   --green:#3ecf8e; --yellow:#f5c842; --red:#f56565;
   --amber:#f0a93a; --amber-text:#96631a;
   --teal:#2dd4bf; --teal-text:#0f7a6e;
+  --ped:#8ecae6; --ped-text:#1c6e96;
   --text:#2b2c31; --muted:#6b6d76; --radius:10px;
   --font:'Segoe UI',system-ui,sans-serif;
 }
@@ -43,6 +44,7 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .tab.t-pac.active{background:var(--cyclamen);border-color:var(--cyclamen)}
 .tab.t-pat.active{background:var(--amber);border-color:var(--amber);color:#0f1117}
 .tab.t-por.active{background:var(--teal);border-color:var(--teal);color:#0f1117}
+.tab.t-ped.active{background:var(--ped);border-color:var(--ped);color:#0f1117}
 .menu-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
 .menu-table th,.menu-table td{border:1px solid var(--border);padding:6px 7px;text-align:left;vertical-align:top}
 .menu-table th{background:var(--card2);color:var(--teal-text);font-size:.72rem}
@@ -273,6 +275,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 <div class="tabs">
   <div class="tab active" onclick="switchTab('general')">🏥 General</div>
   <div class="tab t-emb" onclick="switchTab('embarazo')">🤰 Embarazo</div>
+  <div class="tab t-ped" onclick="switchTab('pediatria')">👶 Pediatría</div>
   <div class="tab t-lab" onclick="switchTab('labs')">🧪 Labs</div>
   <div class="tab t-plan" onclick="switchTab('plan')">🍽️ Plan</div>
   <div class="tab t-hist" onclick="switchTab('historia')">🗂️ Historia</div>
@@ -519,6 +522,57 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
   <button class="btn-save" onclick="guardar('embarazo')">💾 Guardar paciente</button>
   <button class="btn-reset" onclick="resetE()">↺ Limpiar formulario obstétrico</button>
+</div>
+
+<!-- ======= TAB PEDIATRÍA ======= -->
+<div id="tab-pediatria" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--ped-text)">👶 Nutrición infantil</div>
+    <p class="note">Evaluación antropométrica, requerimientos estimados y percentil/Z-score OMS para pacientes pediátricos.</p>
+    <div class="row" style="margin-top:8px">
+      <div class="field"><label>Cama</label><input type="text" id="ped-cama" placeholder="Ej. 12-A" oninput="pedCamaMatch()"></div>
+      <div class="field"><label>Nombre del paciente</label><input type="text" id="ped-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sub-card">
+      <h4>Datos antropométricos</h4>
+      <div class="row">
+        <div class="field"><label>Edad (meses)</label><input type="number" id="pe-edad" placeholder="0" oninput="calcPediatrico()"></div>
+        <div class="field">
+          <label>Sexo</label>
+          <div class="pb-wrap" id="pe-sexo-wrap">
+            <div class="pb on" onclick="setPeSexo('F',this)">Niña</div>
+            <div class="pb" onclick="setPeSexo('M',this)">Niño</div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Peso (kg)</label><input type="number" id="pe-peso" step="0.1" placeholder="0.0" oninput="calcPediatrico()"></div>
+        <div class="field"><label>Talla (cm)</label><input type="number" id="pe-talla" step="0.1" placeholder="0.0" oninput="calcPediatrico()"></div>
+      </div>
+      <div class="field"><label>Edad convertida</label><div class="res neutral" id="pe-edadconv">—</div></div>
+      <div class="field"><label>IMC</label><div class="res neutral" id="pe-imc">—</div></div>
+      <div class="field"><label>Percentil / Z-score (OMS)</label><div class="res neutral" id="pe-pctl">—</div><p class="note">Método LMS oficial OMS — 0-5 años: peso y talla para la edad (estándar 2006, resolución diaria). 5-19 años: IMC para la edad (referencia 2007, mensual).</p></div>
+
+      <h4 style="margin-top:14px">Requerimientos estimados</h4>
+      <div class="field"><label>Energía (kcal/kg/día de referencia)</label><div class="res neutral" id="pe-kcalkg">—</div></div>
+      <div class="field"><label>Energía total estimada</label><div class="res ok" id="pe-kcaltot">—</div></div>
+      <div class="field"><label>Proteína (g/kg/día de referencia)</label><div class="res neutral" id="pe-protkg">—</div></div>
+      <div class="field"><label>Proteína total estimada</label><div class="res neutral" id="pe-prottot">—</div></div>
+      <div class="field"><label>Líquidos (Holliday-Segar)</label><div class="res neutral" id="pe-liq">—</div></div>
+      <div class="pat-tip" id="pe-tip">Completa edad y peso para ver los requerimientos.</div>
+
+      <h4 style="margin-top:14px">Tamizaje por circunferencia de brazo (MUAC)</h4>
+      <div class="field"><label>Circunferencia media de brazo (cm)</label><input type="number" id="pe-muac" step="0.1" placeholder="0.0" oninput="calcMuac()"></div>
+      <div class="field"><label>Clasificación (6–59 meses)</label><div class="res" id="pe-muacres">—</div></div>
+      <p class="note">Puntos de corte OMS/UNICEF: &lt;11.5 cm desnutrición aguda severa · 11.5–12.4 cm moderada · ≥12.5 cm normal. Válido solo en el rango de 6 a 59 meses.</p>
+    </div>
+  </div>
+
+  <button class="btn-save" style="background:var(--ped)" onclick="imprimirPediatria()">🖨️ Generar PDF — Nutrición infantil</button>
 </div>
 
 <!-- ======= TAB LABORATORIOS ======= -->
@@ -771,44 +825,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     <div class="row" style="margin-top:8px">
       <div class="field"><label>Cama</label><input type="text" id="pat-cama" placeholder="Ej. 12-A" oninput="patCamaMatch()"></div>
       <div class="field"><label>Nombre del paciente</label><input type="text" id="pat-nombre" placeholder="Apellidos, Nombre"></div>
-    </div>
-  </div>
-
-  <!-- NUTRICIÓN INFANTIL -->
-  <div class="section">
-    <div class="sec-title" style="color:var(--amber-text)">👶 Nutrición infantil</div>
-
-    <div class="sub-card">
-      <h4>Datos antropométricos</h4>
-      <div class="row">
-        <div class="field"><label>Edad (meses)</label><input type="number" id="pe-edad" placeholder="0" oninput="calcPediatrico()"></div>
-        <div class="field">
-          <label>Sexo</label>
-          <div class="pb-wrap" id="pe-sexo-wrap">
-            <div class="pb on" onclick="setPeSexo('F',this)">Niña</div>
-            <div class="pb" onclick="setPeSexo('M',this)">Niño</div>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="field"><label>Peso (kg)</label><input type="number" id="pe-peso" step="0.1" placeholder="0.0" oninput="calcPediatrico()"></div>
-        <div class="field"><label>Talla (cm)</label><input type="number" id="pe-talla" step="0.1" placeholder="0.0" oninput="calcPediatrico()"></div>
-      </div>
-      <div class="field"><label>Edad convertida</label><div class="res neutral" id="pe-edadconv">—</div></div>
-      <div class="field"><label>IMC</label><div class="res neutral" id="pe-imc">—</div><p class="note">Valor de referencia — para clasificación diagnóstica (percentil/z-score) usa las tablas OMS/CDC de IMC-para-edad y sexo específicas.</p></div>
-      <div class="field"><label>Percentil / Z-score (OMS)</label><div class="res neutral" id="pe-pctl">—</div><p class="note">Método LMS oficial OMS — 0-5 años: peso y talla para la edad (estándar 2006, resolución diaria). 5-19 años: IMC para la edad (referencia 2007, mensual).</p></div>
-      <h4 style="margin-top:14px">Requerimientos estimados</h4>
-      <div class="field"><label>Energía (kcal/kg/día de referencia)</label><div class="res neutral" id="pe-kcalkg">—</div></div>
-      <div class="field"><label>Energía total estimada</label><div class="res ok" id="pe-kcaltot">—</div></div>
-      <div class="field"><label>Proteína (g/kg/día de referencia)</label><div class="res neutral" id="pe-protkg">—</div></div>
-      <div class="field"><label>Proteína total estimada</label><div class="res neutral" id="pe-prottot">—</div></div>
-      <div class="field"><label>Líquidos (Holliday-Segar)</label><div class="res neutral" id="pe-liq">—</div></div>
-      <div class="pat-tip" id="pe-tip">Completa edad y peso para ver los requerimientos.</div>
-
-      <h4 style="margin-top:14px">Tamizaje por circunferencia de brazo (MUAC)</h4>
-      <div class="field"><label>Circunferencia media de brazo (cm)</label><input type="number" id="pe-muac" step="0.1" placeholder="0.0" oninput="calcMuac()"></div>
-      <div class="field"><label>Clasificación (6–59 meses)</label><div class="res" id="pe-muacres">—</div></div>
-      <p class="note">Puntos de corte OMS/UNICEF: &lt;11.5 cm desnutrición aguda severa · 11.5–12.4 cm moderada · ≥12.5 cm normal. Válido solo en el rango de 6 a 59 meses.</p>
     </div>
   </div>
 
@@ -1156,13 +1172,14 @@ function switchTab(t) {
   var tabs = document.querySelectorAll('.tab');
   if(t==='general') tabs[0].classList.add('active');
   else if(t==='embarazo') tabs[1].classList.add('active');
-  else if(t==='labs') tabs[2].classList.add('active');
-  else if(t==='plan') { tabs[3].classList.add('active'); renderPlanGrid(); }
-  else if(t==='historia') { tabs[4].classList.add('active'); renderHistoriaList(); }
-  else if(t==='soap') { tabs[5].classList.add('active'); initPesSelect(); }
-  else if(t==='pacientes') { tabs[6].classList.add('active'); renderPacs(); }
-  else if(t==='patologias') { tabs[7].classList.add('active'); }
-  else { tabs[8].classList.add('active'); }
+  else if(t==='pediatria') { tabs[2].classList.add('active'); calcPediatrico(); }
+  else if(t==='labs') tabs[3].classList.add('active');
+  else if(t==='plan') { tabs[4].classList.add('active'); renderPlanGrid(); }
+  else if(t==='historia') { tabs[5].classList.add('active'); renderHistoriaList(); }
+  else if(t==='soap') { tabs[6].classList.add('active'); initPesSelect(); }
+  else if(t==='pacientes') { tabs[7].classList.add('active'); renderPacs(); }
+  else if(t==='patologias') { tabs[8].classList.add('active'); }
+  else { tabs[9].classList.add('active'); }
 }
 
 // ===== HELPERS =====
@@ -1612,13 +1629,46 @@ function liquidosHS(peso){
   if(peso<=20) return 1000 + (peso-10)*50;
   return 1500 + (peso-20)*20;
 }
+
+/**
+ * Percentil/Z-score OMS oficial para Nutrición infantil.
+ * 0-5 años (≤1856 días): peso/edad y talla/edad, estándar OMS 2006, resolución diaria.
+ * 5-19 años: IMC/edad, referencia OMS 2007, resolución mensual.
+ * OJO con el mapeo de sexo: en este formulario 'F'=Niña / 'M'=Niño.
+ * En percentiles.js (mismo criterio que calc-engine.js) 'M'=Mujer / 'H'=Hombre.
+ * Por eso aquí se invierte a propósito: peSexo 'F' (niña) -> sexoOMS 'M' (mujer).
+ */
+function calcPediatricoPercentil(meses, peso, tallaCm){
+  if(!window.tablasOMS){ setR('pe-pctl','Cargando tablas OMS…','neutral'); return; }
+  var sexoOMS = peSexo==='F' ? 'M' : 'H';
+  var dias = Math.round(meses*30.4375);
+  var partes = [];
+
+  if(dias<=1856){
+    var rPeso = window.Percentiles.zScorePesoEdad(window.tablasOMS, {peso_kg:peso, edad_dias:dias, sexo:sexoOMS});
+    partes.push('Peso/edad: Z '+rPeso.z+' · pc '+rPeso.percentil+' — <b>'+rPeso.interpretacion+'</b>');
+    if(tallaCm){
+      var rTalla = window.Percentiles.zScoreTallaEdad(window.tablasOMS, {talla_cm:tallaCm, edad_dias:dias, sexo:sexoOMS});
+      partes.push('Talla/edad: Z '+rTalla.z+' · pc '+rTalla.percentil+' — <b>'+rTalla.interpretacion+'</b>');
+    }
+  } else if(tallaCm){
+    var imc = peso/((tallaCm/100)*(tallaCm/100));
+    var rImc = window.Percentiles.zScoreIMCedad(window.tablasOMS, {imc:imc, edad_meses:meses, sexo:sexoOMS});
+    partes.push('IMC/edad: Z '+rImc.z+' · pc '+rImc.percentil+' — <b>'+rImc.interpretacion+'</b>');
+  }
+
+  if(partes.length===0){ setR('pe-pctl','Captura talla para calcular el percentil','neutral'); return; }
+  var alerta = partes.some(function(p){ return p.indexOf('Normal')===-1; });
+  setR('pe-pctl', partes.join('<br>'), alerta?'warn':'ok');
+}
+
 function calcPediatrico(){
   var meses = parseFloat(gv('pe-edad'));
   var peso = parseFloat(gv('pe-peso'));
   var tallaCm = parseFloat(gv('pe-talla'));
 
   if(!meses || meses<=0 || !peso){
-    ['pe-imc','pe-kcalkg','pe-kcaltot','pe-protkg','pe-prottot','pe-liq'].forEach(function(id){ setR(id,'—'); });
+    ['pe-imc','pe-kcalkg','pe-kcaltot','pe-protkg','pe-prottot','pe-liq','pe-pctl'].forEach(function(id){ setR(id,'—'); });
     sv('pe-edadconv','—');
     sv('pe-tip','Completa edad y peso para ver los requerimientos.');
     return;
@@ -1634,6 +1684,8 @@ function calcPediatrico(){
   } else {
     setR('pe-imc','—','neutral');
   }
+
+  calcPediatricoPercentil(meses, peso, tallaCm);
 
   var kkg = kcalKgRef(meses);
   setR('pe-kcalkg', kkg+' kcal/kg/día', 'neutral');
@@ -2880,6 +2932,39 @@ function bloqueHistoriaSoap(cama){
   return html;
 }
 
+function imprimirPediatria(){
+  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
+  var cama = gv('ped-cama')||'', nombre = gv('ped-nombre')||'—';
+
+  var historias = getHistorias();
+  var hist = cama ? historias[normCama(cama)] : null;
+  if(hist && nombre==='—') nombre = hist.nombre||'—';
+
+  var html = '<div class="pr-header"><h1>Nutrición Infantil</h1><p>'+fecha+'</p></div>'+
+    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+(cama||'—')+'</td>'+
+    '<td class="pr-k">Nombre</td><td class="pr-v">'+nombre+'</td></tr></table>';
+
+  var bloque = bloqueHistoriaSoap(cama);
+  if(bloque) html += bloque;
+
+  html += '<h3>👶 Evaluación antropométrica</h3>'+
+    '<table class="pr-table">'+
+    '<tr><td class="pr-k">Edad</td><td class="pr-v">'+gt('pe-edadconv')+'</td>'+
+    '<td class="pr-k">Sexo</td><td class="pr-v">'+(peSexo==='F'?'Niña':'Niño')+'</td></tr>'+
+    '<tr><td class="pr-k">Peso / Talla</td><td class="pr-v">'+(gv('pe-peso')||'—')+' kg / '+(gv('pe-talla')||'—')+' cm</td>'+
+    '<td class="pr-k">IMC</td><td class="pr-v">'+gt('pe-imc')+'</td></tr>'+
+    '<tr><td class="pr-k">Percentil/Z-score OMS</td><td class="pr-v" colspan="3">'+gt('pe-pctl')+'</td></tr>'+
+    '<tr><td class="pr-k">Energía total</td><td class="pr-v">'+gt('pe-kcaltot')+'</td>'+
+    '<td class="pr-k">Proteína total</td><td class="pr-v">'+gt('pe-prottot')+'</td></tr>'+
+    '<tr><td class="pr-k">Líquidos</td><td class="pr-v">'+gt('pe-liq')+'</td>'+
+    '<td class="pr-k">MUAC</td><td class="pr-v">'+gt('pe-muacres')+'</td></tr>'+
+    '</table><p class="pr-notas">'+gt('pe-tip')+'</p>'+
+    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
+
+  document.getElementById('print-area').innerHTML = html;
+  setTimeout(function(){ window.print(); }, 100);
+}
+
 function imprimirPatologias(){
   var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
   var cama = gv('pat-cama')||'', nombre = gv('pat-nombre')||'—';
@@ -2897,19 +2982,6 @@ function imprimirPatologias(){
   else html += '<p class="pr-notas">Captura la cama arriba para incluir automáticamente su historia clínica y nota SOAP guardadas en este reporte.</p>';
 
   html += '<h3 style="border-top:2px solid #832d51;padding-top:10px;margin-top:16px">🧮 Evaluación y plan por patología</h3>';
-
-  // Nutrición infantil
-  html += '<h3>👶 Nutrición infantil</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Edad</td><td class="pr-v">'+gt('pe-edadconv')+'</td>'+
-    '<td class="pr-k">Sexo</td><td class="pr-v">'+(peSexo==='F'?'Niña':'Niño')+'</td></tr>'+
-    '<tr><td class="pr-k">Peso / Talla</td><td class="pr-v">'+(gv('pe-peso')||'—')+' kg / '+(gv('pe-talla')||'—')+' cm</td>'+
-    '<td class="pr-k">IMC</td><td class="pr-v">'+gt('pe-imc')+'</td></tr>'+
-    '<tr><td class="pr-k">Energía total</td><td class="pr-v">'+gt('pe-kcaltot')+'</td>'+
-    '<td class="pr-k">Proteína total</td><td class="pr-v">'+gt('pe-prottot')+'</td></tr>'+
-    '<tr><td class="pr-k">Líquidos</td><td class="pr-v">'+gt('pe-liq')+'</td>'+
-    '<td class="pr-k">MUAC</td><td class="pr-v">'+gt('pe-muacres')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('pe-tip')+'</p>';
 
   // Soporte enteral
   html += '<h3>🧪 Soporte nutricional — Enteral</h3>'+
@@ -3136,6 +3208,13 @@ function patCamaMatch(){
   if(hist && !gv('pat-nombre')) sv2('pat-nombre', hist.nombre||'');
 }
 
+function pedCamaMatch(){
+  var cama = gv('ped-cama').trim();
+  if(!cama) return;
+  var hist = getHistorias()[normCama(cama)];
+  if(hist && !gv('ped-nombre')) sv2('ped-nombre', hist.nombre||'');
+}
+
 function soapCamaMatch(){
   var cama = gv('soap-cama').trim();
   if(!cama || cama===_lastAutoCama) return;
@@ -3182,6 +3261,16 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+</script>
+
+<script type="module">
+  import { cargarTablasOMS, Percentiles } from './percentiles.js';
+  window.Percentiles = Percentiles;
+  window.tablasOMS = null;
+  cargarTablasOMS('./who-growth-lms.json').then(function(t){
+    window.tablasOMS = t;
+    if (typeof calcPediatrico === 'function') calcPediatrico();
+  }).catch(function(err){ console.error('No se pudieron cargar las tablas OMS:', err); });
 </script>
 </body>
 </html>
