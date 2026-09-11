@@ -24,6 +24,7 @@
   --amber:#f0a93a; --amber-text:#96631a;
   --teal:#2dd4bf; --teal-text:#0f7a6e;
   --ped:#8ecae6; --ped-text:#1c6e96;
+  --agua:#4a90d9; --agua-text:#2a5f96;
   --text:#2b2c31; --muted:#6b6d76; --radius:10px;
   --font:'Segoe UI',system-ui,sans-serif;
 }
@@ -45,6 +46,7 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .tab.t-pat.active{background:var(--amber);border-color:var(--amber);color:#0f1117}
 .tab.t-por.active{background:var(--teal);border-color:var(--teal);color:#0f1117}
 .tab.t-ped.active{background:var(--ped);border-color:var(--ped);color:#0f1117}
+.tab.t-agua.active{background:var(--agua);border-color:var(--agua);color:#fff}
 .menu-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
 .menu-table th,.menu-table td{border:1px solid var(--border);padding:6px 7px;text-align:left;vertical-align:top}
 .menu-table th{background:var(--card2);color:var(--teal-text);font-size:.72rem}
@@ -277,6 +279,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   <div class="tab t-emb" onclick="switchTab('embarazo')">🤰 Embarazo</div>
   <div class="tab t-ped" onclick="switchTab('pediatria')">👶 Pediatría</div>
   <div class="tab t-lab" onclick="switchTab('labs')">🧪 Labs</div>
+  <div class="tab t-agua" onclick="switchTab('agua')">💧 Agua/Electrolitos</div>
   <div class="tab t-plan" onclick="switchTab('plan')">🍽️ Plan</div>
   <div class="tab t-hist" onclick="switchTab('historia')">🗂️ Historia</div>
   <div class="tab t-soap" onclick="switchTab('soap')">📝 SOAP</div>
@@ -428,7 +431,10 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <div class="field"><label>Talla (m)</label><input type="number" id="e-talla" placeholder="1.60" step="0.01" oninput="calcE()"></div>
       <div class="field"><label>Semanas de gestación (SDG)</label><input type="number" id="e-sdg" placeholder="1–40" min="1" max="40" oninput="calcE()"></div>
     </div>
-    <div class="field"><label>Peso ganado real (kg)</label><input type="number" id="e-ganreal" placeholder="0.0" step="0.1" oninput="calcE()"></div>
+    <div class="row">
+      <div class="field"><label>Peso ganado real (kg)</label><input type="number" id="e-ganreal" placeholder="0.0" step="0.1" oninput="calcE()"></div>
+      <div class="field"><label>Edad materna (años)</label><input type="number" id="e-edadmat" placeholder="0" oninput="calcE()"></div>
+    </div>
   </div>
 
   <div class="section">
@@ -500,6 +506,15 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <div class="mac-card"><div class="mac-lbl">Proteínas</div><div class="mac-vals"><div class="mv" id="e-pg">—<span>g</span></div><div class="mv2" id="e-pkcal">—<span>kcal</span></div><div class="mv2" id="e-ppct">—<span>%</span></div></div></div>
       <div class="mac-card"><div class="mac-lbl">Lípidos</div><div class="mac-vals"><div class="mv" id="e-lipkcal">—<span>kcal</span></div><div class="mv2" id="e-lipg">—<span>g</span></div></div></div>
     </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title pink" id="e-micro-title">Micronutrientes objetivo</div>
+    <p class="note" id="e-micro-sub">Captura la edad materna para ver las metas de micronutrientes.</p>
+    <table class="eq-table">
+      <tbody id="e-micro-body"></tbody>
+    </table>
+    <p class="note" id="e-micro-foot" style="display:none">La recomendación dietética de folato no equivale a la dosis farmacológica de ácido fólico usada para prevención de defectos del tubo neural; la suplementación debe seguir indicación médica.</p>
   </div>
 
   <div class="sum-box pink-box" id="e-sum" style="display:none">
@@ -643,6 +658,85 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     <div class="sec-title purple">🧠 Interpretación global</div>
     <div id="lab-interp-list"></div>
     <p class="note" style="margin-top:8px">Interpretación orientativa basada en patrones combinados de los valores capturados. No sustituye el juicio clínico ni un diagnóstico médico formal.</p>
+  </div>
+
+</div>
+
+<!-- ======= TAB AGUA / ELECTROLITOS ======= -->
+<div id="tab-agua" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--agua-text)">💧 Requerimiento de agua</div>
+    <div class="row">
+      <div class="field"><label>Peso (kg)</label><input type="number" id="ag-peso" step="0.1" placeholder="0.0" oninput="calcAguaReq()"></div>
+      <div class="field">
+        <label>Modalidad</label>
+        <div class="pb-wrap" id="ag-modo-wrap">
+          <div class="pb on" onclick="setAguaModo('sano',this)">Adulto sano</div>
+          <div class="pb" onclick="setAguaModo('hosp',this)">Hospitalizado</div>
+          <div class="pb" onclick="setAguaModo('ped',this)">Pediátrico</div>
+        </div>
+      </div>
+    </div>
+    <div class="field" id="ag-sexo-box">
+      <label>Sexo / estado</label>
+      <div class="pb-wrap" id="ag-sexo-wrap">
+        <div class="pb on" onclick="setAguaSexo('H',this)">Hombre</div>
+        <div class="pb" onclick="setAguaSexo('M',this)">Mujer</div>
+        <div class="pb" onclick="setAguaSexo('embarazo',this)">Embarazo</div>
+        <div class="pb" onclick="setAguaSexo('lactancia',this)">Lactancia</div>
+      </div>
+    </div>
+    <div class="field"><label>Agua total recomendada</label><div class="res ok" id="ag-req">—</div></div>
+    <p class="note" id="ag-req-note">Adulto sano: DRI (referencia poblacional, NOM/IOM). Hospitalizado: 25–30 mL/kg/día, a individualizar por función renal/cardiaca/hepática, fiebre, pérdidas y edema. Pediátrico: regla de Holliday-Segar (4-2-1).</p>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--agua-text)">⚖️ Balance hídrico</div>
+    <div class="row">
+      <div class="field"><label>Ingresos (mL)</label><input type="number" id="ag-ingresos" step="1" placeholder="0" oninput="calcBalance()"></div>
+      <div class="field"><label>Egresos (mL)</label><input type="number" id="ag-egresos" step="1" placeholder="0" oninput="calcBalance()"></div>
+    </div>
+    <div class="field"><label>Balance</label><div class="res" id="ag-balance">—</div><p class="note">Positivo = retiene líquidos · Negativo = pierde líquidos</p></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--agua-text)">🩹 Déficit estimado por deshidratación</div>
+    <div class="row">
+      <div class="field"><label>Peso (kg)</label><input type="number" id="ag-peso-deshid" step="0.1" placeholder="0.0" oninput="calcDeficit()"></div>
+      <div class="field">
+        <label>% deshidratación estimado</label>
+        <select id="ag-pct-deshid" onchange="calcDeficit()">
+          <option value="0.03">Leve (3%)</option>
+          <option value="0.05" selected>Leve-moderada (5%)</option>
+          <option value="0.07">Moderada (7%)</option>
+          <option value="0.10">Severa (10%)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Déficit estimado</label><div class="res" id="ag-deficit">—</div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--agua-text)">🧂 Electrolitos y ácido-base</div>
+    <p class="note" style="margin-bottom:10px">Captura los valores disponibles. Rangos orientativos — cotejar con tu laboratorio institucional.</p>
+    <div class="row">
+      <div class="field"><label>Sodio (mEq/L)</label><input type="number" id="ag-na" step="0.1" placeholder="—" oninput="calcElectrolitos()"></div>
+      <div class="field"><label>Potasio (mEq/L)</label><input type="number" id="ag-k" step="0.1" placeholder="—" oninput="calcElectrolitos()"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Calcio total (mg/dL)</label><input type="number" id="ag-ca" step="0.1" placeholder="—" oninput="calcElectrolitos()"></div>
+      <div class="field"><label>Magnesio (mg/dL)</label><input type="number" id="ag-mg" step="0.1" placeholder="—" oninput="calcElectrolitos()"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Fósforo (mg/dL)</label><input type="number" id="ag-p" step="0.1" placeholder="—" oninput="calcElectrolitos()"></div>
+      <div class="field"><label>Cloro (mEq/L)</label><input type="number" id="ag-cl" step="0.1" placeholder="—" oninput="calcElectrolitos()"></div>
+    </div>
+    <div class="field"><label>Bicarbonato (mEq/L)</label><input type="number" id="ag-hco3" step="0.1" placeholder="—" oninput="calcElectrolitos()"></div>
+
+    <div id="ag-electrolitos-resultados" style="margin-top:10px"></div>
+
+    <div class="field" style="margin-top:10px"><label>Anion gap</label><div class="res" id="ag-aniongap">—</div><p class="note">Na − (Cl + HCO₃) · Requiere Sodio, Cloro y Bicarbonato capturados</p></div>
   </div>
 
 </div>
@@ -1163,6 +1257,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 var gProt = 1.2, eProt = 1.2, lactancia = false;
 var gProtMode = 'gkg', eProtMode = 'gkg';
 var obSexo = 'F', obDeficit = 0, diRiesgo = 'bajo';
+var aguaModo = 'sano', aguaSexo = 'H';
 
 // ===== TABS =====
 function switchTab(t) {
@@ -1174,12 +1269,13 @@ function switchTab(t) {
   else if(t==='embarazo') tabs[1].classList.add('active');
   else if(t==='pediatria') { tabs[2].classList.add('active'); calcPediatrico(); }
   else if(t==='labs') tabs[3].classList.add('active');
-  else if(t==='plan') { tabs[4].classList.add('active'); renderPlanGrid(); }
-  else if(t==='historia') { tabs[5].classList.add('active'); renderHistoriaList(); }
-  else if(t==='soap') { tabs[6].classList.add('active'); initPesSelect(); }
-  else if(t==='pacientes') { tabs[7].classList.add('active'); renderPacs(); }
-  else if(t==='patologias') { tabs[8].classList.add('active'); }
-  else { tabs[9].classList.add('active'); }
+  else if(t==='agua') tabs[4].classList.add('active');
+  else if(t==='plan') { tabs[5].classList.add('active'); renderPlanGrid(); }
+  else if(t==='historia') { tabs[6].classList.add('active'); renderHistoriaList(); }
+  else if(t==='soap') { tabs[7].classList.add('active'); initPesSelect(); }
+  else if(t==='pacientes') { tabs[8].classList.add('active'); renderPacs(); }
+  else if(t==='patologias') { tabs[9].classList.add('active'); }
+  else { tabs[10].classList.add('active'); }
 }
 
 // ===== HELPERS =====
@@ -1361,11 +1457,92 @@ function clearGMacs(){
 }
 
 // ===== CALC EMBARAZO =====
+/**
+ * Tabla de micronutrientes objetivo para la pestaña Embarazo.
+ * Fuente: calc-engine.js — Embarazo.IDR_MICRONUTRIENTES (Manual Maestro
+ * Módulo 4A) y Lactancia.MICRONUTRIENTES (Módulo 4B), cargados como
+ * window.Embarazo / window.Lactancia por el script type="module".
+ * Se llama desde calcE() cada vez que cambian los campos de Embarazo,
+ * y también una vez al cargar el módulo (por si la paciente ya tenía
+ * datos capturados antes de que terminara de cargar calc-engine.js).
+ */
+function renderMicronutrientes(){
+  var body = document.getElementById('e-micro-body');
+  var titulo = document.getElementById('e-micro-title');
+  var sub = document.getElementById('e-micro-sub');
+  var pie = document.getElementById('e-micro-foot');
+  if(!body) return;
+
+  if(!window.Embarazo || !window.Lactancia){
+    body.innerHTML = '<tr><td>Cargando datos de referencia…</td></tr>';
+    return;
+  }
+
+  var edadMat = parseFloat(gv('e-edadmat'));
+  var filas = [];
+
+  if(!lactancia){
+    var idr = window.Embarazo.IDR_MICRONUTRIENTES;
+    var calcioMeta = (!isNaN(edadMat) && edadMat<19) ? idr.calcio_mg.menor_19 : idr.calcio_mg.mayor_19;
+    titulo.textContent = 'Micronutrientes objetivo — Embarazo';
+    sub.textContent = 'Manual Maestro, Módulo 4A. Meta diaria comparada con la ingesta de referencia fuera del embarazo.';
+    pie.style.display = 'block';
+    filas = [
+      ['Hierro', idr.hierro_mg.embarazo+' mg/día (vs. '+idr.hierro_mg.no_embarazo+' fuera del embarazo)'],
+      ['Zinc', idr.zinc_mg.embarazo+' mg/día (vs. '+idr.zinc_mg.no_embarazo+' fuera del embarazo)'],
+      ['Calcio', calcioMeta+' mg/día'+(isNaN(edadMat)?' (captura edad materna para precisar por grupo etario)':'')],
+      ['Vitamina A', idr.vitaminaA_ugER.embarazo+' µg ER/día (vs. '+idr.vitaminaA_ugER.no_embarazo+' fuera del embarazo)'],
+      ['Vitamina C', idr.vitaminaC_mg.embarazo+' mg/día (vs. '+idr.vitaminaC_mg.no_embarazo+' fuera del embarazo)'],
+      ['Vitamina D', idr.vitaminaD_ugER.embarazo+' µg/día'],
+      ['Vitamina E', idr.vitaminaE_mg.embarazo+' mg/día'],
+      ['Folato', idr.folato_ugDFE.embarazo+' µg DFE/día']
+    ];
+  } else {
+    var grupo = (!isNaN(edadMat) && edadMat<=18) ? '14-18' : (!isNaN(edadMat) && edadMat<=30) ? '19-30' : '31-50';
+    var m = window.Lactancia.MICRONUTRIENTES[grupo];
+    titulo.textContent = 'Micronutrientes objetivo — Lactancia (madre '+grupo+' años'+(isNaN(edadMat)?', grupo por defecto':'')+')';
+    sub.textContent = 'Manual Maestro, Módulo 4B.';
+    pie.style.display = 'none';
+    filas = [
+      ['Vitamina A', m.vitaminaA_mcg+' µg/día'],
+      ['Vitamina C', m.vitaminaC_mg+' mg/día'],
+      ['Vitamina D', m.vitaminaD_mcg+' µg/día'],
+      ['Vitamina E', m.vitaminaE_mg+' mg/día'],
+      ['Vitamina K', m.vitaminaK_mcg+' µg/día'],
+      ['Tiamina (B1)', m.tiamina_mg+' mg/día'],
+      ['Riboflavina (B2)', m.riboflavina_mg+' mg/día'],
+      ['Niacina (B3)', m.niacina_mg+' mg/día'],
+      ['Vitamina B6', m.vitaminaB6_mg+' mg/día'],
+      ['Folato', m.folato_mcg+' µg/día'],
+      ['Vitamina B12', m.vitaminaB12_mcg+' µg/día'],
+      ['Calcio', m.calcio_mg+' mg/día'],
+      ['Hierro', m.hierro_mg+' mg/día'],
+      ['Zinc', m.zinc_mg+' mg/día'],
+      ['Yodo', m.yodo_mcg+' µg/día'],
+      ['Magnesio', m.magnesio_mg+' mg/día'],
+      ['Fósforo', m.fosforo_mg+' mg/día'],
+      ['Selenio', m.selenio_mcg+' µg/día'],
+      ['Cobre', m.cobre_mg+' mg/día'],
+      ['Cromo', m.cromo_mcg+' µg/día'],
+      ['Flúor', m.fluor_mg+' mg/día'],
+      ['Potasio', m.potasio_g+' g/día'],
+      ['Sodio', m.sodio_g+' g/día'],
+      ['Cloro', m.cloro_g+' g/día']
+    ];
+  }
+
+  body.innerHTML = filas.map(function(f){
+    return '<tr><td>'+f[0]+'</td><td style="text-align:right">'+f[1]+'</td></tr>';
+  }).join('');
+}
+
 function calcE() {
   var pActual=parseFloat(gv('e-peso')), pPreg=parseFloat(gv('e-preg'));
   var talla=parseFloat(gv('e-talla')), sdg=parseInt(gv('e-sdg'));
   var ganReal=parseFloat(gv('e-ganreal'))||0;
   var hcpct=parseInt(gv('e-hcpct')), lippct=parseInt(gv('e-lippct'));
+
+  renderMicronutrientes();
 
   if(!pPreg||!talla||talla<0.5){
     ['e-imcp','e-imca','e-pesoe','e-dif','e-pideal','e-paj','e-pcambio','e-phab','e-pidealpct','e-pusar','e-kcalb','e-inc','e-kcalt'].forEach(function(id){ setR(id,'—'); });
@@ -1506,6 +1683,95 @@ function calcE() {
 function clearEMacs(){
   ['e-hckcal','e-hcg','e-pg','e-pkcal','e-ppct','e-lipkcal','e-lipg'].forEach(function(id){ document.getElementById(id).innerHTML='—'; });
   document.getElementById('e-sum').style.display='none';
+}
+
+// ===== AGUA / ELECTROLITOS =====
+// Todas las funciones de este bloque usan window.AguaElectrolitos, expuesto
+// por calc-engine.js vía el script type="module" al final del archivo.
+
+function setAguaModo(v, el){
+  document.querySelectorAll('#ag-modo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  aguaModo = v;
+  document.getElementById('ag-sexo-box').style.display = v==='sano' ? 'block' : 'none';
+  calcAguaReq();
+}
+
+function setAguaSexo(v, el){
+  document.querySelectorAll('#ag-sexo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  aguaSexo = v;
+  calcAguaReq();
+}
+
+function calcAguaReq(){
+  var peso = parseFloat(gv('ag-peso'));
+  if(!window.AguaElectrolitos){ setR('ag-req','Cargando datos de referencia…','neutral'); return; }
+  var AE = window.AguaElectrolitos;
+  if(aguaModo==='sano'){
+    var litros = AE.AGUA_TOTAL_DRI[aguaSexo];
+    setR('ag-req', litros+' L/día (referencia DRI, no ajustada por peso)', 'ok');
+  } else if(!peso){
+    setR('ag-req','—','neutral');
+  } else if(aguaModo==='hosp'){
+    var rango = AE.aguaAdultoHospitalizado(peso);
+    setR('ag-req', rango.minimo_ml+' – '+rango.maximo_ml+' mL/día', 'ok');
+  } else {
+    var hs = AE.holidaySegar(peso);
+    setR('ag-req', hs.ml_por_hora+' mL/h · '+hs.ml_por_dia+' mL/día', 'ok');
+  }
+}
+
+function calcBalance(){
+  var ingresos = parseFloat(gv('ag-ingresos'));
+  var egresos = parseFloat(gv('ag-egresos'));
+  if(isNaN(ingresos)||isNaN(egresos)||!window.AguaElectrolitos){ setR('ag-balance','—','neutral'); return; }
+  var bal = window.AguaElectrolitos.balanceHidrico(ingresos, egresos);
+  setR('ag-balance', (bal>=0?'+':'')+bal+' mL', bal<0?'warn':'ok');
+}
+
+function calcDeficit(){
+  var peso = parseFloat(gv('ag-peso-deshid'));
+  var pct = parseFloat(gv('ag-pct-deshid'));
+  if(!peso||!window.AguaElectrolitos){ setR('ag-deficit','—','neutral'); return; }
+  var litros = window.AguaElectrolitos.deficitDeshidratacion(peso, pct);
+  setR('ag-deficit', litros+' L ('+r0(litros*1000)+' mL)', 'warn');
+}
+
+var AG_ELECTROLITOS_CAMPOS = [
+  {id:'ag-na', key:'sodio_meq', label:'Sodio', unidad:'mEq/L'},
+  {id:'ag-k', key:'potasio_meq', label:'Potasio', unidad:'mEq/L'},
+  {id:'ag-ca', key:'calcio_total_mg', label:'Calcio total', unidad:'mg/dL'},
+  {id:'ag-mg', key:'magnesio_mg', label:'Magnesio', unidad:'mg/dL'},
+  {id:'ag-p', key:'fosforo_mg', label:'Fósforo', unidad:'mg/dL'},
+  {id:'ag-cl', key:'cloro_meq', label:'Cloro', unidad:'mEq/L'},
+  {id:'ag-hco3', key:'bicarbonato_meq', label:'Bicarbonato', unidad:'mEq/L'}
+];
+
+function calcElectrolitos(){
+  if(!window.AguaElectrolitos) return;
+  var AE = window.AguaElectrolitos;
+  var html = '';
+  AG_ELECTROLITOS_CAMPOS.forEach(function(c){
+    var v = parseFloat(gv(c.id));
+    if(isNaN(v)) return;
+    var clasif = AE.clasificarAnalito(c.key, v);
+    var rango = AE.RANGOS_REFERENCIA[c.key];
+    var tagCls = clasif==='Normal' ? 'normal' : (clasif==='Bajo' ? 'bajo' : 'alto');
+    html += '<div class="lab-row"><div class="lab-row-top"><span class="lab-name">'+c.label+'</span><span class="lab-tag '+tagCls+'">'+clasif+'</span></div>'+
+      '<div class="lab-vals"><span>Valor: <b style="color:var(--text)">'+v+' '+c.unidad+'</b></span></div>'+
+      '<div class="lab-ref">Ref.: '+rango.min+' – '+rango.max+' '+c.unidad+'</div></div>';
+  });
+  document.getElementById('ag-electrolitos-resultados').innerHTML = html;
+
+  var na = parseFloat(gv('ag-na')), cl = parseFloat(gv('ag-cl')), hco3 = parseFloat(gv('ag-hco3'));
+  if(!isNaN(na) && !isNaN(cl) && !isNaN(hco3)){
+    var ag = AE.anionGap(na, cl, hco3);
+    var fueraDeRango = ag<8 || ag>16;
+    setR('ag-aniongap', ag+' mEq/L'+(fueraDeRango?' (fuera del rango típico 8–16)':' (dentro del rango típico 8–16)'), fueraDeRango?'warn':'ok');
+  } else {
+    setR('ag-aniongap','—','neutral');
+  }
 }
 
 // ===== PATOLOGÍAS: OBESIDAD =====
@@ -3265,12 +3531,19 @@ if ('serviceWorker' in navigator) {
 
 <script type="module">
   import { cargarTablasOMS, Percentiles } from './percentiles.js';
+  import { Embarazo, Lactancia, AguaElectrolitos } from './calc-engine.js';
   window.Percentiles = Percentiles;
+  window.Embarazo = Embarazo;
+  window.Lactancia = Lactancia;
+  window.AguaElectrolitos = AguaElectrolitos;
   window.tablasOMS = null;
   cargarTablasOMS('./who-growth-lms.json').then(function(t){
     window.tablasOMS = t;
     if (typeof calcPediatrico === 'function') calcPediatrico();
   }).catch(function(err){ console.error('No se pudieron cargar las tablas OMS:', err); });
+  if (typeof renderMicronutrientes === 'function') renderMicronutrientes();
+  if (typeof calcAguaReq === 'function') calcAguaReq();
+  if (typeof calcElectrolitos === 'function') calcElectrolitos();
 </script>
 </body>
 </html>
