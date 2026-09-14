@@ -25,6 +25,7 @@
   --teal:#2dd4bf; --teal-text:#0f7a6e;
   --ped:#8ecae6; --ped-text:#1c6e96;
   --agua:#4a90d9; --agua-text:#2a5f96;
+  --antro:#9b8fd6; --antro-text:#5849a3;
   --text:#2b2c31; --muted:#6b6d76; --radius:10px;
   --font:'Segoe UI',system-ui,sans-serif;
 }
@@ -47,6 +48,7 @@ header p{font-size:.75rem;color:var(--muted);margin-top:3px}
 .tab.t-por.active{background:var(--teal);border-color:var(--teal);color:#0f1117}
 .tab.t-ped.active{background:var(--ped);border-color:var(--ped);color:#0f1117}
 .tab.t-agua.active{background:var(--agua);border-color:var(--agua);color:#fff}
+.tab.t-antro.active{background:var(--antro);border-color:var(--antro);color:#fff}
 .menu-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
 .menu-table th,.menu-table td{border:1px solid var(--border);padding:6px 7px;text-align:left;vertical-align:top}
 .menu-table th{background:var(--card2);color:var(--teal-text);font-size:.72rem}
@@ -276,6 +278,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab('general')">🏥 General</div>
+  <div class="tab t-antro" onclick="switchTab('antropometria')">📏 Antropometría</div>
   <div class="tab t-emb" onclick="switchTab('embarazo')">🤰 Embarazo</div>
   <div class="tab t-ped" onclick="switchTab('pediatria')">👶 Pediatría</div>
   <div class="tab t-lab" onclick="switchTab('labs')">🧪 Labs</div>
@@ -396,6 +399,82 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
   <button class="btn-save" onclick="guardar('general')">💾 Guardar paciente</button>
   <button class="btn-reset" onclick="resetG()">↺ Limpiar formulario</button>
+</div>
+
+<!-- ======= TAB ANTROPOMETRÍA AVANZADA ======= -->
+<div id="tab-antropometria" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--antro-text)">📏 Datos generales</div>
+    <div class="row">
+      <div class="field">
+        <label>Sexo</label>
+        <div class="pb-wrap" id="an-sexo-wrap">
+          <div class="pb" onclick="setAnSexo('M',this)">Mujer</div>
+          <div class="pb on" onclick="setAnSexo('H',this)">Hombre</div>
+        </div>
+      </div>
+      <div class="field"><label>Edad (años)</label><input type="number" id="an-edad" placeholder="0" oninput="calcAntropometria()"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Peso (kg)</label><input type="number" id="an-peso" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+      <div class="field"><label>Talla (cm)</label><input type="number" id="an-talla" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+    </div>
+    <div class="field"><label>Superficie corporal (Mosteller)</label><div class="res neutral" id="an-sc">—</div><p class="note">Útil sobre todo para dosificación de fármacos/quimioterapia — no es un dato central en valoración nutricional de rutina.</p></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--antro-text)">⚖️ Peso ideal y rango saludable</div>
+    <div class="field">
+      <label>Grupo poblacional</label>
+      <div class="pb-wrap" id="an-grupo-wrap">
+        <div class="pb on" onclick="setAnGrupo('adulto',this)">Adulto</div>
+        <div class="pb" onclick="setAnGrupo('adolescente',this)">Adolescente</div>
+        <div class="pb" onclick="setAnGrupo('mayor',this)">Adulto mayor</div>
+      </div>
+    </div>
+    <div class="field"><label>Peso ideal</label><div class="res ok" id="an-pideal">—</div></div>
+    <div class="field"><label>Rango de peso saludable</label><div class="res neutral" id="an-rango">—</div><p class="note">Adulto: IMC 18.5–24.99 · Adulto mayor: IMC 23.1–27.9 (rangos más altos, protectores en esta etapa)</p></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--antro-text)">📐 Circunferencias</div>
+    <div class="row">
+      <div class="field"><label>Cintura (cm)</label><input type="number" id="an-cintura" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+      <div class="field"><label>Cadera (cm)</label><input type="number" id="an-cadera" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+    </div>
+    <div class="field"><label>Índice cintura-cadera</label><div class="res" id="an-icc">—</div></div>
+    <div class="field"><label>Distribución de grasa</label><div class="res" id="an-distgrasa">—</div></div>
+    <div class="field"><label>Circunferencia de muñeca (cm)</label><input type="number" id="an-muneca" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+    <div class="field"><label>Complexión</label><div class="res neutral" id="an-complexion">—</div></div>
+    <div class="field"><label>% Agua corporal (estimado)</label><div class="res neutral" id="an-agua">—</div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--antro-text)">🧬 Composición corporal (pliegues cutáneos)</div>
+    <p class="note" style="margin-bottom:8px">Método Durnin-Womersley. Requiere edad y sexo capturados arriba.</p>
+    <div class="row">
+      <div class="field"><label>Bicipital (mm)</label><input type="number" id="an-bicipital" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+      <div class="field"><label>Subescapular (mm)</label><input type="number" id="an-subescapular" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Suprailiaco (mm)</label><input type="number" id="an-suprailiaco" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+      <div class="field"><label>Tricipital (mm)</label><input type="number" id="an-tricipital" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+    </div>
+    <div class="field"><label>Densidad corporal</label><div class="res neutral" id="an-densidad">—</div></div>
+    <div class="field"><label>% Grasa corporal</label><div class="res ok" id="an-grasa">—</div></div>
+    <div class="field"><label>Rango de grasa ideal (edad/sexo)</label><div class="res neutral" id="an-grasa-ideal">—</div></div>
+    <div class="field"><label>Composición (con peso capturado arriba)</label><div class="res neutral" id="an-composicion">—</div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title" style="color:var(--antro-text)">💪 Masa muscular del brazo</div>
+    <div class="field"><label>Circunferencia de brazo (cm)</label><input type="number" id="an-brazo" step="0.1" placeholder="0.0" oninput="calcAntropometria()"></div>
+    <p class="note" style="margin-bottom:8px">Usa el pliegue tricipital capturado arriba.</p>
+    <div class="field"><label>Área muscular del brazo</label><div class="res neutral" id="an-amb">—</div></div>
+    <div class="field"><label>Masa muscular total / %</label><div class="res neutral" id="an-mm">—</div></div>
+  </div>
+
 </div>
 
 <!-- ======= TAB EMBARAZO ======= -->
@@ -1185,6 +1264,30 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     </div>
   </div>
 
+  <!-- DIETOTERAPIA POR CONDICIÓN — GUÍA RÁPIDA -->
+  <div class="section">
+    <div class="sec-title" style="color:var(--amber-text)">📋 Dietoterapia por condición — guía rápida</div>
+    <p class="note">Marco general de enfoque nutricional (Manual Maestro, Módulo 7). Son lineamientos de orientación, no una prescripción completa — individualizar siempre según medicación, función orgánica, etapa de la enfermedad y tolerancia del paciente.</p>
+
+    <div class="sub-card">
+      <div class="field">
+        <label>Condición</label>
+        <select id="dt-condicion" onchange="renderDietoterapia()">
+          <option value="hipertension">Hipertensión</option>
+          <option value="icc">Insuficiencia cardiaca</option>
+          <option value="hepatica">Enfermedad hepática</option>
+          <option value="pancreatitis">Pancreatitis</option>
+          <option value="celiaquia">Celiaquía</option>
+          <option value="sii">Síndrome de intestino irritable (SII)</option>
+          <option value="cancer">Cáncer</option>
+          <option value="estrenimiento">Estreñimiento</option>
+        </select>
+      </div>
+      <div class="field"><label>Enfoque general</label><div class="res neutral" id="dt-enfoque">—</div></div>
+      <div id="dt-puntos"></div>
+    </div>
+  </div>
+
   <button class="btn-save" onclick="imprimirPatologias()">🖨️ Generar PDF — Módulos por patología</button>
 </div>
 
@@ -1258,6 +1361,7 @@ var gProt = 1.2, eProt = 1.2, lactancia = false;
 var gProtMode = 'gkg', eProtMode = 'gkg';
 var obSexo = 'F', obDeficit = 0, diRiesgo = 'bajo';
 var aguaModo = 'sano', aguaSexo = 'H';
+var anSexo = 'H', anGrupo = 'adulto';
 
 // ===== TABS =====
 function switchTab(t) {
@@ -1266,16 +1370,17 @@ function switchTab(t) {
   document.getElementById('tab-'+t).classList.add('active');
   var tabs = document.querySelectorAll('.tab');
   if(t==='general') tabs[0].classList.add('active');
-  else if(t==='embarazo') tabs[1].classList.add('active');
-  else if(t==='pediatria') { tabs[2].classList.add('active'); calcPediatrico(); }
-  else if(t==='labs') tabs[3].classList.add('active');
-  else if(t==='agua') tabs[4].classList.add('active');
-  else if(t==='plan') { tabs[5].classList.add('active'); renderPlanGrid(); }
-  else if(t==='historia') { tabs[6].classList.add('active'); renderHistoriaList(); }
-  else if(t==='soap') { tabs[7].classList.add('active'); initPesSelect(); }
-  else if(t==='pacientes') { tabs[8].classList.add('active'); renderPacs(); }
-  else if(t==='patologias') { tabs[9].classList.add('active'); }
-  else { tabs[10].classList.add('active'); }
+  else if(t==='antropometria') { tabs[1].classList.add('active'); calcAntropometria(); }
+  else if(t==='embarazo') tabs[2].classList.add('active');
+  else if(t==='pediatria') { tabs[3].classList.add('active'); calcPediatrico(); }
+  else if(t==='labs') tabs[4].classList.add('active');
+  else if(t==='agua') tabs[5].classList.add('active');
+  else if(t==='plan') { tabs[6].classList.add('active'); renderPlanGrid(); }
+  else if(t==='historia') { tabs[7].classList.add('active'); renderHistoriaList(); }
+  else if(t==='soap') { tabs[8].classList.add('active'); initPesSelect(); }
+  else if(t==='pacientes') { tabs[9].classList.add('active'); renderPacs(); }
+  else if(t==='patologias') { tabs[10].classList.add('active'); }
+  else { tabs[11].classList.add('active'); }
 }
 
 // ===== HELPERS =====
@@ -1683,6 +1788,106 @@ function calcE() {
 function clearEMacs(){
   ['e-hckcal','e-hcg','e-pg','e-pkcal','e-ppct','e-lipkcal','e-lipg'].forEach(function(id){ document.getElementById(id).innerHTML='—'; });
   document.getElementById('e-sum').style.display='none';
+}
+
+// ===== ANTROPOMETRÍA AVANZADA =====
+// Usa window.Antropometria, expuesto por calc-engine.js vía el script
+// type="module" al final del archivo.
+
+function setAnSexo(v, el){
+  document.querySelectorAll('#an-sexo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); anSexo = v; calcAntropometria();
+}
+function setAnGrupo(v, el){
+  document.querySelectorAll('#an-grupo-wrap .pb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on'); anGrupo = v; calcAntropometria();
+}
+
+function calcAntropometria(){
+  if(!window.Antropometria){
+    ['an-sc','an-pideal','an-rango','an-icc','an-distgrasa','an-complexion','an-agua','an-densidad','an-grasa','an-grasa-ideal','an-composicion','an-amb','an-mm'].forEach(function(id){ setR(id,'Cargando…','neutral'); });
+    return;
+  }
+  var AN = window.Antropometria;
+  var edad = parseFloat(gv('an-edad'));
+  var peso = parseFloat(gv('an-peso'));
+  var tallaCm = parseFloat(gv('an-talla'));
+  var tallaM = tallaCm ? tallaCm/100 : null;
+
+  // Superficie corporal (Mosteller)
+  if(peso && tallaCm && window.PlanAlimentacion){
+    setR('an-sc', window.PlanAlimentacion.superficieCorporal(peso, tallaCm)+' m²', 'neutral');
+  } else {
+    setR('an-sc','—','neutral');
+  }
+
+  // Peso ideal y rango saludable
+  if(tallaCm){
+    var pideal;
+    if(anGrupo==='adolescente') pideal = anSexo==='M' ? AN.pesoIdealAdolescenteMujer(tallaCm) : AN.pesoIdealAdolescenteHombre(tallaCm);
+    else pideal = AN.pesoIdealAdulto(tallaCm);
+    setR('an-pideal', pideal+' kg', 'ok');
+
+    var rango = anGrupo==='mayor' ? AN.rangoPesoSaludableAdultoMayor(tallaM) : AN.rangoPesoSaludable(tallaM);
+    setR('an-rango', rango.minimo+' – '+rango.maximo+' kg', 'neutral');
+  } else {
+    setR('an-pideal','—','neutral'); setR('an-rango','—','neutral');
+  }
+
+  // Circunferencias
+  var cintura = parseFloat(gv('an-cintura'));
+  var cadera = parseFloat(gv('an-cadera'));
+  if(cintura && cadera){
+    var icc = AN.indiceCinturaCadera(cintura, cadera);
+    var dist = AN.distribucionGrasaICC(icc, anSexo);
+    setR('an-icc', icc, dist==='Androide'?'warn':'ok');
+    setR('an-distgrasa', dist, dist==='Androide'?'warn':'ok');
+  } else { setR('an-icc','—','neutral'); setR('an-distgrasa','—','neutral'); }
+
+  var muneca = parseFloat(gv('an-muneca'));
+  if(tallaCm && muneca){
+    var comp = AN.complexion(tallaCm, muneca, anSexo);
+    setR('an-complexion', comp.complexion+' (índice '+comp.indice+')', 'neutral');
+  } else { setR('an-complexion','—','neutral'); }
+
+  if(peso){
+    setR('an-agua', AN.porcentajeAguaCorporal(peso)+' %', 'neutral');
+  } else { setR('an-agua','—','neutral'); }
+
+  // Pliegues cutáneos (Durnin-Womersley)
+  var bic = parseFloat(gv('an-bicipital'));
+  var sub = parseFloat(gv('an-subescapular'));
+  var supra = parseFloat(gv('an-suprailiaco'));
+  var tric = parseFloat(gv('an-tricipital'));
+  var sumaPliegues = (!isNaN(bic)&&!isNaN(sub)&&!isNaN(supra)&&!isNaN(tric)) ? bic+sub+supra+tric : null;
+
+  if(sumaPliegues && edad){
+    var dens = AN.densidadCorporal(sumaPliegues, edad, anSexo);
+    setR('an-densidad', dens, 'neutral');
+    var grasa = AN.porcentajeGrasaCorporal(dens);
+    setR('an-grasa', 'Siri '+grasa.siri+'% · Brozek '+grasa.brozek+'% · Promedio '+grasa.promedio+'%', 'ok');
+    var rangoIdeal = AN.rangoGrasaIdeal(edad, anSexo);
+    setR('an-grasa-ideal', rangoIdeal.min+'% – '+rangoIdeal.max+'%', 'neutral');
+
+    if(peso){
+      var comp2 = AN.composicionCorporal(peso, grasa.promedio);
+      setR('an-composicion', 'Grasa: '+comp2.kg_grasa_total+' kg · Masa libre de grasa: '+comp2.masa_libre_grasa_kg+' kg', 'neutral');
+    } else { setR('an-composicion','—','neutral'); }
+  } else {
+    setR('an-densidad','—','neutral'); setR('an-grasa','—','neutral');
+    setR('an-grasa-ideal','—','neutral'); setR('an-composicion','—','neutral');
+  }
+
+  // Masa muscular del brazo
+  var brazo = parseFloat(gv('an-brazo'));
+  if(brazo && !isNaN(tric)){
+    var amb = AN.areaMuscularBrazo(brazo, tric, anSexo);
+    setR('an-amb', amb+' cm²', 'neutral');
+    if(tallaCm && peso){
+      var mm = AN.masaMuscularTotal(tallaCm, amb, peso);
+      setR('an-mm', mm.masa_muscular_total_kg+' kg ('+mm.porcentaje_masa_muscular+'%)', 'neutral');
+    } else { setR('an-mm','—','neutral'); }
+  } else { setR('an-amb','—','neutral'); setR('an-mm','—','neutral'); }
 }
 
 // ===== AGUA / ELECTROLITOS =====
@@ -2219,6 +2424,94 @@ function calcEmbDislip(){
   if(!isNaN(tg) && tg>1000) tip = '⚠️ TG >1000 mg/dL en embarazo: riesgo real de pancreatitis aguda — requiere valoración médica urgente y restricción estricta de grasa total, además del manejo nutricional.';
   else if((!isNaN(ct)&&ct>r.ct[1]) || (!isNaN(tg)&&tg>r.tg[1])) tip = 'Valor(es) por arriba del rango esperado para el trimestre. Descartar diabetes gestacional/preeclampsia asociadas y reforzar calidad de grasas y fibra; no se recomienda restricción calórica agresiva durante el embarazo.';
   sv('ed-tip', tip);
+}
+
+// ===== DIETOTERAPIA POR CONDICIÓN — GUÍA RÁPIDA =====
+// Fuente: Manual Maestro, Módulo 7. Marcos de orientación general, no
+// prescripciones completas — se individualizan según medicación, función
+// orgánica, etapa de la enfermedad y tolerancia.
+var DIETOTERAPIA_GUIAS = {
+  hipertension: {
+    enfoque: 'Patrón tipo DASH adaptado; reducir sodio y ultraprocesados.',
+    puntos: [
+      'Meta de sodio habitual: &lt;2,300 mg/día (algunas guías sugieren &lt;1,500 mg/día en riesgo elevado).',
+      'Priorizar frutas, verduras, lácteos bajos en grasa, cereales integrales y proteína magra.',
+      'Aumentar potasio, calcio y magnesio dietéticos si la función renal lo permite.',
+      'Limitar alcohol; favorecer actividad física según indicación médica.'
+    ]
+  },
+  icc: {
+    enfoque: 'Sodio y líquidos según grado de congestión y función renal; no restringir de forma automática.',
+    puntos: [
+      'Restricción de sodio habitual: 2,000–3,000 mg/día; más estricta solo si hay congestión significativa.',
+      'La restricción de líquidos suele reservarse para hiponatremia o congestión refractaria, no de rutina.',
+      'Vigilar el peso diario como indicador de retención de líquidos.',
+      'Evitar restricciones calórico-proteicas innecesarias — preservar masa muscular, sobre todo en caquexia cardiaca.'
+    ]
+  },
+  hepatica: {
+    enfoque: 'Preservar masa muscular; no restringir proteína sin indicación específica.',
+    puntos: [
+      'Evitar restricción proteica rutinaria incluso en cirrosis — el catabolismo muscular empeora el pronóstico.',
+      'Fraccionar la ingesta y evitar ayunos prolongados (una colación nocturna reduce el catabolismo).',
+      'En encefalopatía hepática, individualizar la fuente de proteína solo si hay intolerancia clara — no restringir de rutina.',
+      'Vigilar sodio y líquidos si hay ascitis; valorar tiamina si existe riesgo de deficiencia (ej. consumo de alcohol).'
+    ]
+  },
+  pancreatitis: {
+    enfoque: 'Valorar riesgo y tolerancia; evitar el ayuno prolongado innecesario.',
+    puntos: [
+      'Pancreatitis leve: iniciar vía oral de forma temprana según tolerancia, con dieta baja en grasa.',
+      'Pancreatitis grave: preferir nutrición enteral temprana sobre parenteral si el tracto digestivo es funcional.',
+      'Evitar el ayuno prolongado "por rutina" — se asocia a peores desenlaces clínicos.',
+      'Progresar textura y grasa según la tolerancia real del paciente, no por calendario fijo.'
+    ]
+  },
+  celiaquia: {
+    enfoque: 'Dieta sin gluten estricta y de por vida; excluir trigo, cebada y centeno.',
+    puntos: [
+      'Sin gluten estricto y permanente — no solo durante los episodios sintomáticos.',
+      'Prevenir contaminación cruzada (utensilios, superficies, alimentos procesados).',
+      'Evaluar deficiencias frecuentes al diagnóstico: hierro, folato, vitamina D, calcio, B12.',
+      'Verificar etiquetado "sin gluten" certificado, no solo ausencia aparente de trigo/cebada/centeno.'
+    ]
+  },
+  sii: {
+    enfoque: 'Individualizar; FODMAP solo en pacientes seleccionados y con reintroducción posterior.',
+    puntos: [
+      'La dieta baja en FODMAP no es de por vida — la fase de reintroducción es esencial para identificar disparadores reales.',
+      'No indicarla de rutina a todo paciente con SII; valorar primero medidas generales (fibra, hidratación, horarios regulares).',
+      'Identificar el patrón predominante (SII con estreñimiento, con diarrea, o mixto) para ajustar el tipo de fibra.',
+      'Considerar apoyo especializado en FODMAP para evitar restricciones innecesarias o prolongadas.'
+    ]
+  },
+  cancer: {
+    enfoque: 'Prevenir y tratar la desnutrición; ajustar energía y proteína según la situación clínica.',
+    puntos: [
+      'Tamizaje nutricional temprano — la desnutrición es frecuente y afecta la tolerancia al tratamiento.',
+      'Los requerimientos proteicos suelen ser más altos (con frecuencia 1.2–2.0 g/kg/d) para preservar masa magra.',
+      'Ajustar consistencia y vía de alimentación según efectos del tratamiento (mucositis, náusea, disgeusia).',
+      'Individualizar según la fase (tratamiento activo, paliativo, sobrevivencia) — los objetivos cambian con el contexto.'
+    ]
+  },
+  estrenimiento: {
+    enfoque: 'Ajustar fibra, líquidos y actividad física según la causa y la tolerancia.',
+    puntos: [
+      'Aumentar la fibra de forma gradual (≈25–38 g/día en adultos) para evitar distensión o gases.',
+      'Asegurar líquidos suficientes junto con el aumento de fibra — la fibra sin líquidos puede empeorar el cuadro.',
+      'Favorecer actividad física regular cuando sea clínicamente posible.',
+      'Descartar causas secundarias (medicamentos, inmovilidad, alteraciones metabólicas) antes de atribuirlo solo a la dieta.'
+    ]
+  }
+};
+
+function renderDietoterapia(){
+  var cond = gv('dt-condicion');
+  var g = DIETOTERAPIA_GUIAS[cond];
+  if(!g) return;
+  setR('dt-enfoque', g.enfoque, 'neutral');
+  document.getElementById('dt-puntos').innerHTML = '<ul style="padding-left:18px; font-size:.82rem; line-height:1.6; margin-top:6px">'+
+    g.puntos.map(function(p){ return '<li>'+p+'</li>'; }).join('')+'</ul>';
 }
 
 // ===== RESET =====
@@ -3322,8 +3615,20 @@ function imprimirPatologias(){
     '<td class="pr-k">Rango esperado</td><td class="pr-v">'+gt('ed-rango')+'</td></tr>'+
     '<tr><td class="pr-k">Colesterol total</td><td class="pr-v">'+gt('ed-r-ct')+'</td>'+
     '<td class="pr-k">Triglicéridos</td><td class="pr-v">'+gt('ed-r-tg')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('ed-tip')+'</p>'+
-    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
+    '</table><p class="pr-notas">'+gt('ed-tip')+'</p>';
+
+  // Dietoterapia por condición
+  var dtCond = gv('dt-condicion');
+  var dtSel = document.getElementById('dt-condicion');
+  var dtLabel = dtSel.options[dtSel.selectedIndex] ? dtSel.options[dtSel.selectedIndex].text : dtCond;
+  var dtGuia = DIETOTERAPIA_GUIAS[dtCond];
+  if(dtGuia){
+    html += '<h3>📋 Dietoterapia por condición — '+dtLabel+'</h3>'+
+      '<p class="pr-notas"><b>Enfoque general:</b> '+dtGuia.enfoque+'</p>'+
+      '<ul class="pr-notas">'+dtGuia.puntos.map(function(p){ return '<li>'+p+'</li>'; }).join('')+'</ul>';
+  }
+
+  html += '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
 
   document.getElementById('print-area').innerHTML = html;
   setTimeout(function(){ window.print(); }, 100);
@@ -3517,6 +3822,7 @@ function soapCamaMatch(){
 // Init
 setLact(false);
 initLabSelect();
+renderDietoterapia();
 
 // Registro del Service Worker (PWA offline)
 if ('serviceWorker' in navigator) {
@@ -3531,11 +3837,13 @@ if ('serviceWorker' in navigator) {
 
 <script type="module">
   import { cargarTablasOMS, Percentiles } from './percentiles.js';
-  import { Embarazo, Lactancia, AguaElectrolitos } from './calc-engine.js';
+  import { Embarazo, Lactancia, AguaElectrolitos, Antropometria, PlanAlimentacion } from './calc-engine.js';
   window.Percentiles = Percentiles;
   window.Embarazo = Embarazo;
   window.Lactancia = Lactancia;
   window.AguaElectrolitos = AguaElectrolitos;
+  window.Antropometria = Antropometria;
+  window.PlanAlimentacion = PlanAlimentacion;
   window.tablasOMS = null;
   cargarTablasOMS('./who-growth-lms.json').then(function(t){
     window.tablasOMS = t;
@@ -3544,6 +3852,7 @@ if ('serviceWorker' in navigator) {
   if (typeof renderMicronutrientes === 'function') renderMicronutrientes();
   if (typeof calcAguaReq === 'function') calcAguaReq();
   if (typeof calcElectrolitos === 'function') calcElectrolitos();
+  if (typeof calcAntropometria === 'function') calcAntropometria();
 </script>
 </body>
 </html>
