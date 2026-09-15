@@ -3343,39 +3343,132 @@ function setPlanCard(id, actual, target, dec){
 
 // ===== SOAP / DIAGNÓSTICO NUTRICIONAL (PES) =====
 // Catálogo representativo eNCPT / NANDA-I por dominio: NI (Ingesta), NC (Clínico), NB (Conductual-ambiental)
+// Catálogo completo de diagnósticos nutricios (PES), tomado del Manual de
+// Referencia de Terminología Internacional de Nutrición y Dietética (IDNT/
+// eNCPT, Academia de Nutrición y Dietética, 4a ed., trad. CMN México).
+// 73 términos en los 4 dominios oficiales: Ingestión (NI), Clínicos (NC),
+// Conductuales-Ambientales (NB) y Otros (NO). El texto de "plan" es una
+// sugerencia de intervención orientativa — no forma parte del manual
+// original, que solo define el problema — y siempre debe individualizarse.
 var PES_CATALOG = [
- {code:'NI-1.2', problema:'Ingesta excesiva de energía', plan:'Ajustar plan de alimentación a los requerimientos calóricos calculados; fraccionar dieta; educación sobre tamaño de porciones y densidad energética.'},
- {code:'NI-1.4', problema:'Ingesta inadecuada de energía', plan:'Incrementar aporte calórico de forma progresiva; considerar suplementación oral; fraccionar en tomas pequeñas y frecuentes.'},
- {code:'NI-2.1', problema:'Ingesta oral de alimentos/bebidas inadecuada', plan:'Favorecer vía oral con modificación de consistencia y frecuencia; valorar suplementos nutricionales orales; monitorear tolerancia.'},
- {code:'NI-2.3', problema:'Ingesta enteral inadecuada', plan:'Ajustar volumen/velocidad de infusión enteral según tolerancia; revalorar fórmula y vía de administración con el equipo tratante.'},
- {code:'NI-3.1', problema:'Ingesta inadecuada de líquidos', plan:'Establecer meta de líquidos según requerimiento; ofrecer líquidos con cada tiempo de comida; vigilar signos de deshidratación.'},
- {code:'NI-5.1', problema:'Aumento de los requerimientos de nutrientes (especificar)', plan:'Ajustar plan de alimentación para cubrir el requerimiento aumentado; priorizar fuentes de alta densidad nutricional.'},
- {code:'NI-5.2', problema:'Desnutrición (evidencia clínica/antropométrica)', plan:'Iniciar plan de recuperación nutricional progresivo; monitoreo antropométrico y bioquímico periódico; considerar interconsulta.'},
- {code:'NI-5.6.2', problema:'Ingesta excesiva de grasa', plan:'Reducir fuentes de grasa saturada/trans; educación en lectura de etiquetado y técnicas de cocción bajas en grasa.'},
- {code:'NI-5.6.3', problema:'Ingesta inadecuada de grasa', plan:'Incorporar fuentes de grasas esenciales de buena calidad de forma gradual según tolerancia.'},
- {code:'NI-5.7.1', problema:'Ingesta inadecuada de proteína', plan:'Aumentar aporte proteico priorizando alimentos de alto valor biológico; considerar módulo proteico si aplica.'},
- {code:'NI-5.8.1', problema:'Ingesta inadecuada de carbohidratos', plan:'Ajustar aporte de hidratos de carbono complejos distribuidos en el día; evitar ayunos prolongados.'},
- {code:'NI-5.8.2', problema:'Ingesta excesiva de carbohidratos', plan:'Reducir azúcares simples y ultraprocesados; priorizar carbohidratos de bajo índice glucémico.'},
- {code:'NI-5.10.1', problema:'Ingesta inadecuada de minerales (especificar: hierro/calcio/etc.)', plan:'Incrementar fuentes alimentarias del micronutriente deficiente; valorar suplementación con el equipo médico.'},
- {code:'NC-1.1', problema:'Dificultad de deglución (disfagia)', plan:'Modificar consistencia de dieta según nivel de disfagia; coordinar valoración con terapia de lenguaje/deglución.'},
- {code:'NC-1.4', problema:'Alteración de la función gastrointestinal', plan:'Ajustar consistencia y fraccionamiento de la dieta; identificar y evitar alimentos que exacerban síntomas.'},
- {code:'NC-2.1', problema:'Utilización alterada de nutrientes', plan:'Ajustar plan de alimentación según la condición clínica de base; monitoreo bioquímico estrecho.'},
- {code:'NC-2.2', problema:'Alteración de valores de laboratorio relacionados con nutrición', plan:'Plan de alimentación dirigido a corregir el parámetro alterado; reevaluación bioquímica en el seguimiento.'},
+ // ===== DOMINIO: INGESTIÓN (NI) — Balance energético =====
+ {code:'NI-1.1', problema:'Gasto energético incrementado', plan:'Ajustar el aporte calórico al gasto energético estimado, considerando composición corporal, medicamentos y factores endocrino-neurológicos; monitorear tolerancia y evolución de peso.'},
+ {code:'NI-1.2', problema:'Ingestión energética deficiente', plan:'Incrementar aporte calórico de forma progresiva; considerar suplementación oral; fraccionar en tomas pequeñas y frecuentes.'},
+ {code:'NI-1.3', problema:'Ingestión energética excesiva', plan:'Ajustar plan de alimentación a los requerimientos calóricos calculados; fraccionar dieta; educación sobre tamaño de porciones y densidad energética.'},
+ {code:'NI-1.4', problema:'Predicción de ingestión energética subóptima', plan:'Anticipar el riesgo de ingestión insuficiente (ej. cirugía, cambio de dieta programado) y planear estrategias preventivas antes de que ocurra el déficit.'},
+ {code:'NI-1.5', problema:'Predicción de ingestión energética excesiva', plan:'Anticipar el riesgo de ingestión excesiva (ej. cambio de tratamiento, transición de dieta) y planear estrategias preventivas de control de porciones y educación.'},
+ // ===== Ingestión vía oral o apoyo nutricio =====
+ {code:'NI-2.1', problema:'Ingestión vía oral deficiente', plan:'Favorecer vía oral con modificación de consistencia y frecuencia; valorar suplementos nutricionales orales; monitorear tolerancia.'},
+ {code:'NI-2.2', problema:'Ingestión vía oral excesiva', plan:'Revisar tamaño y frecuencia de las porciones vía oral; ajustar a los requerimientos calculados; educación en autocontrol de la ingestión.'},
+ {code:'NI-2.3', problema:'Infusión deficiente de nutrición enteral', plan:'Ajustar volumen/velocidad de infusión enteral según tolerancia; revalorar fórmula y vía de administración con el equipo tratante.'},
+ {code:'NI-2.4', problema:'Infusión excesiva de nutrición enteral', plan:'Ajustar volumen/velocidad de infusión enteral a la meta calculada; vigilar signos de sobrecarga (distensión, residuo gástrico, glucemia).'},
+ {code:'NI-2.5', problema:'Nutrición enteral inferior a lo óptimo en composición y modalidad', plan:'Revisar la fórmula y vía de administración contra la práctica basada en evidencia; ajustar composición o modalidad según la condición clínica.'},
+ {code:'NI-2.6', problema:'Infusión deficiente de nutrición parenteral', plan:'Ajustar volumen/composición de la mezcla parenteral a la meta calculada; coordinar con farmacia y equipo médico.'},
+ {code:'NI-2.7', problema:'Infusión excesiva de nutrición parenteral', plan:'Ajustar volumen/composición de la mezcla parenteral a la meta calculada; vigilar sobrecarga metabólica (glucosa, triglicéridos, electrolitos).'},
+ {code:'NI-2.8', problema:'Nutrición parenteral inferior a la óptima en composición y modalidad', plan:'Revisar composición y vía de administración de la mezcla parenteral contra la práctica basada en evidencia.'},
+ {code:'NI-2.9', problema:'Aceptación limitada de alimentos', plan:'Ampliar gradualmente la variedad y calidad de alimentos aceptados; identificar barreras sensoriales o conductuales; coordinar con el equipo si hay sospecha de trastorno de la conducta alimentaria.'},
+ // ===== Ingestión de líquidos =====
+ {code:'NI-3.1', problema:'Ingestión deficiente de líquidos', plan:'Establecer meta de líquidos según requerimiento; ofrecer líquidos con cada tiempo de comida; vigilar signos de deshidratación.'},
+ {code:'NI-3.2', problema:'Ingestión excesiva de líquidos', plan:'Ajustar la ingestión de líquidos a la meta calculada; identificar la causa y coordinar restricción si aplica.'},
+ // ===== Sustancias bioactivas =====
+ {code:'NI-4.1', problema:'Ingestión subóptima de sustancias bioactivas (especificar)', plan:'Incrementar la ingestión de la sustancia bioactiva específica (ej. esteroles/estanoles vegetales, psyllium) según la meta del paciente.'},
+ {code:'NI-4.2', problema:'Ingestión excesiva de sustancias bioactivas (especificar)', plan:'Reducir la ingestión de la sustancia bioactiva específica a niveles seguros; educar sobre fuentes ocultas en suplementos o alimentos.'},
+ {code:'NI-4.3', problema:'Ingestión excesiva de alcohol', plan:'Educar sobre los límites de consumo recomendados; valorar apoyo especializado si hay dependencia; considerar interacción con el estado nutricio y medicamentos.'},
+ // ===== Nutrimentos =====
+ {code:'NI-5.1', problema:'Necesidades incrementadas de nutrimentos (especificar)', plan:'Ajustar el plan de alimentación para cubrir el requerimiento aumentado del nutrimento específico; priorizar fuentes de alta densidad nutricional.'},
+ {code:'NI-5.2', problema:'Desnutrición', plan:'Iniciar plan de recuperación nutricional progresivo; monitoreo antropométrico y bioquímico periódico; considerar interconsulta.'},
+ {code:'NI-5.3', problema:'Ingestión energética-proteica deficiente', plan:'Incrementar aporte de energía y proteína de forma progresiva; fraccionar tomas; considerar suplementación oral o enteral según tolerancia.'},
+ {code:'NI-5.4', problema:'Necesidades disminuidas de nutrimentos (especificar)', plan:'Ajustar el plan de alimentación para reducir el aporte del nutrimento específico según la condición clínica; vigilar signos de deficiencia si la restricción es prolongada.'},
+ {code:'NI-5.5', problema:'Desequilibrio de nutrimentos', plan:'Identificar y corregir la combinación de nutrimentos que interfiere entre sí; ajustar el plan de alimentación.'},
+ // ===== Lípidos y colesterol =====
+ {code:'NI-5.6.1', problema:'Ingestión deficiente de lípidos', plan:'Incorporar fuentes de grasas esenciales de buena calidad de forma gradual según tolerancia.'},
+ {code:'NI-5.6.2', problema:'Ingestión excesiva de lípidos', plan:'Reducir fuentes de grasa saturada/trans; educación en lectura de etiquetado y técnicas de cocción bajas en grasa.'},
+ {code:'NI-5.6.3', problema:'Ingestión menor a la óptima de los diferentes tipos de lípidos (especificar)', plan:'Ajustar la proporción de tipos de grasa (saturada/insaturada/trans) hacia el perfil recomendado; priorizar fuentes de omega-3.'},
+ // ===== Proteína =====
+ {code:'NI-5.7.1', problema:'Ingestión deficiente de proteína', plan:'Aumentar aporte proteico priorizando alimentos de alto valor biológico; considerar módulo proteico si aplica.'},
+ {code:'NI-5.7.2', problema:'Ingestión excesiva de proteína', plan:'Ajustar el aporte proteico a la meta calculada; vigilar función renal si hay factores de riesgo asociados.'},
+ {code:'NI-5.7.3', problema:'Ingestión menor a la óptima de los diferentes tipos de proteína o aminoácidos (especificar)', plan:'Ajustar la fuente o el tipo de proteína/aminoácidos según la condición clínica.'},
+ // ===== Hidratos de carbono y fibra =====
+ {code:'NI-5.8.1', problema:'Ingestión deficiente de hidratos de carbono', plan:'Ajustar aporte de hidratos de carbono complejos distribuidos en el día; evitar ayunos prolongados.'},
+ {code:'NI-5.8.2', problema:'Ingestión excesiva de hidratos de carbono', plan:'Reducir azúcares simples y ultraprocesados; priorizar carbohidratos de bajo índice glucémico.'},
+ {code:'NI-5.8.3', problema:'Ingestión menor a la óptima de los diferentes tipos de hidratos de carbono (especificar)', plan:'Ajustar el tipo de hidrato de carbono consumido (ej. azúcar, almidón) hacia el perfil recomendado.'},
+ {code:'NI-5.8.4', problema:'Ingestión inconsistente de hidratos de carbono', plan:'Distribuir de forma constante los hidratos de carbono entre comidas y días; coordinar horarios con el esquema de medicamentos si aplica.'},
+ {code:'NI-5.8.5', problema:'Ingestión deficiente de fibra', plan:'Aumentar la fibra de forma gradual (frutas, verduras, leguminosas, cereales integrales) para evitar distensión o gases.'},
+ {code:'NI-5.8.6', problema:'Ingestión excesiva de fibra', plan:'Ajustar la ingestión de fibra a un nivel tolerado; vigilar síntomas gastrointestinales y absorción de micronutrimentos.'},
+ // ===== Vitaminas =====
+ {code:'NI-5.9.1', problema:'Ingestión deficiente de vitaminas (especificar)', plan:'Incrementar fuentes alimentarias de la(s) vitamina(s) deficiente(s); valorar suplementación con el equipo médico.'},
+ {code:'NI-5.9.2', problema:'Ingestión excesiva de vitaminas (especificar)', plan:'Reducir la ingestión de la(s) vitamina(s) en exceso, incluyendo fuentes de suplementos; vigilar signos de toxicidad.'},
+ // ===== Minerales =====
+ {code:'NI-5.10.1', problema:'Ingestión deficiente de minerales (especificar)', plan:'Incrementar fuentes alimentarias del mineral deficiente; valorar suplementación con el equipo médico.'},
+ {code:'NI-5.10.2', problema:'Ingestión excesiva de minerales (especificar)', plan:'Reducir la ingestión del mineral en exceso, incluyendo fuentes de suplementos; vigilar signos de toxicidad o interacción con otros nutrimentos.'},
+ // ===== Multi-nutrimento =====
+ {code:'NI-5.11.1', problema:'Predicción de ingestión de nutrimentos subóptima (especificar)', plan:'Anticipar el riesgo de ingestión insuficiente de uno o más nutrimentos y planear estrategias preventivas.'},
+ {code:'NI-5.11.2', problema:'Predicción de ingestión de nutrimentos excesiva (especificar)', plan:'Anticipar el riesgo de ingestión excesiva de uno o más nutrimentos y planear estrategias preventivas.'},
+
+ // ===== DOMINIO: CLÍNICOS (NC) — Funcional =====
+ {code:'NC-1.1', problema:'Dificultad para deglutir', plan:'Modificar consistencia de dieta según nivel de disfagia; coordinar valoración con terapia de lenguaje/deglución.'},
+ {code:'NC-1.2', problema:'Dificultad para morder/masticar', plan:'Ajustar textura de los alimentos (picado, molido, suave); valorar salud bucal y dentición.'},
+ {code:'NC-1.3', problema:'Dificultades durante la lactancia', plan:'Evaluar técnica de lactancia, posición y agarre; coordinar con consultora de lactancia si está disponible.'},
+ {code:'NC-1.4', problema:'Alteración en la función gastrointestinal (GI)', plan:'Ajustar consistencia y fraccionamiento de la dieta; identificar y evitar alimentos que exacerban síntomas.'},
+ // ===== Bioquímicos =====
+ {code:'NC-2.1', problema:'Alteración en la utilización de nutrimentos', plan:'Ajustar plan de alimentación según la condición clínica de base; monitoreo bioquímico estrecho.'},
+ {code:'NC-2.2', problema:'Valores de laboratorio relacionados con la nutrición alterados (especificar)', plan:'Plan de alimentación dirigido a corregir el parámetro alterado; reevaluación bioquímica en el seguimiento.'},
+ {code:'NC-2.3', problema:'Interacción medicamentos-alimentos (especificar)', plan:'Ajustar horario o composición de la dieta para evitar la interacción identificada; coordinar con farmacia/médico tratante.'},
+ {code:'NC-2.4', problema:'Predicción de interacción medicamentos-alimentos (especificar)', plan:'Anticipar la interacción potencial y educar al paciente sobre horarios o alimentos a evitar con el medicamento.'},
+ // ===== Peso =====
  {code:'NC-3.1', problema:'Bajo peso', plan:'Plan de alimentación hipercalórico/hiperproteico progresivo; monitoreo semanal de peso.'},
- {code:'NC-3.2', problema:'Pérdida de peso involuntaria', plan:'Identificar causa de la pérdida; ajustar aporte calórico-proteico; vigilancia estrecha de ingesta y peso.'},
+ {code:'NC-3.2', problema:'Pérdida de peso involuntaria', plan:'Identificar causa de la pérdida; ajustar aporte calórico-proteico; vigilancia estrecha de ingestión y peso.'},
  {code:'NC-3.3', problema:'Sobrepeso/obesidad', plan:'Plan de alimentación hipocalórico moderado; fomentar actividad física según indicación médica; educación en hábitos.'},
- {code:'NC-3.4', problema:'Ganancia de peso involuntaria/excesiva', plan:'Revisar composición y volumen de la dieta actual; ajustar aporte calórico según meta de ganancia esperada.'},
- {code:'NB-1.1', problema:'Conocimientos insuficientes relacionados con la alimentación y nutrición', plan:'Sesión de educación nutricional individualizada; material de apoyo escrito; verificar comprensión.'},
- {code:'NB-1.3', problema:'No está listo/disposición para la dieta o cambio de estilo de vida', plan:'Abordaje motivacional; establecer metas pequeñas y alcanzables; reforzar en próximas consultas.'},
- {code:'NB-1.5', problema:'Alteración en la capacidad para autocontrolarse', plan:'Estrategias de automonitoreo (registro de alimentos); involucrar red de apoyo familiar.'},
- {code:'NB-2.1', problema:'Actividad física insuficiente', plan:'Fomentar actividad física gradual según condición clínica; coordinar con el equipo médico si hay restricciones.'},
- {code:'NB-3.1', problema:'Acceso limitado a alimentos', plan:'Adaptar plan de alimentación a recursos disponibles; orientar sobre opciones de bajo costo y programas de apoyo social.'}
+ {code:'NC-3.4', problema:'Aumento de peso involuntario', plan:'Revisar composición y volumen de la dieta actual; identificar causa (edema, medicamentos, ingestión) y ajustar el plan.'},
+ {code:'NC-3.5', problema:'Tasa de crecimiento subóptima', plan:'Incrementar aporte calórico-proteico según meta de crecimiento; monitoreo frecuente de peso/talla y curvas de crecimiento.'},
+ {code:'NC-3.6', problema:'Tasa de crecimiento excesiva', plan:'Ajustar aporte calórico a la meta de crecimiento esperada; monitoreo frecuente de peso/talla y curvas de crecimiento.'},
+
+ // ===== DOMINIO: CONDUCTUALES-AMBIENTALES (NB) — Conocimientos y creencias =====
+ {code:'NB-1.1', problema:'Conocimiento insuficiente en temas relacionados con alimentos y nutrición', plan:'Sesión de educación nutricional individualizada; material de apoyo escrito; verificar comprensión.'},
+ {code:'NB-1.2', problema:'Creencias y/o actitudes infundadas en materia de alimentación y nutrición (usar con precaución)', plan:'Abordar con sensibilidad las creencias identificadas; ofrecer información basada en evidencia sin confrontar directamente; respetar el contexto cultural del paciente.'},
+ {code:'NB-1.3', problema:'No estar preparado para realizar un cambio en el estilo de vida/dieta', plan:'Abordaje motivacional; establecer metas pequeñas y alcanzables; reforzar en próximas consultas.'},
+ {code:'NB-1.4', problema:'Déficit en el automonitoreo', plan:'Introducir herramientas sencillas de registro (diario de alimentos, app); revisar y reforzar el hábito en cada consulta.'},
+ {code:'NB-1.5', problema:'Patrón de alimentación desordenado', plan:'Evaluar con instrumentos validados si aplica; coordinar con salud mental/psicología; evitar recomendaciones restrictivas que refuercen el patrón.'},
+ {code:'NB-1.6', problema:'Apego insuficiente a las recomendaciones nutricias', plan:'Explorar barreras para el apego; simplificar el plan; reforzar la relevancia personal de las metas acordadas.'},
+ {code:'NB-1.7', problema:'Elecciones no deseables de alimentos', plan:'Educación sobre alternativas más alineadas con las guías alimentarias; involucrar al paciente en la selección de opciones factibles.'},
+ // ===== Actividad física y función física =====
+ {code:'NB-2.1', problema:'Inactividad física', plan:'Fomentar actividad física gradual según condición clínica; coordinar con el equipo médico si hay restricciones.'},
+ {code:'NB-2.2', problema:'Actividad física excesiva', plan:'Ajustar el nivel de actividad física a un rango seguro; valorar necesidades energéticas incrementadas asociadas; descartar patrón compensatorio.'},
+ {code:'NB-2.3', problema:'Incapacidad para el autocuidado', plan:'Identificar barreras físicas o cognitivas; involucrar red de apoyo o cuidador en la implementación del plan.'},
+ {code:'NB-2.4', problema:'Incapacidad para preparar alimentos/comidas', plan:'Adaptar el plan a las capacidades disponibles; valorar apoyo de terceros, servicios de entrega o programas comunitarios.'},
+ {code:'NB-2.5', problema:'Precaria calidad de vida nutricia', plan:'Explorar el impacto percibido de la condición/recomendaciones en la vida diaria; ajustar el plan para mejorar la sostenibilidad y satisfacción del paciente.'},
+ {code:'NB-2.6', problema:'Dificultad para autoalimentarse', plan:'Valorar equipo adaptado para la alimentación; coordinar con terapia ocupacional si está disponible.'},
+ // ===== Seguridad alimentaria y acceso a los alimentos =====
+ {code:'NB-3.1', problema:'Ingestión de alimentos no seguros', plan:'Educar en manejo higiénico de alimentos; identificar la fuente de contaminación; coordinar con autoridades si aplica.'},
+ {code:'NB-3.2', problema:'Acceso limitado a alimentos o agua', plan:'Adaptar plan de alimentación a recursos disponibles; orientar sobre opciones de bajo costo y programas de apoyo social.'},
+ {code:'NB-3.3', problema:'Acceso limitado a suministros relacionados con la nutrición', plan:'Identificar suministros faltantes (fórmulas, equipo); coordinar apoyo institucional o comunitario para su obtención.'},
+
+ // ===== DOMINIO: OTROS (NO) =====
+ {code:'N0-1.1', problema:'Sin diagnóstico nutricio en este momento', plan:'Documentar la ausencia de un problema nutricio actual; programar reevaluación según el riesgo y contexto clínico del paciente.'}
 ];
 
 function initPesSelect(){
   var sel = document.getElementById('soap-pes-select');
   if(!sel || sel.dataset.filled) return;
-  sel.innerHTML = PES_CATALOG.map(function(p,i){ return '<option value="'+i+'">'+p.code+' — '+p.problema+'</option>'; }).join('');
+  var DOMINIOS = {NI:'Ingestión', NC:'Clínicos', NB:'Conductuales-Ambientales', N0:'Otros'};
+  var orden = ['Ingestión','Clínicos','Conductuales-Ambientales','Otros'];
+  var grupos = {};
+  PES_CATALOG.forEach(function(p, i){
+    var prefijo = p.code.split('-')[0];
+    var dominio = DOMINIOS[prefijo] || 'Otros';
+    if(!grupos[dominio]) grupos[dominio] = [];
+    grupos[dominio].push({idx:i, p:p});
+  });
+  var html = '';
+  orden.forEach(function(dominio){
+    if(!grupos[dominio]) return;
+    html += '<optgroup label="'+dominio+'">';
+    grupos[dominio].forEach(function(item){
+      html += '<option value="'+item.idx+'">'+item.p.code+' — '+item.p.problema+'</option>';
+    });
+    html += '</optgroup>';
+  });
+  sel.innerHTML = html;
   sel.dataset.filled = '1';
 }
 
