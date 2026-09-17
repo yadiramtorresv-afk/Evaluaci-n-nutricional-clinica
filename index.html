@@ -3938,14 +3938,35 @@ if ('serviceWorker' in navigator) {
   window.Antropometria = Antropometria;
   window.PlanAlimentacion = PlanAlimentacion;
   window.tablasOMS = null;
+  window._modulosCargados = true;
   cargarTablasOMS('./who-growth-lms.json').then(function(t){
     window.tablasOMS = t;
     if (typeof calcPediatrico === 'function') calcPediatrico();
-  }).catch(function(err){ console.error('No se pudieron cargar las tablas OMS:', err); });
+  }).catch(function(err){
+    console.error('No se pudieron cargar las tablas OMS:', err);
+    window._errorTablasOMS = err.message || 'Error desconocido';
+    var el = document.getElementById('pe-pctl');
+    if (el) { el.textContent = '⚠️ No se pudo cargar who-growth-lms.json — revisa que el archivo esté subido en la raíz del repo.'; el.className = 'res danger'; }
+  });
   if (typeof renderMicronutrientes === 'function') renderMicronutrientes();
   if (typeof calcAguaReq === 'function') calcAguaReq();
   if (typeof calcElectrolitos === 'function') calcElectrolitos();
   if (typeof calcAntropometria === 'function') calcAntropometria();
+</script>
+
+<script>
+  // Red de seguridad: si a los 8 segundos el módulo de arriba nunca llegó
+  // a ejecutarse (ej. calc-engine.js o percentiles.js dieron 404, o tienen
+  // un error de sintaxis que rompe el <script type="module"> completo),
+  // window._modulosCargados sigue sin existir y esto lo hace visible en
+  // vez de dejar la pantalla en "Cargando…" para siempre sin explicación.
+  setTimeout(function(){
+    if (window._modulosCargados) return; // el módulo sí corrió, todo bien
+    var el = document.getElementById('pe-pctl');
+    var msg = '⚠️ No se pudieron cargar los módulos (calc-engine.js / percentiles.js). Revisa en DevTools → pestaña Console/Network si dan 404, y confirma que ambos archivos estén subidos en la raíz del repo con ese nombre exacto.';
+    if (el) { el.textContent = msg; el.className = 'res danger'; }
+    console.error(msg);
+  }, 8000);
 </script>
 </body>
 </html>

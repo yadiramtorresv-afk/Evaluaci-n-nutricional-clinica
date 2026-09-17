@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nutri-calc-v25';
+const CACHE_NAME = 'nutri-calc-v26';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -38,10 +38,15 @@ self.addEventListener('fetch', function(event) {
   event.respondWith(
     caches.match(event.request).then(function(cached) {
       return cached || fetch(event.request).then(function(response) {
-        return caches.open(CACHE_NAME).then(function(cache) {
-          cache.put(event.request, response.clone());
-          return response;
-        });
+        // Solo cachear respuestas exitosas — un 404/500 nunca debe
+        // quedarse "pegado" en caché sirviéndose para siempre.
+        if (response && response.ok) {
+          return caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        }
+        return response;
       }).catch(function() {
         return cached;
       });
