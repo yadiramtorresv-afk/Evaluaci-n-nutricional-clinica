@@ -765,6 +765,163 @@ const PlanAlimentacion = {
   superficieCorporal(peso_kg, talla_cm) {
     return round(Math.sqrt((peso_kg * talla_cm) / 3600), 2);
   },
+
+  /**
+   * Reparto automático de porciones SMAE a partir de una meta de kcal y
+   * macronutrientes, para dar un punto de partida editable (igual que el
+   * botón "Automático" de los softwares comerciales de referencia).
+   *
+   * ES UNA HEURÍSTICA DE ASIGNACIÓN SECUENCIAL, NO UN OPTIMIZADOR:
+   *  1. Fija verduras y frutas según el nivel calórico (base saludable).
+   *  2. Fija 1 porción de leguminosas y 2 de leche descremada (aporte de
+   *     calcio/vitamina D de rutina).
+   *  3. Cubre el resto de los hidratos de carbono con cereales sin grasa.
+   *  4. Cubre el resto de la proteína con AOA de bajo aporte de grasa.
+   *  5. Cubre el resto de los lípidos con aceites sin proteína.
+   * Cada paso resta lo ya cubierto por los pasos anteriores antes de
+   * calcular el siguiente grupo, por lo que el orden importa. El resultado
+   * es un punto de partida razonable para ajustar a mano, no una dieta
+   * final — así se explica en la interfaz.
+   *
+   * @param {{kcal:number, proteina_g:number, lipidos_g:number, hc_g:number}} meta
+   * @returns {{porciones: object, adecuacion: object}}
+   */
+  reparticionAutomaticaPorGrupos(meta) {
+    const G = this.GRUPOS_SMAE;
+    const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+    const redondearMedio = (v) => Math.max(0, Math.round(v * 2) / 2);
+
+    const porciones = {};
+    const restante = { kcal: meta.kcal, proteina_g: meta.proteina_g, lipidos_g: meta.lipidos_g, hc_g: meta.hc_g };
+
+    const descontar = (grupo, n) => {
+      const g = G[grupo];
+      restante.kcal -= g.kcal * n;
+      restante.proteina_g -= g.pt * n;
+      restante.lipidos_g -= g.lp * n;
+      restante.hc_g -= g.hc * n;
+    };
+
+    // 1. Verduras y frutas, según nivel calórico.
+    porciones.verduras = redondearMedio(clamp(meta.kcal / 320, 3, 6));
+    porciones.frutas = redondearMedio(clamp(meta.kcal / 500, 2, 4));
+    descontar('verduras', porciones.verduras);
+    descontar('frutas', porciones.frutas);
+
+    // 2. Leguminosas y leche descremada, aporte fijo de rutina.
+    porciones.leguminosas = 1;
+    porciones.leche_descremada = 2;
+    descontar('leguminosas', porciones.leguminosas);
+    descontar('leche_descremada', porciones.leche_descremada);
+
+    // 3. Cereales sin grasa, para cubrir el resto de los hidratos de carbono.
+    porciones.cereales_sin_grasa = redondearMedio(restante.hc_g / G.cereales_sin_grasa.hc);
+    descontar('cereales_sin_grasa', porciones.cereales_sin_grasa);
+
+    // 4. AOA bajo aporte de grasa, para cubrir el resto de la proteína.
+    porciones.aoa_bajo_aporte_grasa = redondearMedio(restante.proteina_g / G.aoa_bajo_aporte_grasa.pt);
+    descontar('aoa_bajo_aporte_grasa', porciones.aoa_bajo_aporte_grasa);
+
+    // 5. Aceites sin proteína, para cubrir el resto de los lípidos.
+    porciones.aceites_sin_proteina = redondearMedio(restante.lipidos_g / G.aceites_sin_proteina.lp);
+    descontar('aceites_sin_proteina', porciones.aceites_sin_proteina);
+
+    const adecuacion = this.calcularAdecuacionMenu(porciones, meta);
+    return { porciones, adecuacion: adecuacion.adecuacion_pct, totales: adecuacion.totales };
+  },
+};
+
+// ============================================================================
+// MÓDULO: AGUA, ELECTROLITOS Y ÁCIDO-BASE
+// Fuente: Manual Maestro Módulo 9
+// ============================================================================
+
+const AguaElectrolitos = {
+  /** Balance hídrico = ingresos - egresos (mL). Positivo = balance positivo. */
+  balanceHidrico(ingresos_ml, egresos_ml) {
+    return round(ingresos_ml - egresos_ml);
+  },
+
+  /** Déficit aproximado por deshidratación (L) = peso (kg) x fracción de deshidratación. */
+  deficitDeshidratacion(peso_kg, fraccion_deshidratacion) {
+    return round(peso_kg * fraccion_deshidratacion, 2);
+  },
+
+  /**
+   * Regla de Holliday-Segar (4-2-1) para mantenimiento hídrico pediátrico.
+   * Devuelve mL/h y mL/día.
+   */
+  holidaySegar(peso_kg) {
+    let mlPorHora = 0;
+    if (peso_kg <= 10) {
+      mlPorHora = peso_kg * 4;
+    } else if (peso_kg <= 20) {
+      mlPorHora = 10 * 4 + (peso_kg - 10) * 2;
+    } else {
+      mlPorHora = 10 * 4 + 10 * 2 + (peso_kg - 20) * 1;
+    }
+    return {
+      ml_por_hora: round(mlPorHora),
+      ml_por_dia: round(mlPorHora * 24),
+    };
+  },
+
+  /**
+   * Agua total de referencia para adulto hospitalizado (Manual Maestro):
+   * 25-30 mL/kg/día como punto de partida, a individualizar por función
+   * renal/cardiaca/hepática, fiebre, pérdidas y edema.
+   */
+  aguaAdultoHospitalizado(peso_kg) {
+    return {
+      minimo_ml: round(peso_kg * 25),
+      maximo_ml: round(peso_kg * 30),
+    };
+  },
+
+  /** Agua total de referencia en adultos sanos (DRI): hombres 3.7 L/d, mujeres 2.7 L/d. */
+  AGUA_TOTAL_DRI: {
+    H: 3.7,
+    M: 2.7,
+    embarazo: 3.0,
+    lactancia: 3.8,
+  },
+
+  /** Anion gap = Na - (Cl + HCO3). */
+  anionGap(sodio_meq, cloro_meq, bicarbonato_meq) {
+    return round(sodio_meq - (cloro_meq + bicarbonato_meq));
+  },
+
+  /**
+   * Rangos orientativos de electrolitos y otros analitos (Manual Maestro,
+   * Módulo 9). Pueden variar según el laboratorio.
+   */
+  RANGOS_REFERENCIA: {
+    sodio_meq: { min: 135, max: 145 },
+    potasio_meq: { min: 3.5, max: 5.0 },
+    calcio_total_mg: { min: 8.5, max: 10.5 },
+    magnesio_mg: { min: 1.7, max: 2.2 },
+    fosforo_mg: { min: 2.5, max: 4.5 },
+    cloro_meq: { min: 98, max: 106 },
+    bicarbonato_meq: { min: 22, max: 29 },
+  },
+
+  /**
+   * Clasifica un valor de electrolito/analito contra el rango de referencia.
+   * @param {string} analito clave de RANGOS_REFERENCIA (ej. 'sodio_meq')
+   * @param {number} valor
+   */
+  clasificarAnalito(analito, valor) {
+    const rango = this.RANGOS_REFERENCIA[analito];
+    if (!rango) throw new Error(`Analito desconocido: ${analito}`);
+    if (valor < rango.min) return 'Bajo';
+    if (valor > rango.max) return 'Alto';
+    return 'Normal';
+  },
+
+  /** % de agua corporal total, adultos: ~50-60% del peso (rango orientativo). */
+  porcentajeAguaCorporalRango() {
+    return { min: 50, max: 60 };
+  },
 };
 
 // ============================================================================
@@ -780,4 +937,5 @@ export {
   Pediatria,
   SoporteNutricional,
   PlanAlimentacion,
+  AguaElectrolitos,
 };
