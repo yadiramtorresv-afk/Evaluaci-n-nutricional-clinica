@@ -248,6 +248,23 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .modal-btns button{flex:1;padding:10px;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:var(--font);border:none}
 .m-confirm{background:var(--red);color:#fff}
 .m-cancel{background:var(--card);color:var(--text)}
+.exp-bar{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border)}
+.exp-info{font-size:.74rem;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.exp-new{background:none;border:1px solid var(--border);color:var(--muted);border-radius:99px;font-size:.66rem;padding:3px 9px;cursor:pointer}
+.exp-bar .btn-save{margin-bottom:8px}
+.exp-anexo{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--muted);margin-top:8px}
+.exp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px}
+.exp-name{font-weight:700;font-size:.9rem;color:var(--text)}
+.exp-meta{font-size:.68rem;color:var(--muted);margin-top:2px}
+.exp-chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.exp-chip{font-size:.66rem;padding:3px 8px;border-radius:99px;background:var(--card);border:1px solid var(--border);color:var(--muted)}
+.exp-acts{display:flex;gap:8px}
+.exp-acts button{flex:1}
+.sug-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:12px}
+.sug-title{font-size:.7rem;font-weight:700;color:var(--accent);margin-bottom:8px}
+.sug-pes{font-size:.72rem;color:var(--muted);margin:6px 0 4px}
+.sug-chips{display:flex;flex-wrap:wrap;gap:6px}
+.sug-chip{font-size:.72rem;padding:5px 10px;border-radius:99px;border:1px solid var(--accent);color:var(--text);cursor:pointer;line-height:1.3}
 #print-area{display:none}
 @media print{
   body>*:not(#print-area){display:none !important}
@@ -264,6 +281,10 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   .pr-firma{margin-top:50px;text-align:center}
   .pr-firma-line{border-top:1px solid #333;width:260px;margin:0 auto 6px}
   .pr-firma p{font-size:.8rem;color:#444}
+  #print-area h4{font-size:.82rem;color:#444;margin:10px 0 4px}
+  #print-area h3{page-break-after:avoid}
+  .pr-table tr{page-break-inside:avoid}
+  .pr-fecha{float:right;font-size:.65rem;color:#777;font-weight:400}
   @page{margin:1.5cm}
 }
 </style>
@@ -403,6 +424,14 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 <!-- ======= TAB ANTROPOMETRÍA AVANZADA ======= -->
 <div id="tab-antropometria" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title">🛏 Paciente (expediente)</div>
+    <div class="row">
+      <div class="field"><label>Cama</label><input type="text" id="an-cama" placeholder="Ej. 12-A"></div>
+      <div class="field"><label>Nombre</label><input type="text" id="an-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
 
   <div class="section">
     <div class="sec-title" style="color:var(--antro-text)">📏 Datos generales</div>
@@ -666,11 +695,18 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     </div>
   </div>
 
-  <button class="btn-save" style="background:var(--ped)" onclick="imprimirPediatria()">🖨️ Generar PDF — Nutrición infantil</button>
 </div>
 
 <!-- ======= TAB LABORATORIOS ======= -->
 <div id="tab-labs" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title">🛏 Paciente (expediente)</div>
+    <div class="row">
+      <div class="field"><label>Cama</label><input type="text" id="lab-cama" placeholder="Ej. 12-A"></div>
+      <div class="field"><label>Nombre</label><input type="text" id="lab-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
 
   <div class="section">
     <div class="sec-title purple">Datos del paciente</div>
@@ -743,6 +779,14 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 <!-- ======= TAB AGUA / ELECTROLITOS ======= -->
 <div id="tab-agua" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title">🛏 Paciente (expediente)</div>
+    <div class="row">
+      <div class="field"><label>Cama</label><input type="text" id="ag-cama" placeholder="Ej. 12-A"></div>
+      <div class="field"><label>Nombre</label><input type="text" id="ag-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
 
   <div class="section">
     <div class="sec-title" style="color:var(--agua-text)">💧 Requerimiento de agua</div>
@@ -822,6 +866,14 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 
 <!-- ======= TAB PLAN DE ALIMENTOS ======= -->
 <div id="tab-plan" class="tab-content">
+
+  <div class="section">
+    <div class="sec-title">🛏 Paciente (expediente)</div>
+    <div class="row">
+      <div class="field"><label>Cama</label><input type="text" id="pl-cama" placeholder="Ej. 12-A"></div>
+      <div class="field"><label>Nombre</label><input type="text" id="pl-nombre" placeholder="Apellidos, Nombre"></div>
+    </div>
+  </div>
 
   <div class="section">
     <div class="sec-title orange">Sistema de equivalentes</div>
@@ -954,11 +1006,12 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <select id="soap-pes-select"></select>
     </div>
     <button class="btn-save" style="background:var(--accent);margin-top:8px" onclick="agregarPES()">➕ Agregar diagnóstico al análisis</button>
-    <div class="field" style="margin-top:10px"><label>Diagnóstico(s) — edita libremente etiología y signos</label><textarea id="soap-a" rows="6" placeholder="Se llenará automáticamente al agregar un PES. Completa 'relacionado con...' y 'evidenciado por...' según el caso."></textarea></div>
+    <div class="field" style="margin-top:10px"><label>Diagnóstico(s) — edita libremente etiología y signos</label><textarea id="soap-a" rows="6" oninput="renderSugerencias()" placeholder="Se llenará automáticamente al agregar un PES. Completa 'relacionado con...' y 'evidenciado por...' según el caso."></textarea></div>
   </div>
 
   <div class="section">
     <div class="sec-title">P — Plan (Intervención nutricia)</div>
+    <div id="soap-sug" class="sug-box" style="display:none"></div>
     <div class="field">
       <label>Dominio de intervención (IDNT/eNCPT)</label>
       <select id="soap-int-dom" onchange="cambiarDominioInt()"></select>
@@ -972,17 +1025,21 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <input type="text" id="soap-int-det" placeholder="Cantidad, frecuencia o indicación específica (opcional)" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarIntervencion();}">
     </div>
     <button class="btn-save" style="background:var(--accent)" onclick="agregarIntervencion()">➕ Agregar intervención al plan</button>
-    <div class="field" style="margin-top:10px"><label>Plan de intervención</label><textarea id="soap-p" rows="6" placeholder="Se sugiere automáticamente según el/los diagnóstico(s) seleccionados. Agrega intervenciones del catálogo o edítalo libremente según el caso."></textarea></div>
+    <div class="field" style="margin-top:10px"><label>Plan de intervención</label><textarea id="soap-p" rows="6" oninput="renderSugerencias()" placeholder="Se sugiere automáticamente según el/los diagnóstico(s) seleccionados. Agrega intervenciones del catálogo o edítalo libremente según el caso."></textarea></div>
     <p class="note">La intervención se elige según el diagnóstico nutricio y su etiología. Cada meta debe poder medirse en el monitoreo.</p>
   </div>
 
   <button class="btn-reset" onclick="limpiarSOAP()">↺ Limpiar SOAP</button>
-  <button class="pac-btn pdf" style="width:100%;margin-top:8px;padding:11px" onclick="imprimirSOAP()">🖨️ Generar PDF SOAP</button>
 
 </div>
 
 <!-- ======= TAB PACIENTES ======= -->
 <div id="tab-pacientes" class="tab-content">
+  <div class="section">
+    <div class="sec-title green">📁 Expedientes por cama</div>
+    <p class="note" style="margin-bottom:10px">Cada pestaña guarda su parte aquí (💾 Guardar en expediente). El botón imprimir junta todo en un solo formato.</p>
+    <div id="exp-list"></div>
+  </div>
   <div class="section">
     <div class="sec-title green">Pacientes del día</div>
     <div class="pac-count" id="pac-count">0 pacientes guardados</div>
@@ -1302,7 +1359,6 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     </div>
   </div>
 
-  <button class="btn-save" onclick="imprimirPatologias()">🖨️ Generar PDF — Módulos por patología</button>
 </div>
 
 <!-- ======= TAB PORCIONES ======= -->
@@ -1351,7 +1407,7 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     <p class="note">Ajustar tamaños de porción según el requerimiento energético y los intercambios del plan individual (pestaña Plan).</p>
   </div>
 
-  <button class="btn-save" style="background:var(--teal-text)" onclick="imprimirPorciones()">🖨️ Generar PDF — Porciones y menú</button>
+  <button class="btn-save" style="background:var(--teal-text)" onclick="imprimirPorciones()">🖨️ Imprimir solo porciones y menú (material educativo)</button>
 </div>
 
 <!-- TOAST -->
@@ -1379,6 +1435,7 @@ var anSexo = 'H', anGrupo = 'adulto';
 
 // ===== TABS =====
 function switchTab(t) {
+  tomarPacienteDeTab(tabActual());
   document.querySelectorAll('.tab-content').forEach(function(el){ el.classList.remove('active'); });
   document.querySelectorAll('.tab').forEach(function(el){ el.classList.remove('active'); });
   document.getElementById('tab-'+t).classList.add('active');
@@ -1395,6 +1452,7 @@ function switchTab(t) {
   else if(t==='pacientes') { tabs[9].classList.add('active'); renderPacs(); }
   else if(t==='patologias') { tabs[10].classList.add('active'); }
   else { tabs[11].classList.add('active'); }
+  aplicarPacienteATab(t); actualizarInfoExp();
 }
 
 // ===== HELPERS =====
@@ -2606,10 +2664,12 @@ function guardar(tipo) {
     };
   }
   var list=getPacs(); list.push(data); savePacs(list);
-  showToast('✓ Paciente guardado correctamente');
+  var okExp = guardarEnExpediente(tipo==='general'?'general':'embarazo', true);
+  showToast(okExp ? '✓ Guardado en la lista del día y en el expediente' : '✓ Paciente guardado correctamente');
 }
 
 function renderPacs(){
+  renderExpedientes();
   var list=getPacs();
   var cnt=document.getElementById('pac-count');
   cnt.textContent=list.length+' paciente'+(list.length!==1?'s':'')+' guardado'+(list.length!==1?'s':'');
@@ -2799,9 +2859,7 @@ function guardarPacLabs(id){
 }
 
 // ===== GENERAR PDF POR PACIENTE (impresión del navegador) =====
-function imprimirPaciente(id){
-  var p = getPacs().find(function(x){ return x.id===id; });
-  if(!p) return;
+function htmlPacienteLegacy(p){
   var isE = p.tipo==='embarazo';
   var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
 
@@ -2844,18 +2902,16 @@ function imprimirPaciente(id){
       (notasHtml ? '<h3>Interpretación global</h3>'+notasHtml : '');
   }
 
-  var html = '<div class="pr-header"><h1>Valoración Nutricional</h1><p>'+fecha+'</p></div>'+
-    '<h3>Datos del paciente</h3>'+datosHtml+
-    '<h3>'+(isE?'Valoración obstétrica':'Valoración general')+'</h3>'+calcHtml+
-    labsHtml+
-    bloqueHistoriaSoap(p.cama)+
-    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
-
-  document.getElementById('print-area').innerHTML = html;
-  setTimeout(function(){ window.print(); }, 100);
+  return {calc:'<h3>'+(isE?'Valoración obstétrica':'Valoración general')+'</h3>'+calcHtml, labs:labsHtml};
 }
 
-function imprimirPorciones(){
+function imprimirPaciente(id){
+  var p = getPacs().find(function(x){ return x.id===id; });
+  if(!p) return;
+  imprimirExpediente(p.cama, {pac:p});
+}
+
+function imprimirPorciones(retornar){
   var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
   var eqRows = [
     ['Verduras','1 taza cruda o ½ taza cocida (brócoli, calabacita, jitomate)','25'],
@@ -2897,6 +2953,7 @@ function imprimirPorciones(){
     '<h3>Menú de ejemplo — 1 semana</h3>'+menuHtml+
     '<p class="pr-notas">Material de referencia y educación nutricional. Ajustar porciones y alimentos según el plan individual del paciente.</p>';
 
+  if(retornar) return html;
   document.getElementById('print-area').innerHTML = html;
   setTimeout(function(){ window.print(); }, 100);
 }
@@ -3495,6 +3552,7 @@ function agregarPES(){
   aEl.value = aEl.value ? (aEl.value+'\n\n'+linea) : linea;
   var pEl = document.getElementById('soap-p');
   pEl.value = pEl.value ? (pEl.value+'\n\n• '+p.plan) : '• '+p.plan;
+  renderSugerencias();
 }
 
 // ===== INTERVENCIÓN NUTRICIA (catálogo IDNT/eNCPT) =====
@@ -3704,6 +3762,118 @@ function agregarIntervencion(){
   var pEl = document.getElementById('soap-p');
   pEl.value = pEl.value ? (pEl.value+'\n'+linea) : linea;
   document.getElementById('soap-int-det').value = '';
+  renderSugerencias();
+}
+
+// ===== Conexión PES → Intervención (sugerencias orientativas) =====
+// El manual indica que la intervención se elige según el diagnóstico y su etiología,
+// pero no trae una tabla fija diagnóstico→intervención. Esta tabla es una ayuda
+// práctica (propia de la app) para no buscar en el catálogo completo cada vez.
+var PES_INT = {
+ 'NI-1.1':['ND-1.2.2','ND-1.3','ND-3.1.1'],
+ 'NI-1.2':['ND-1.2.2','ND-3.1.1','ND-1.3','E-1.5'],
+ 'NI-1.3':['ND-1.2.2','E-1.5','C-2.2','C-2.3'],
+ 'NI-1.4':['ND-1.2.2','ND-3.1.1','E-1.2'],
+ 'NI-1.5':['ND-1.2.2','E-1.2','C-2.2'],
+ 'NI-2.1':['ND-1.4','ND-3.1.1','ND-4.1','ND-4.3'],
+ 'NI-2.2':['ND-1.2.2','E-1.5','C-2.3'],
+ 'NI-2.3':['ND-2.1.3','ND-2.1.4','ND-2.1.5'],
+ 'NI-2.4':['ND-2.1.3','ND-2.1.4','ND-2.1.2'],
+ 'NI-2.5':['ND-2.1.1','ND-2.1.2','ND-2.1.6'],
+ 'NI-2.6':['ND-2.2.3','ND-2.2.1','ND-2.2.4'],
+ 'NI-2.7':['ND-2.2.3','ND-2.2.2','ND-2.2.1'],
+ 'NI-2.8':['ND-2.2.1','ND-2.2.2','ND-2.2.5'],
+ 'NI-2.9':['ND-1.4','ND-4.5','ND-5.7','C-2.1'],
+ 'NI-3.1':['ND-1.2.7','ND-1.3','E-1.5'],
+ 'NI-3.2':['ND-1.2.7','E-1.5'],
+ 'NI-4.1':['ND-3.3.9','ND-1.4'],
+ 'NI-4.2':['ND-3.3.9','ND-1.4','E-1.5'],
+ 'NI-4.3':['ND-3.3.7','E-1.4','C-2.1','RC-1.5'],
+ 'NI-5.1':['ND-3.2.1','ND-1.4','ND-3.1.1'],
+ 'NI-5.2':['ND-1.2.2','ND-1.2.3','ND-3.1.1','RC-1.4'],
+ 'NI-5.3':['ND-1.2.2','ND-1.2.3','ND-3.1.1'],
+ 'NI-5.4':['ND-1.2.8','E-1.5'],
+ 'NI-5.5':['ND-1.2.8','ND-3.2.1','E-1.5'],
+ 'NI-5.6.1':['ND-1.2.5','ND-3.1.1'],
+ 'NI-5.6.2':['ND-1.2.5','E-1.5'],
+ 'NI-5.6.3':['ND-1.2.5','ND-1.4'],
+ 'NI-5.7.1':['ND-1.2.3','ND-3.1.1'],
+ 'NI-5.7.2':['ND-1.2.3','E-1.5'],
+ 'NI-5.7.3':['ND-1.2.3','ND-1.4'],
+ 'NI-5.8.1':['ND-1.2.4','ND-1.4'],
+ 'NI-5.8.2':['ND-1.2.4','E-1.5'],
+ 'NI-5.8.3':['ND-1.2.4','ND-1.4'],
+ 'NI-5.8.4':['ND-1.2.4','ND-1.3','E-2.2'],
+ 'NI-5.8.5':['ND-1.2.6','ND-3.3.4','E-1.5'],
+ 'NI-5.8.6':['ND-1.2.6','E-1.5'],
+ 'NI-5.9.1':['ND-3.2.3','ND-1.2.9'],
+ 'NI-5.9.2':['ND-1.2.9','E-1.5'],
+ 'NI-5.10.1':['ND-3.2.4','ND-1.2.10'],
+ 'NI-5.10.2':['ND-1.2.10','E-1.5'],
+ 'NI-5.11.1':['ND-1.4','E-1.2'],
+ 'NI-5.11.2':['ND-1.4','E-1.2'],
+ 'NC-1.1':['ND-1.2.1','ND-4.2','ND-4.4','RC-1.4'],
+ 'NC-1.2':['ND-1.2.1','ND-4.4','RC-1.5'],
+ 'NC-1.3':['E-1.6','C-2.5','RC-1.5'],
+ 'NC-1.4':['ND-1.2.8','ND-1.2.6','ND-1.3'],
+ 'NC-2.1':['ND-1.2.8','ND-3.2.1','RC-1.4'],
+ 'NC-2.2':['E-2.1','ND-1.4','RC-1.4'],
+ 'NC-2.3':['ND-6.1','E-1.6','RC-1.4'],
+ 'NC-2.4':['ND-6.1','E-1.6','RC-1.4'],
+ 'NC-3.1':['ND-1.2.2','ND-3.1.1','ND-1.3'],
+ 'NC-3.2':['ND-1.2.2','ND-3.1.1','RC-1.4'],
+ 'NC-3.3':['ND-1.2.2','E-1.5','C-2.2','C-2.3'],
+ 'NC-3.4':['ND-1.2.2','E-1.4','RC-1.4'],
+ 'NC-3.5':['ND-1.2.2','ND-3.1.1','RC-1.4'],
+ 'NC-3.6':['ND-1.2.2','E-1.5','RC-1.4'],
+ 'NB-1.1':['E-1.1','E-1.5','E-2.2'],
+ 'NB-1.2':['E-1.4','C-1.2','C-2.8'],
+ 'NB-1.3':['C-1.4','C-2.1','C-2.2'],
+ 'NB-1.4':['C-2.3','E-2.2','C-2.2'],
+ 'NB-1.5':['C-2.1','C-2.7','ND-1.3'],
+ 'NB-1.6':['C-2.1','C-2.2','C-2.5'],
+ 'NB-1.7':['E-1.5','C-2.7','C-2.4'],
+ 'NB-2.1':['C-2.1','C-2.2','C-2.5'],
+ 'NB-2.2':['E-1.2','C-2.1','RC-1.4'],
+ 'NB-2.3':['RC-1.5','C-2.5','E-2.2'],
+ 'NB-2.4':['E-2.2','RC-1.6','C-2.4'],
+ 'NB-2.5':['C-2.1','C-2.5','RC-1.4'],
+ 'NB-2.6':['ND-4.1','ND-4.2','ND-4.3'],
+ 'NB-3.1':['E-1.3','E-2.2'],
+ 'NB-3.2':['RC-1.6','RC-2.2','C-2.4'],
+ 'NB-3.3':['RC-1.6','C-2.4'],
+ 'N0-1.1':[]
+};
+
+function renderSugerencias(){
+  var box = document.getElementById('soap-sug');
+  if(!box) return;
+  var a = gv('soap-a'), pl = gv('soap-p');
+  var codes = (a.match(/\bN[ICB0O]-\d+\.\d+(?:\.\d+)?/g)||[]).filter(function(c,i,arr){ return arr.indexOf(c)===i; });
+  var html = '';
+  codes.forEach(function(pc){
+    var lista = (PES_INT[pc.replace('NO-','N0-')]||[]).filter(function(ic){ return pl.indexOf(ic+' —')<0; });
+    if(!lista.length) return;
+    var pes = PES_CATALOG.find(function(x){ return x.code===pc; });
+    html += '<div class="sug-pes">Para '+esc(pc)+(pes?' — '+esc(pes.problema):'')+'</div><div class="sug-chips">'+
+      lista.map(function(ic){
+        var it = INT_FLAT.find(function(f){ return f.c===ic; });
+        return it ? '<span class="sug-chip" onclick="agregarIntSug(\''+ic+'\')">＋ '+ic+' '+esc(it.t)+'</span>' : '';
+      }).join('')+'</div>';
+  });
+  if(html){
+    box.innerHTML = '<div class="sug-title">💡 Intervenciones sugeridas según tus diagnósticos (orientativas · toca para agregar)</div>'+html;
+    box.style.display = 'block';
+  } else { box.innerHTML = ''; box.style.display = 'none'; }
+}
+
+function agregarIntSug(code){
+  var it = INT_FLAT.find(function(f){ return f.c===code; });
+  if(!it) return;
+  var pEl = document.getElementById('soap-p');
+  var linea = '• '+it.c+' — '+it.t+(it.e ? ': __________' : '');
+  pEl.value = pEl.value ? (pEl.value+'\n'+linea) : linea;
+  renderSugerencias();
 }
 
 function soapFromTab(which){
@@ -3731,224 +3901,403 @@ function limpiarSOAP(){
   ['soap-cama','soap-nombre','soap-s-socio','soap-s-sintomas','soap-s-antec','soap-o','soap-a','soap-p','soap-int-det'].forEach(function(id){
     document.getElementById(id).value = '';
   });
+  renderSugerencias();
 }
 
 function nlToBr(txt){
   return (txt||'—').replace(/\n/g,'<br>');
 }
 
-function imprimirSOAP(){
-  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
-  var cama = gv('soap-cama')||'', nombre = gv('soap-nombre')||'—';
+// ===== EXPEDIENTE POR CAMA: guardar por pestaña + impresión unificada =====
+// Cada pestaña guarda una "foto" de sus datos y resultados en el expediente de la cama.
+// La impresión junta historia clínica + todas las pestañas guardadas + nota SOAP en un solo formato.
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  var html = '<div class="pr-header"><h1>Nota SOAP — Valoración Nutricional</h1><p>'+fecha+'</p></div>'+
-    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+(cama||'—')+'</td>'+
-    '<td class="pr-k">Nombre</td><td class="pr-v">'+nombre+'</td></tr></table>'+
-    '<h3>S — Subjetivo</h3>'+
-    '<p><b>Datos socioeconómicos:</b><br>'+nlToBr(gv('soap-s-socio'))+'</p>'+
-    '<p style="margin-top:8px"><b>Síntomas referidos:</b><br>'+nlToBr(gv('soap-s-sintomas'))+'</p>'+
-    '<p style="margin-top:8px"><b>Antecedentes:</b><br>'+nlToBr(gv('soap-s-antec'))+'</p>'+
-    '<h3>O — Objetivo</h3><p>'+nlToBr(gv('soap-o'))+'</p>'+
-    '<h3>A — Análisis (Diagnóstico nutricional)</h3><p>'+nlToBr(gv('soap-a'))+'</p>'+
-    '<h3>P — Plan</h3><p>'+nlToBr(gv('soap-p'))+'</p>'+
-    bloqueHistoria(cama)+
-    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
+var EK = 'nutriapp_expedientes_v1';
+function getExps(){ try{ return JSON.parse(localStorage.getItem(EK))||{}; }catch(e){ return {}; } }
+function saveExps(o){ localStorage.setItem(EK, JSON.stringify(o)); }
 
-  document.getElementById('print-area').innerHTML = html;
-  setTimeout(function(){ window.print(); }, 100);
+var TAB_META = {
+  general:       {titulo:'Valoración general',                    ico:'🏥', cama:'cama',      nombre:'nombre'},
+  antropometria: {titulo:'Antropometría y composición corporal',  ico:'📏', cama:'an-cama',   nombre:'an-nombre'},
+  embarazo:      {titulo:'Valoración obstétrica',                 ico:'🤰', cama:'e-cama',    nombre:'e-nom'},
+  pediatria:     {titulo:'Nutrición infantil',                    ico:'👶', cama:'ped-cama',  nombre:'ped-nombre'},
+  labs:          {titulo:'Laboratorios',                          ico:'🧪', cama:'lab-cama',  nombre:'lab-nombre'},
+  agua:          {titulo:'Agua y electrolitos',                   ico:'💧', cama:'ag-cama',   nombre:'ag-nombre'},
+  plan:          {titulo:'Plan de alimentación (equivalentes)',   ico:'🍽️', cama:'pl-cama',   nombre:'pl-nombre'},
+  historia:      {titulo:'Historia clínica nutricional',          ico:'📋', cama:'hist-cama', nombre:'hist-nombre'},
+  soap:          {titulo:'Nota SOAP',                             ico:'📝', cama:'soap-cama', nombre:'soap-nombre'},
+  patologias:    {titulo:'Módulos por patología',                 ico:'🩺', cama:'pat-cama',  nombre:'pat-nombre'}
+};
+var EXP_ORDEN = ['general','antropometria','embarazo','pediatria','labs','agua','plan','patologias','soap'];
+var CAMA_IDS = Object.keys(TAB_META).map(function(k){ return TAB_META[k].cama; });
+var NOMBRE_IDS = Object.keys(TAB_META).map(function(k){ return TAB_META[k].nombre; });
+var HIST_CAMPOS = ['hist-cama','hist-nombre','hist-alergias','hist-socio','hist-patologicos','hist-heredo','hist-nutricionales',
+  'hist-r24-desayuno','hist-r24-colmat','hist-r24-comida','hist-r24-colvesp','hist-r24-cena'];
+
+// ---------- Paciente activo (una sola cama/nombre compartidos entre pestañas) ----------
+var camaActiva = '', nombreActivo = '', incluirAnexo = false;
+
+function tabActual(){
+  var a = document.querySelector('.tab-content.active');
+  return a ? a.id.replace('tab-','') : 'general';
+}
+function valEl(id){ var el = document.getElementById(id); return el ? (el.value||'').trim() : ''; }
+
+function nombreConocido(cama){
+  var k = normCama(cama), e = getExps()[k], hs = getHistorias()[k];
+  if(e && e.nombre) return e.nombre;
+  if(hs && hs.nombre && hs.nombre!=='—') return hs.nombre;
+  var ps = getPacs().filter(function(p){ return normCama(p.cama)===k && p.nombre && p.nombre!=='—'; });
+  return ps.length ? ps[ps.length-1].nombre : '';
 }
 
-
-function bloqueHistoria(cama){
-  var html = '';
-  var hist = cama ? getHistorias()[normCama(cama)] : null;
-
-  if(hist){
-    html += '<h3>📋 Historia clínica nutricional</h3>'+
-      '<table class="pr-table">'+
-      '<tr><td class="pr-k">Alergias</td><td class="pr-v" colspan="3">'+(hist.alergias||'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Datos socioeconómicos</td><td class="pr-v" colspan="3">'+(hist.socioeconomico||'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Antecedentes patológicos</td><td class="pr-v" colspan="3">'+(hist.patologicos||'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Heredofamiliares</td><td class="pr-v" colspan="3">'+(hist.heredofamiliares||'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Antecedentes nutricionales</td><td class="pr-v" colspan="3">'+(hist.nutricionales||'—')+'</td></tr>'+
-      '</table>'+
-      '<h3 style="font-size:.85rem">Recordatorio de 24 horas</h3>'+
-      '<table class="pr-table">'+
-      '<tr><td class="pr-k">Desayuno</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.desayuno||'—':'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Colación matutina</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.colMat||'—':'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Comida</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.comida||'—':'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Colación vespertina</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.colVesp||'—':'—')+'</td></tr>'+
-      '<tr><td class="pr-k">Cena</td><td class="pr-v" colspan="3">'+(hist.r24h?hist.r24h.cena||'—':'—')+'</td></tr>'+
-      '</table><p class="pr-notas">Historia registrada el '+(hist.fechaISO||'—')+' '+(hist.hora||'')+'</p>';
-  } else if(cama){
-    html += '<p class="pr-notas">⚠️ No se encontró una historia clínica guardada para la cama "'+cama+'". Captúrala en la pestaña Historia y presiona "Guardar historia (por cama)" para que aparezca automáticamente en este reporte.</p>';
+// Toma cama/nombre de la pestaña indicada y los vuelve el paciente activo.
+function tomarPacienteDeTab(t){
+  var m = TAB_META[t]; if(!m) return;
+  var c = valEl(m.cama), n = valEl(m.nombre);
+  if(c && normCama(c)!==normCama(camaActiva)){
+    var habiaCama = !!camaActiva;
+    camaActiva = c;
+    nombreActivo = n || nombreConocido(c) || (habiaCama ? '' : nombreActivo);
+  } else if(n){
+    nombreActivo = n;
   }
-  return html;
 }
 
-function bloqueHistoriaSoap(cama){
-  var html = bloqueHistoria(cama);
+// Pone el paciente activo en los campos cama/nombre de la pestaña que se abre.
+function aplicarPacienteATab(t){
+  var m = TAB_META[t]; if(!m) return;
+  if(!camaActiva && !nombreActivo) return;
+  // Historia: solo si el formulario está vacío (para no pisar una historia cargada)
+  if(t==='historia' && HIST_CAMPOS.some(function(id){ return valEl(id); })) return;
+  var c = document.getElementById(m.cama), n = document.getElementById(m.nombre);
+  if(c) c.value = camaActiva;
+  if(n) n.value = nombreActivo;
+}
 
-  var soapCama = gv('soap-cama').trim();
-  if(cama && soapCama && normCama(soapCama)===normCama(cama)){
-    var s1=gv('soap-s-socio'), s2=gv('soap-s-sintomas'), s3=gv('soap-s-antec'), o=gv('soap-o'), a=gv('soap-a'), p=gv('soap-p');
-    if(s1||s2||s3||o||a||p){
-      html += '<h3>📝 Nota SOAP</h3>'+
-        '<table class="pr-table">'+
-        '<tr><td class="pr-k">S — Síntomas referidos</td><td class="pr-v" colspan="3">'+(s2||'—')+'</td></tr>'+
-        '<tr><td class="pr-k">S — Datos socioeconómicos</td><td class="pr-v" colspan="3">'+(s1||'—')+'</td></tr>'+
-        '<tr><td class="pr-k">S — Antecedentes</td><td class="pr-v" colspan="3">'+(s3||'—')+'</td></tr>'+
-        '<tr><td class="pr-k">O — Objetivo</td><td class="pr-v" colspan="3">'+(o||'—')+'</td></tr>'+
-        '<tr><td class="pr-k">A — Diagnóstico (PES)</td><td class="pr-v" colspan="3">'+(a||'—')+'</td></tr>'+
-        '<tr><td class="pr-k">P — Plan</td><td class="pr-v" colspan="3">'+(p||'—')+'</td></tr>'+
-        '</table>';
+function nuevoPaciente(){
+  camaActiva = ''; nombreActivo = '';
+  CAMA_IDS.concat(NOMBRE_IDS).forEach(function(id){ var el = document.getElementById(id); if(el) el.value = ''; });
+  actualizarInfoExp();
+  showToast('Paciente activo limpiado. Captura la nueva cama.');
+}
+
+function actualizarInfoExp(){
+  var txt = camaActiva ? ('Paciente activo: Cama '+camaActiva+(nombreActivo?' · '+nombreActivo:'')) : 'Sin paciente activo — captura la cama arriba';
+  document.querySelectorAll('.exp-info-txt').forEach(function(el){ el.textContent = txt; });
+}
+
+// ---------- Foto (snapshot) de una pestaña ----------
+function txtEl(el){
+  var c = el.cloneNode(true);
+  c.querySelectorAll('*').forEach(function(x){ x.insertAdjacentText('beforebegin',' '); x.insertAdjacentText('afterend',' '); });
+  return c.textContent.replace(/\s+/g,' ').replace(/(\d) %/g,'$1%').trim();
+}
+function vacioV(v){ return !v || /^[—–-]+\s*(kcal|g|%|mg|kg|mL|ml|L)?$/.test(v); }
+function oculto(el, raiz){
+  for(var n=el; n && n!==raiz.parentNode; n=n.parentNode){
+    if(n.style && n.style.display==='none') return true;
+  }
+  return false;
+}
+
+function snapshotGenerico(t){
+  var cont = document.getElementById('tab-'+t);
+  if(!cont) return [];
+  var secs = [];
+  cont.querySelectorAll('.section').forEach(function(sec){
+    if(oculto(sec, cont)) return;
+    var titEl = sec.querySelector('.sec-title');
+    var titulo = titEl ? txtEl(titEl).replace(/^[^\wÁÉÍÓÚÑáéíóúñ]+/,'') : '';
+    var rows = [], notas = [], activa = false;
+    sec.querySelectorAll('.field, .sum-row, .mac-card, .pg-row, .ps-card, .pat-tip').forEach(function(el){
+      if(oculto(el, sec)) return;
+      var cl = el.classList;
+      if(cl.contains('sum-row')){
+        var sv = el.querySelector('.sum-v')||el, v = txtEl(sv);
+        if(!vacioV(v)){ rows.push([txtEl(el.querySelector('.sum-k')||el), v]); if(v!==(sv.dataset.def||'')) activa = true; }
+      } else if(cl.contains('mac-card')){
+        var vals = [];
+        el.querySelectorAll('.mv, .mv2').forEach(function(x){ var tv = txtEl(x); if(!vacioV(tv)) vals.push(tv); });
+        if(vals.length){ rows.push([txtEl(el.querySelector('.mac-lbl')||el), vals.join(' · ')]); activa = true; }
+      } else if(cl.contains('pg-row')){
+        var inp = el.querySelector('input'), n = inp ? parseFloat(inp.value) : 0;
+        if(n>0){ rows.push([txtEl(el.querySelector('.pg-name')||el), inp.value+' porción(es)']); activa = true; }
+      } else if(cl.contains('ps-card')){
+        var pv = txtEl(el.querySelector('.ps-val')||el), pt = txtEl(el.querySelector('.ps-target')||el);
+        if(parseFloat(pv)>0){ rows.push([txtEl(el.querySelector('.ps-label')||el), pv+(/—/.test(pt)?'':' ('+pt+')')]); activa = true; }
+      } else if(cl.contains('pat-tip')){
+        var tip = txtEl(el);
+        if(tip && tip!==(el.dataset.def||'')) notas.push(tip);
+      } else { // .field
+        var lab = el.querySelector('label');
+        if(!lab) return;
+        var partes = [], saltar = false;
+        el.querySelectorAll('.pb-wrap .pb.on').forEach(function(x){ partes.push(txtEl(x)); });
+        el.querySelectorAll('.res').forEach(function(r){
+          if(oculto(r, el)) return;
+          var rv = txtEl(r);
+          if(!vacioV(rv)){ partes.push(rv); if(rv!==(r.dataset.def||'')) activa = true; }
+        });
+        var sl = el.querySelector('.sl-val');
+        if(sl) partes.push(txtEl(sl));
+        el.querySelectorAll('input, select, textarea').forEach(function(i){
+          if(i.type==='range' || i.type==='checkbox' || i.type==='button') return;
+          if(CAMA_IDS.indexOf(i.id)>=0 || NOMBRE_IDS.indexOf(i.id)>=0){ saltar = true; return; }
+          var iv = '';
+          if(i.tagName==='SELECT') iv = (i.value!=='' && i.selectedIndex>=0) ? i.options[i.selectedIndex].text : '';
+          else iv = (i.value||'').trim();
+          if(iv){
+            partes.push(iv);
+            if(i.dataset.tocado==='1' || (i.tagName!=='SELECT' && iv!==i.defaultValue)) activa = true;
+          }
+        });
+        if(!saltar && partes.length) rows.push([txtEl(lab), partes.join(' · ')]);
+      }
+    });
+    if(activa && (rows.length || notas.length)) secs.push({t:titulo, rows:rows, notas:notas});
+  });
+  return secs;
+}
+
+function snapshotTab(t){
+  if(t==='soap'){
+    var d = {socio:gv('soap-s-socio'), sintomas:gv('soap-s-sintomas'), antec:gv('soap-s-antec'),
+             o:gv('soap-o'), a:gv('soap-a'), p:gv('soap-p')};
+    var hay = Object.keys(d).some(function(k){ return d[k].trim(); });
+    return hay ? {soap:d} : null;
+  }
+  if(t==='labs' && !labResultados.length) return null;
+  var secs = snapshotGenerico(t);
+  if(t==='labs'){
+    secs.push({
+      t:'Resultados de laboratorio',
+      tabla:{head:['Analito','Valor','Referencia','Interpretación'],
+             filas:labResultados.map(function(r){ return [r.name, r.valor+' '+r.unit, r.refText, r.interp]; })},
+      notas:generarInterpretacion(labResultados, labCtx).map(function(n){ return n.txt.replace(/<[^>]+>/g,''); })
+    });
+  }
+  return secs.length ? {secs:secs} : null;
+}
+
+// ---------- Guardar en expediente ----------
+function guardarEnExpediente(t, silencioso){
+  var m = TAB_META[t]; if(!m) return false;
+  tomarPacienteDeTab(t);
+  if(!camaActiva){
+    if(!silencioso) showToast('⚠️ Captura el número de cama para guardar en el expediente', true);
+    return false;
+  }
+  var snap = snapshotTab(t);
+  if(!snap){
+    if(!silencioso) showToast('⚠️ No hay datos en esta pestaña para guardar', true);
+    return false;
+  }
+  var exps = getExps(), k = normCama(camaActiva);
+  var hoy = new Date();
+  var e = exps[k] || {cama:camaActiva, nombre:'', secciones:{}};
+  e.cama = camaActiva;
+  if(nombreActivo) e.nombre = nombreActivo;
+  snap.fechaISO = hoy.toISOString().slice(0,10);
+  snap.hora = hoy.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  e.secciones[t] = snap;
+  e.actualizado = hoy.toISOString();
+  exps[k] = e;
+  saveExps(exps);
+  if(!silencioso) showToast('✓ '+m.titulo+' guardado en el expediente de la cama '+camaActiva);
+  return true;
+}
+function guardarExp(t){ guardarEnExpediente(t, false); }
+
+function setAnexo(v){
+  incluirAnexo = !!v;
+  document.querySelectorAll('.exp-anexo-chk').forEach(function(c){ c.checked = incluirAnexo; });
+}
+
+function imprimirExp(t){
+  tomarPacienteDeTab(t);
+  if(!camaActiva){ showToast('⚠️ Captura el número de cama para imprimir el expediente', true); return; }
+  if(t!=='historia') guardarEnExpediente(t, true);
+  imprimirExpediente(camaActiva);
+}
+
+// ---------- Formato de impresión único ----------
+function nlToBrEsc(txt){ return esc(txt||'—').replace(/\n/g,'<br>'); }
+
+function tablaPares(rows){
+  var LK = 38, LV = 42;
+  function corto(r){ return r[0].length<=LK && r[1].length<=LV; }
+  var h = '<table class="pr-table">', i = 0;
+  while(i<rows.length){
+    var r = rows[i], r2 = rows[i+1];
+    if(corto(r) && r2 && corto(r2)){
+      h += '<tr><td class="pr-k">'+esc(r[0])+'</td><td class="pr-v">'+esc(r[1])+'</td>'+
+           '<td class="pr-k">'+esc(r2[0])+'</td><td class="pr-v">'+esc(r2[1])+'</td></tr>';
+      i += 2;
+    } else {
+      h += '<tr><td class="pr-k">'+esc(r[0])+'</td><td class="pr-v" colspan="3">'+esc(r[1])+'</td></tr>';
+      i += 1;
     }
   }
+  return h+'</table>';
+}
+function tablaGrid(t){
+  return '<table class="pr-table pr-labs"><tr>'+t.head.map(function(x){ return '<th>'+esc(x)+'</th>'; }).join('')+'</tr>'+
+    t.filas.map(function(f){ return '<tr>'+f.map(function(c,i){ return '<td class="pr-v">'+(i===3?'<b>'+esc(c)+'</b>':esc(c))+'</td>'; }).join('')+'</tr>'; }).join('')+'</table>';
+}
+
+function bloqueHistoria(cama){
+  var hist = cama ? getHistorias()[normCama(cama)] : null;
+  if(!hist) return '';
+  var r = hist.r24h || {};
+  function fila(k,v){ return '<tr><td class="pr-k">'+k+'</td><td class="pr-v" colspan="3">'+esc(v||'—')+'</td></tr>'; }
+  return '<h3>📋 Historia clínica nutricional <span class="pr-fecha">'+esc(hist.fechaISO||'')+' '+esc(hist.hora||'')+'</span></h3>'+
+    '<table class="pr-table">'+fila('Alergias',hist.alergias)+fila('Datos socioeconómicos',hist.socioeconomico)+
+    fila('Antecedentes patológicos',hist.patologicos)+fila('Heredofamiliares',hist.heredofamiliares)+
+    fila('Antecedentes nutricionales',hist.nutricionales)+'</table>'+
+    '<h4>Recordatorio de 24 horas</h4>'+
+    '<table class="pr-table">'+fila('Desayuno',r.desayuno)+fila('Colación matutina',r.colMat)+fila('Comida',r.comida)+
+    fila('Colación vespertina',r.colVesp)+fila('Cena',r.cena)+'</table>';
+}
+
+function htmlSeccionExp(id, s){
+  var m = TAB_META[id];
+  var h = '<h3>'+m.ico+' '+m.titulo+' <span class="pr-fecha">'+esc(s.fechaISO||'')+' '+esc(s.hora||'')+'</span></h3>';
+  if(s.soap){
+    var d = s.soap;
+    h += '<h4>S — Subjetivo</h4>'+
+      '<p><b>Datos socioeconómicos:</b><br>'+nlToBrEsc(d.socio)+'</p>'+
+      '<p style="margin-top:6px"><b>Síntomas referidos:</b><br>'+nlToBrEsc(d.sintomas)+'</p>'+
+      '<p style="margin-top:6px"><b>Antecedentes:</b><br>'+nlToBrEsc(d.antec)+'</p>'+
+      '<h4>O — Objetivo</h4><p>'+nlToBrEsc(d.o)+'</p>'+
+      '<h4>A — Análisis (diagnóstico nutricional, PES)</h4><p>'+nlToBrEsc(d.a)+'</p>'+
+      '<h4>P — Plan (intervención nutricia)</h4><p>'+nlToBrEsc(d.p)+'</p>';
+    return h;
+  }
+  (s.secs||[]).forEach(function(sec){
+    if(sec.t) h += '<h4>'+esc(sec.t)+'</h4>';
+    if(sec.rows && sec.rows.length) h += tablaPares(sec.rows);
+    if(sec.tabla) h += tablaGrid(sec.tabla);
+    if(sec.notas && sec.notas.length) h += '<ul class="pr-notas">'+sec.notas.map(function(n){ return '<li>'+esc(n)+'</li>'; }).join('')+'</ul>';
+  });
+  return h;
+}
+
+function buscarFilaExp(e, clave){
+  var out = '';
+  if(!e) return out;
+  Object.keys(e.secciones||{}).forEach(function(id){
+    ((e.secciones[id].secs)||[]).forEach(function(sec){
+      (sec.rows||[]).forEach(function(r){ if(!out && r[0]===clave) out = r[1]; });
+    });
+  });
+  return out;
+}
+
+function construirExpedienteHTML(cama, opts){
+  opts = opts || {};
+  var k = normCama(cama);
+  var e = k ? (getExps()[k] || null) : null;
+  var hist = k ? (getHistorias()[k] || null) : null;
+  var pac = opts.pac || null;
+  if(!e && !hist && !pac) return null;
+
+  var nombre = (e && e.nombre) || (hist && hist.nombre!=='—' && hist.nombre) || (pac && pac.nombre!=='—' && pac.nombre) || '—';
+  var dx = buscarFilaExp(e,'Diagnóstico') || (pac && pac.dx!=='—' ? pac.dx : '') || '—';
+  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
+  var camaTxt = (e && e.cama) || (hist && hist.cama) || (pac && pac.cama) || cama || '—';
+
+  var html = '<div class="pr-header"><h1>Expediente de Valoración Nutricional</h1><p>'+esc(fecha)+'</p></div>'+
+    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+esc(camaTxt)+'</td>'+
+    '<td class="pr-k">Nombre</td><td class="pr-v">'+esc(nombre)+'</td></tr>'+
+    '<tr><td class="pr-k">Diagnóstico</td><td class="pr-v" colspan="3">'+esc(dx)+'</td></tr></table>';
+
+  html += bloqueHistoria(camaTxt);
+
+  var legacy = pac ? htmlPacienteLegacy(pac) : null;
+  var tieneTipo = e && pac && e.secciones && e.secciones[pac.tipo==='embarazo'?'embarazo':'general'];
+  if(legacy && !tieneTipo) html += legacy.calc;
+
+  EXP_ORDEN.forEach(function(id){
+    if(e && e.secciones && e.secciones[id]) html += htmlSeccionExp(id, e.secciones[id]);
+  });
+
+  if(legacy && pac.labs && pac.labs.length) html += legacy.labs;
+
+  if(incluirAnexo) html += '<div style="page-break-before:always"></div>'+imprimirPorciones(true);
+
+  html += '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
   return html;
 }
 
-function imprimirPediatria(){
-  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
-  var cama = gv('ped-cama')||'', nombre = gv('ped-nombre')||'—';
-
-  var historias = getHistorias();
-  var hist = cama ? historias[normCama(cama)] : null;
-  if(hist && nombre==='—') nombre = hist.nombre||'—';
-
-  var html = '<div class="pr-header"><h1>Nutrición Infantil</h1><p>'+fecha+'</p></div>'+
-    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+(cama||'—')+'</td>'+
-    '<td class="pr-k">Nombre</td><td class="pr-v">'+nombre+'</td></tr></table>';
-
-  var bloque = bloqueHistoriaSoap(cama);
-  if(bloque) html += bloque;
-
-  html += '<h3>👶 Evaluación antropométrica</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Edad</td><td class="pr-v">'+gt('pe-edadconv')+'</td>'+
-    '<td class="pr-k">Sexo</td><td class="pr-v">'+(peSexo==='F'?'Niña':'Niño')+'</td></tr>'+
-    '<tr><td class="pr-k">Peso / Talla</td><td class="pr-v">'+(gv('pe-peso')||'—')+' kg / '+(gv('pe-talla')||'—')+' cm</td>'+
-    '<td class="pr-k">IMC</td><td class="pr-v">'+gt('pe-imc')+'</td></tr>'+
-    '<tr><td class="pr-k">Percentil/Z-score OMS</td><td class="pr-v" colspan="3">'+gt('pe-pctl')+'</td></tr>'+
-    '<tr><td class="pr-k">Energía total</td><td class="pr-v">'+gt('pe-kcaltot')+'</td>'+
-    '<td class="pr-k">Proteína total</td><td class="pr-v">'+gt('pe-prottot')+'</td></tr>'+
-    '<tr><td class="pr-k">Líquidos</td><td class="pr-v">'+gt('pe-liq')+'</td>'+
-    '<td class="pr-k">MUAC</td><td class="pr-v">'+gt('pe-muacres')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('pe-tip')+'</p>'+
-    '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
-
+function imprimirExpediente(cama, opts){
+  var html = construirExpedienteHTML(cama, opts);
+  if(!html){ showToast('⚠️ No hay nada guardado para la cama '+(cama||'—'), true); return; }
   document.getElementById('print-area').innerHTML = html;
   setTimeout(function(){ window.print(); }, 100);
 }
 
-function imprimirPatologias(){
-  var fecha = new Date().toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'});
-  var cama = gv('pat-cama')||'', nombre = gv('pat-nombre')||'—';
-
-  var historias = getHistorias();
-  var hist = cama ? historias[normCama(cama)] : null;
-  if(hist && nombre==='—') nombre = hist.nombre||'—';
-
-  var html = '<div class="pr-header"><h1>Historia clínica nutricional</h1><p>'+fecha+'</p></div>'+
-    '<table class="pr-table"><tr><td class="pr-k">Cama</td><td class="pr-v">'+(cama||'—')+'</td>'+
-    '<td class="pr-k">Nombre</td><td class="pr-v">'+nombre+'</td></tr></table>';
-
-  var bloque = bloqueHistoriaSoap(cama);
-  if(bloque) html += bloque;
-  else html += '<p class="pr-notas">Captura la cama arriba para incluir automáticamente su historia clínica y nota SOAP guardadas en este reporte.</p>';
-
-  html += '<h3 style="border-top:2px solid #832d51;padding-top:10px;margin-top:16px">🧮 Evaluación y plan por patología</h3>';
-
-  // Soporte enteral
-  html += '<h3>🧪 Soporte nutricional — Enteral</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Proteína total</td><td class="pr-v">'+gt('en-prottot')+'</td>'+
-    '<td class="pr-k">Volumen total</td><td class="pr-v">'+gt('en-vol')+'</td></tr>'+
-    '<tr><td class="pr-k">Velocidad/toma</td><td class="pr-v">'+gt('en-vel')+'</td>'+
-    '<td class="pr-k">Modo</td><td class="pr-v">'+(enModo==='continua'?'Continua':enModo==='ciclica'?'Cíclica':'Bolo')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('en-tip')+'</p>';
-
-  // Soporte parenteral
-  html += '<h3>💉 Soporte nutricional — Parenteral</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Proteína</td><td class="pr-v">'+gt('pa-prot')+'</td>'+
-    '<td class="pr-k">Lípidos</td><td class="pr-v">'+gt('pa-lip')+'</td></tr>'+
-    '<tr><td class="pr-k">Dextrosa</td><td class="pr-v">'+gt('pa-dex')+'</td>'+
-    '<td class="pr-k">GIR</td><td class="pr-v">'+gt('pa-gir')+'</td></tr>'+
-    '<tr><td class="pr-k">Relación kcal:N₂</td><td class="pr-v">'+gt('pa-relacion')+'</td>'+
-    '<td class="pr-k">Vía de acceso</td><td class="pr-v">'+gt('pa-via')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('pa-tip')+'</p>';
-
-  // Obesidad
-  html += '<h3>⚖️ Obesidad</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">IMC</td><td class="pr-v">'+gt('ob-imc')+'</td>'+
-    '<td class="pr-k">GET</td><td class="pr-v">'+gt('ob-get')+'</td></tr>'+
-    '<tr><td class="pr-k">Kcal objetivo</td><td class="pr-v">'+gt('ob-kcalobj')+'</td>'+
-    '<td class="pr-k">Proteína objetivo</td><td class="pr-v">'+gt('ob-prot')+'</td></tr>'+
-    '<tr><td class="pr-k">Fibra</td><td class="pr-v">'+gt('ob-fibra')+'</td>'+
-    '<td class="pr-k">Agua</td><td class="pr-v">'+gt('ob-agua')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('ob-tip')+'</p>';
-
-  // Diabetes / DM2
-  html += '<h3>🩹 Diabetes / DM2</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Kcal totales</td><td class="pr-v">'+gt('db-kcal')+'</td>'+
-    '<td class="pr-k">CHO totales</td><td class="pr-v">'+gt('db-hctot')+'</td></tr>'+
-    '<tr><td class="pr-k">Glucosa ayuno</td><td class="pr-v">'+gt('db-r-ayuno')+'</td>'+
-    '<td class="pr-k">Glucosa posprandial</td><td class="pr-v">'+gt('db-r-pos')+'</td></tr>'+
-    '<tr><td class="pr-k">HbA1c</td><td class="pr-v">'+gt('db-r-hba1c')+'</td>'+
-    '<td class="pr-k">—</td><td class="pr-v">—</td></tr>'+
-    '</table><p class="pr-notas">'+gt('db-tip')+'</p>';
-
-  // Dislipidemias
-  html += '<h3>🩸 Dislipidemias</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Colesterol total</td><td class="pr-v">'+gt('di-r-ct')+'</td>'+
-    '<td class="pr-k">LDL</td><td class="pr-v">'+gt('di-r-ldl')+'</td></tr>'+
-    '<tr><td class="pr-k">HDL</td><td class="pr-v">'+gt('di-r-hdl')+'</td>'+
-    '<td class="pr-k">Triglicéridos</td><td class="pr-v">'+gt('di-r-tg')+'</td></tr>'+
-    '<tr><td class="pr-k">Meta LDL</td><td class="pr-v">'+gt('di-meta-ldl')+'</td>'+
-    '<td class="pr-k">Fibra soluble</td><td class="pr-v">'+gt('di-fibsol')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('di-tip')+'</p>';
-
-  // Enfermedad renal crónica
-  html += '<h3>🫘 Enfermedad renal crónica</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Etapa</td><td class="pr-v">'+gt('er-etapa')+'</td>'+
-    '<td class="pr-k">Modalidad</td><td class="pr-v">'+(erModo==='hd'?'Hemodiálisis':erModo==='dp'?'Diálisis peritoneal':'Sin diálisis')+'</td></tr>'+
-    '<tr><td class="pr-k">Energía</td><td class="pr-v">'+gt('er-kcal')+'</td>'+
-    '<td class="pr-k">Proteína</td><td class="pr-v">'+gt('er-prot')+'</td></tr>'+
-    '<tr><td class="pr-k">Sodio</td><td class="pr-v">'+gt('er-sodio')+'</td>'+
-    '<td class="pr-k">Potasio</td><td class="pr-v">'+gt('er-potasio')+'</td></tr>'+
-    '<tr><td class="pr-k">Fósforo</td><td class="pr-v">'+gt('er-fosforo')+'</td>'+
-    '<td class="pr-k">Líquidos</td><td class="pr-v">'+gt('er-liquidos')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('er-tip')+'</p>';
-
-  // Embarazo con dislipidemia
-  html += '<h3>🤰🩸 Embarazo con dislipidemia</h3>'+
-    '<table class="pr-table">'+
-    '<tr><td class="pr-k">Trimestre</td><td class="pr-v">'+edTrim+'º</td>'+
-    '<td class="pr-k">Rango esperado</td><td class="pr-v">'+gt('ed-rango')+'</td></tr>'+
-    '<tr><td class="pr-k">Colesterol total</td><td class="pr-v">'+gt('ed-r-ct')+'</td>'+
-    '<td class="pr-k">Triglicéridos</td><td class="pr-v">'+gt('ed-r-tg')+'</td></tr>'+
-    '</table><p class="pr-notas">'+gt('ed-tip')+'</p>';
-
-  // Dietoterapia por condición
-  var dtCond = gv('dt-condicion');
-  var dtSel = document.getElementById('dt-condicion');
-  var dtLabel = dtSel.options[dtSel.selectedIndex] ? dtSel.options[dtSel.selectedIndex].text : dtCond;
-  var dtGuia = DIETOTERAPIA_GUIAS[dtCond];
-  if(dtGuia){
-    html += '<h3>📋 Dietoterapia por condición — '+dtLabel+'</h3>'+
-      '<p class="pr-notas"><b>Enfoque general:</b> '+dtGuia.enfoque+'</p>'+
-      '<ul class="pr-notas">'+dtGuia.puntos.map(function(p){ return '<li>'+p+'</li>'; }).join('')+'</ul>';
+// ---------- Lista de expedientes (pestaña Pacientes) ----------
+function renderExpedientes(){
+  var box = document.getElementById('exp-list');
+  if(!box) return;
+  var exps = getExps(), hs = getHistorias();
+  var keys = Object.keys(exps);
+  Object.keys(hs).forEach(function(k){ if(keys.indexOf(k)<0) keys.push(k); });
+  if(!keys.length){
+    box.innerHTML = '<div class="pac-empty">Aún no hay expedientes.<br>Captura la cama en cualquier pestaña y presiona 💾 Guardar en expediente.</div>';
+    return;
   }
-
-  html += '<div class="pr-firma"><div class="pr-firma-line"></div><p>Nombre y firma del responsable</p></div>';
-
-  document.getElementById('print-area').innerHTML = html;
-  setTimeout(function(){ window.print(); }, 100);
+  keys.sort(function(a,b){ return ((exps[b]&&exps[b].actualizado)||'').localeCompare((exps[a]&&exps[a].actualizado)||''); });
+  box.innerHTML = keys.map(function(k){
+    var e = exps[k], hi = hs[k];
+    var cama = (e && e.cama) || (hi && hi.cama) || k;
+    var nom = (e && e.nombre) || (hi && hi.nombre!=='—' && hi.nombre) || '';
+    var chips = [];
+    if(hi) chips.push(TAB_META.historia.ico+' Historia');
+    EXP_ORDEN.forEach(function(id){ if(e && e.secciones && e.secciones[id]) chips.push(TAB_META[id].ico+' '+TAB_META[id].titulo.split(' (')[0]); });
+    var enc = encodeURIComponent(k);
+    return '<div class="exp-card"><div class="exp-name">Cama '+esc(cama)+(nom?' · '+esc(nom):'')+'</div>'+
+      '<div class="exp-chips">'+chips.map(function(c){ return '<span class="exp-chip">'+esc(c)+'</span>'; }).join('')+'</div>'+
+      '<div class="exp-acts"><button class="pac-btn pdf" onclick="imprimirExpKey(\''+enc+'\')">🖨️ Imprimir expediente</button>'+
+      (e ? '<button class="pac-del" style="margin:0" onclick="delExp(\''+enc+'\')">✕ Eliminar</button>' : '')+'</div></div>';
+  }).join('');
 }
+function imprimirExpKey(enc){ imprimirExpediente(decodeURIComponent(enc)); }
+function delExp(enc){
+  var k = decodeURIComponent(enc);
+  if(!confirm('¿Eliminar el expediente guardado de la cama '+k+'? La historia clínica no se borra.')) return;
+  var exps = getExps(); delete exps[k]; saveExps(exps);
+  renderExpedientes();
+  showToast('Expediente eliminado');
+}
+
+// ---------- Botones en cada pestaña ----------
+function initExpedienteUI(){
+  var conGuardar = ['antropometria','pediatria','labs','agua','plan','patologias','soap'];
+  var soloImprimir = ['general','embarazo','historia'];
+  conGuardar.concat(soloImprimir).forEach(function(t){
+    var cont = document.getElementById('tab-'+t);
+    if(!cont) return;
+    var h = '<div class="exp-bar"><div class="exp-info"><span class="exp-info-txt"></span>'+
+      '<button class="exp-new" onclick="nuevoPaciente()">↺ Nuevo paciente</button></div>';
+    if(conGuardar.indexOf(t)>=0) h += '<button class="btn-save" onclick="guardarExp(\''+t+'\')">💾 Guardar en expediente</button>';
+    h += '<button class="pac-btn pdf" style="width:100%;padding:11px" onclick="imprimirExp(\''+t+'\')">🖨️ Imprimir expediente completo</button>'+
+      '<label class="exp-anexo"><input type="checkbox" class="exp-anexo-chk" onchange="setAnexo(this.checked)"> Incluir anexo de porciones y menú de ejemplo</label></div>';
+    cont.insertAdjacentHTML('beforeend', h);
+  });
+  actualizarInfoExp();
+}
+function capturarDefaults(){
+  document.querySelectorAll('.res, .sum-v, .pat-tip').forEach(function(el){ el.dataset.def = txtEl(el); });
+}
+['input','change'].forEach(function(nombre){
+  document.addEventListener(nombre, function(e){ if(e.target && e.target.dataset) e.target.dataset.tocado = '1'; });
+});
+initExpedienteUI();
+if(document.readyState==='complete') capturarDefaults();
+else window.addEventListener('load', capturarDefaults);
 
 
 // ===== HISTORIA CLÍNICA (localStorage, por cama) =====
@@ -3963,7 +4312,8 @@ function exportarRespaldo(){
     version: 1,
     fecha: new Date().toISOString(),
     pacientes: getPacs(),
-    historias: getHistorias()
+    historias: getHistorias(),
+    expedientes: getExps()
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   var url = URL.createObjectURL(blob);
@@ -3986,9 +4336,11 @@ function importarRespaldo(input){
       var data = JSON.parse(e.target.result);
       var nPac = (data.pacientes||[]).length;
       var nHist = Object.keys(data.historias||{}).length;
-      if(!confirm('Se importarán '+nPac+' paciente(s) y '+nHist+' historia(s), reemplazando lo que tengas guardado actualmente. ¿Continuar?')) { input.value=''; return; }
+      var nExp = Object.keys(data.expedientes||{}).length;
+      if(!confirm('Se importarán '+nPac+' paciente(s), '+nHist+' historia(s) y '+nExp+' expediente(s), reemplazando lo que tengas guardado actualmente. ¿Continuar?')) { input.value=''; return; }
       savePacs(data.pacientes||[]);
       saveHistorias(data.historias||{});
+      if(data.expedientes) saveExps(data.expedientes);
       renderPacs();
       showToast('⬆️ Respaldo importado correctamente');
     }catch(err){
