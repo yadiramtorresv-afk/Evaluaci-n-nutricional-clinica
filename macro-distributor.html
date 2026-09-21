@@ -215,6 +215,21 @@
   }
   .del-btn:hover { color: var(--coral); }
 
+  .auto-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--forest-deep);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .auto-btn:hover { background: var(--forest); }
+  .auto-btn:disabled { background: #cfc9b8; cursor: not-allowed; }
+
   .empty-menu { color: #9a9482; font-size: 13px; padding: 18px 0; text-align: center; }
 
   tfoot td { font-weight: 600; border-top: 1px solid var(--line); border-bottom: none; padding-top: 10px; }
@@ -419,8 +434,14 @@
 
     <!-- ============ PANEL DERECHO: MENÚ CON ALIMENTOS REALES ============ -->
     <div class="card">
-      <h2>Menú del día</h2>
-      <div class="sub">Busca en la base SMAE (1,941 alimentos) y agrega porciones al menú.</div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+        <div>
+          <h2>Menú del día</h2>
+          <div class="sub">Busca en la base SMAE (1,941 alimentos) y agrega porciones al menú.</div>
+        </div>
+        <button id="btnAutomatico" class="auto-btn" title="Genera un punto de partida a partir de tu meta de macros">⚙ Automático</button>
+      </div>
+      <div class="sub" id="auto-hint" style="display:none; margin-top:-4px; margin-bottom:14px;"></div>
 
       <div class="search-wrap">
         <label for="search">Buscar alimento</label>
@@ -530,7 +551,7 @@
 
 <script type="module">
 import { Energia, PlanAlimentacion } from './calc-engine.js';
-import { cargarBaseDeAlimentos, buscarAlimento, aporteDeAlimento, NOMBRES_GRUPOS } from './food-database.js';
+import { cargarBaseDeAlimentos, buscarAlimento, buscarPlatillo, buscarComidaRapida, aporteDeAlimento, NOMBRES_GRUPOS } from './food-database.js';
 import { cargarTablasOMS, Percentiles, valorParaZ } from './percentiles.js';
 
 const $ = (id) => document.getElementById(id);
@@ -656,7 +677,66 @@ function recalcularMacros() {
   actualizarAdecuacion();
 }
 
-// ---------- búsqueda de alimentos ----------
+// ---------- búsqueda de alimentos, platillos y comida rápida ----------
+
+// Mapea las claves de "equivalentes" de comida rápida a los grupos SMAE
+// que usa calc-engine.js, para poder calcular sus macros.
+const MAPA_GRUPO_COMIDA_RAPIDA = {
+  aoambag: 'aoa_muy_bajo_aporte_grasa',
+  aoabag: 'aoa_bajo_aporte_grasa',
+  aoamag: 'aoa_moderado_aporte_grasa',
+  grasa_sin_proteina: 'aceites_sin_proteina',
+  cereal_sin_grasa: 'cereales_sin_grasa',
+  azucar_sin_grasa: 'azucares_sin_grasa',
+  leche_entera: 'leche_entera',
+  leche_descremada: 'leche_descremada',
+  verduras: 'verduras',
+  frutas: 'frutas',
+  leguminosas: 'leguminosas',
+  // 'libre' no tiene aporte de macros definido en el SMAE (kcal libre) — se omite.
+};
+
+/** Normaliza un platillo al mismo formato que usa aporteDeAlimento(). */
+function normalizarPlatillo(p) {
+  return {
+    alimento: p.nombre,
+    grupo: p.categoria || 'Platillo',
+    tipo: 'Platillo',
+    cantidad_sugerida: p.cantidad || '1',
+    unidad: p.unidad || 'porción',
+    kcal: p.kcal ?? 0,
+    proteina_g: p.proteina_g ?? 0,
+    lipidos_g: p.lipidos_g ?? 0,
+    hc_g: p.hc_g ?? 0,
+    equivalentesTexto: (p.equivalentes || []).join(' + '),
+  };
+}
+
+/** Normaliza un producto de comida rápida, calculando sus macros a partir
+ * de sus equivalentes SMAE con PlanAlimentacion.aportePorGrupo(). */
+function normalizarComidaRapida(item) {
+  const totales = { proteina_g: 0, lipidos_g: 0, hc_g: 0 };
+  for (const [clave, cantidad] of Object.entries(item.equivalentes || {})) {
+    const grupo = MAPA_GRUPO_COMIDA_RAPIDA[clave];
+    if (!grupo || !cantidad) continue;
+    const aporte = PlanAlimentacion.aportePorGrupo(grupo, cantidad);
+    totales.proteina_g += aporte.proteina_g;
+    totales.lipidos_g += aporte.lipidos_g;
+    totales.hc_g += aporte.hc_g;
+  }
+  return {
+    alimento: item.nombre,
+    grupo: item.marca,
+    tipo: 'Comida rápida',
+    cantidad_sugerida: '1',
+    unidad: 'porción',
+    kcal: item.kcal ?? 0,
+    proteina_g: round1(totales.proteina_g),
+    lipidos_g: round1(totales.lipidos_g),
+    hc_g: round1(totales.hc_g),
+  };
+}
+
 let searchTimeout = null;
 $('search').addEventListener('input', () => {
   clearTimeout(searchTimeout);
@@ -666,8 +746,12 @@ $('search').addEventListener('input', () => {
     return;
   }
   searchTimeout = setTimeout(() => {
-    const resultados = buscarAlimento(db, q).slice(0, 30);
-    renderSearchResults(resultados);
+    const alimentos = buscarAlimento(db, q)
+      .slice(0, 15)
+      .map((a) => ({ ...a, tipo: 'Alimento' }));
+    const platillos = buscarPlatillo(db, q).slice(0, 10).map(normalizarPlatillo);
+    const comidaRapida = buscarComidaRapida(db, q).slice(0, 10).map(normalizarComidaRapida);
+    renderSearchResults([...alimentos, ...platillos, ...comidaRapida]);
   }, 120);
 });
 
@@ -681,7 +765,7 @@ function renderSearchResults(resultados) {
   box.innerHTML = resultados
     .map(
       (a, i) => `<div class="search-result-item" data-idx="${i}">
-        <span>${a.alimento}<br><span class="grp">${NOMBRES_GRUPOS[a.grupo] || a.grupo} · ${a.cantidad_sugerida} ${a.unidad}</span></span>
+        <span>${a.alimento}<br><span class="grp">${a.tipo === 'Alimento' ? NOMBRES_GRUPOS[a.grupo] || a.grupo : `${a.tipo} · ${a.grupo}`} · ${a.cantidad_sugerida} ${a.unidad}</span></span>
         <span class="kc">${a.kcal} kcal</span>
       </div>`
     )
@@ -706,6 +790,62 @@ function agregarAlimento(alimento) {
   renderMenu();
 }
 
+// ---------- reparto automático ----------
+// Un alimento representativo por grupo SMAE, elegido de la base real.
+// Es un punto de partida editable: cada renglón se puede buscar y cambiar
+// igual que cualquier otro agregado a mano.
+const ALIMENTO_REPRESENTATIVO = {
+  verduras: ['jitomate'],
+  frutas: ['manzana'],
+  leguminosas: ['frijol promedio cocido', 'frijol'],
+  leche_descremada: ['leche descremada'],
+  cereales_sin_grasa: ['tortilla de maíz', 'arroz cocido', 'arroz'],
+  aoa_bajo_aporte_grasa: ['pechuga de pollo', 'pollo'],
+  aceites_sin_proteina: ['aceite de oliva', 'aceite vegetal', 'aceite'],
+};
+
+function buscarRepresentativo(grupo) {
+  const terminos = ALIMENTO_REPRESENTATIVO[grupo] || [];
+  for (const t of terminos) {
+    const r = buscarAlimento(db, t, grupo);
+    if (r.length) return r[0];
+  }
+  const todos = db[grupo]?.alimentos;
+  return todos && todos.length ? { ...todos[0], grupo } : null;
+}
+
+$('btnAutomatico').addEventListener('click', () => {
+  if (!db) return;
+  const kcalMeta = parseFloat($('kcalMeta').value) || 0;
+  const pct = leerPct();
+  const macros = Energia.macronutrientes({
+    kcal_totales: kcalMeta,
+    pct_proteina: pct.pro,
+    pct_hc: pct.hc,
+    pct_lipidos: pct.lip,
+  });
+  const meta = {
+    kcal: kcalMeta,
+    proteina_g: macros.proteina.gr,
+    lipidos_g: macros.lipidos.gr,
+    hc_g: macros.hc.gr,
+  };
+  const resultado = PlanAlimentacion.reparticionAutomaticaPorGrupos(meta);
+
+  const nuevoMenu = [];
+  for (const [grupo, porciones] of Object.entries(resultado.porciones)) {
+    if (porciones <= 0) continue;
+    const alimento = buscarRepresentativo(grupo);
+    if (alimento) nuevoMenu.push({ alimento, porciones });
+  }
+  menu = nuevoMenu;
+  renderMenu();
+
+  const hint = $('auto-hint');
+  hint.style.display = 'block';
+  hint.textContent = `Punto de partida generado a partir de tu meta de macros. Revisa la tabla de adecuación (arriba a la izquierda) — los porcentajes ahí reflejan los alimentos reales del menú, no el promedio del grupo. Cambia cualquier alimento o cantidad libremente.`;
+});
+
 function renderMenu() {
   const body = $('menuBody');
   if (!menu.length) {
@@ -716,7 +856,7 @@ function renderMenu() {
         const aporte = aporteDeAlimento(row.alimento, row.porciones);
         return `<tr>
           <td>${row.alimento.alimento}</td>
-          <td style="color:#857f6c; font-size:12px;">${NOMBRES_GRUPOS[row.alimento.grupo] || row.alimento.grupo}</td>
+          <td style="color:#857f6c; font-size:12px;">${row.alimento.tipo && row.alimento.tipo !== 'Alimento' ? `${row.alimento.tipo} · ` : ''}${NOMBRES_GRUPOS[row.alimento.grupo] || row.alimento.grupo}</td>
           <td class="num"><input class="porciones" type="number" min="0" step="0.5" value="${row.porciones}" data-idx="${i}" /></td>
           <td class="num">${aporte.kcal}</td>
           <td class="num">${aporte.proteina_g}</td>
