@@ -101,7 +101,7 @@ function alimentosPorGrupo(db, grupoSlug) {
  * @param {number} numPorciones cuántas veces la porción sugerida (ej. 1.5)
  */
 function aporteDeAlimento(alimento, numPorciones = 1) {
-  const round = (v) => (v == null ? null : Math.round(v * 10) / 10);
+  const round = (v) => (v == null || Number.isNaN(v) ? null : Math.round(v * 10) / 10);
   return {
     alimento: alimento.alimento,
     porciones: numPorciones,
