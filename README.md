@@ -109,3 +109,36 @@ Percentiles.zScorePesoTalla(tablas, { peso_kg: 9.5, talla_cm: 75, sexo: 'H' });
 
 - **Peso/edad 5-19 años**: la OMS deja de publicar este indicador después de los 10 años a propósito (no distingue talla de masa corporal en el estirón puberal) — usa IMC/edad en su lugar, que sí cubre todo el rango.
 - **Circunferencia cefálica** y **perímetro braquial** (0-5 años): no incluidos, agregable después si se necesita.
+
+## Reparto automático por grupos SMAE (botón "Automático")
+
+`PlanAlimentacion.reparticionAutomaticaPorGrupos(meta)` en `calc-engine.js` — heurística de asignación secuencial (no un optimizador) que da un punto de partida editable a partir de una meta de kcal/macros:
+
+1. Verduras y frutas según nivel calórico
+2. 1 porción de leguminosas + 2 de leche descremada (aporte de rutina)
+3. Cereales sin grasa para cubrir el resto de los hidratos de carbono
+4. AOA bajo aporte de grasa para cubrir el resto de la proteína
+5. Aceites sin proteína para cubrir el resto de los lípidos
+
+En `macro-distributor.html`, el botón **Automático** llama a esta función y llena el menú con un alimento representativo real por grupo (ej. Jitomate, Manzana, Pechuga de pollo) en las porciones sugeridas — editable igual que cualquier alimento agregado a mano.
+
+**Importante:** el % de adecuación calculado por la heurística usa el aporte *promedio* del grupo SMAE, pero una vez que se llena el menú con alimentos *reales*, la adecuación puede variar unos puntos (un alimento específico no es exactamente el promedio de su grupo). La tabla de adecuación de la app siempre refleja los alimentos reales, no la predicción de la heurística — así se lo advertimos al usuario en el mensaje que aparece tras generar el menú.
+
+Probado con 3 escenarios (1200, 1600 y 2200 kcal): adecuación heurística entre 91.7% y 101.9%, sin porciones negativas en ningún caso.
+
+## AguaElectrolitos — agua, electrolitos y ácido-base (Módulo 9)
+
+`AguaElectrolitos` en `calc-engine.js` — cierra el motor de cálculo al 100% del Manual Maestro:
+- `balanceHidrico`, `deficitDeshidratacion`, `holidaySegar` (regla 4-2-1 pediátrica), `aguaAdultoHospitalizado` (25-30 mL/kg/d)
+- `anionGap`, `clasificarAnalito` (Bajo/Normal/Alto contra `RANGOS_REFERENCIA`: sodio, potasio, calcio, magnesio, fósforo, cloro, bicarbonato)
+
+Validado: Holliday-Segar en 8kg/24kg/35kg da exactamente 32/64/75 mL/h; anion gap 140-102-24=14; clasificación de electrolitos correcta en los 3 casos probados.
+
+## Búsqueda unificada: alimentos + platillos + comida rápida
+
+El buscador de `macro-distributor.html` ahora combina en un solo resultado:
+- Alimentos sueltos SMAE (1,941)
+- Platillos compuestos (77), con sus macros ya calculadas
+- Productos de comida rápida (158), con macros calculadas a partir de sus equivalentes SMAE vía `PlanAlimentacion.aportePorGrupo()`
+
+Cada resultado muestra una etiqueta de tipo (Alimento/Platillo/marca) y se agrega al menú igual que cualquier alimento — mismo cálculo de porciones, misma tabla de adecuación.
