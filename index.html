@@ -958,8 +958,22 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   </div>
 
   <div class="section">
-    <div class="sec-title">P — Plan</div>
-    <div class="field"><label>Plan de intervención</label><textarea id="soap-p" rows="6" placeholder="Se sugiere automáticamente según el/los diagnóstico(s) seleccionados. Edítalo según el caso."></textarea></div>
+    <div class="sec-title">P — Plan (Intervención nutricia)</div>
+    <div class="field">
+      <label>Dominio de intervención (IDNT/eNCPT)</label>
+      <select id="soap-int-dom" onchange="cambiarDominioInt()"></select>
+    </div>
+    <div class="field">
+      <label>Intervención</label>
+      <select id="soap-int-sel" onchange="actualizarPhInt()"></select>
+    </div>
+    <div class="field">
+      <label>Detalle / especificar</label>
+      <input type="text" id="soap-int-det" placeholder="Cantidad, frecuencia o indicación específica (opcional)" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarIntervencion();}">
+    </div>
+    <button class="btn-save" style="background:var(--accent)" onclick="agregarIntervencion()">➕ Agregar intervención al plan</button>
+    <div class="field" style="margin-top:10px"><label>Plan de intervención</label><textarea id="soap-p" rows="6" placeholder="Se sugiere automáticamente según el/los diagnóstico(s) seleccionados. Agrega intervenciones del catálogo o edítalo libremente según el caso."></textarea></div>
+    <p class="note">La intervención se elige según el diagnóstico nutricio y su etiología. Cada meta debe poder medirse en el monitoreo.</p>
   </div>
 
   <button class="btn-reset" onclick="limpiarSOAP()">↺ Limpiar SOAP</button>
@@ -1377,7 +1391,7 @@ function switchTab(t) {
   else if(t==='agua') tabs[5].classList.add('active');
   else if(t==='plan') { tabs[6].classList.add('active'); renderPlanGrid(); }
   else if(t==='historia') { tabs[7].classList.add('active'); renderHistoriaList(); }
-  else if(t==='soap') { tabs[8].classList.add('active'); initPesSelect(); }
+  else if(t==='soap') { tabs[8].classList.add('active'); initPesSelect(); initIntSelect(); }
   else if(t==='pacientes') { tabs[9].classList.add('active'); renderPacs(); }
   else if(t==='patologias') { tabs[10].classList.add('active'); }
   else { tabs[11].classList.add('active'); }
@@ -3483,6 +3497,215 @@ function agregarPES(){
   pEl.value = pEl.value ? (pEl.value+'\n\n• '+p.plan) : '• '+p.plan;
 }
 
+// ===== INTERVENCIÓN NUTRICIA (catálogo IDNT/eNCPT) =====
+// Terminología de Intervención Nutricia del Manual de Referencia de Terminología
+// Internacional de Nutrición y Dietética (4a ed., trad. CMN México), Paso 3 del PAN.
+// 4 dominios: Administración de alimentos y/o nutrimentos (ND), Educación nutricia (E),
+// Asesoría nutricia (C) y Coordinación de la atención nutricia (RC), más la
+// Prescripción nutricia (NP-1.1). e:1 = el manual pide "especificar".
+// No se muestran los identificadores numéricos de 5 dígitos (son solo para
+// expedientes electrónicos de EE. UU./Canadá).
+var INT_CATALOG = [
+ {id:'NP', nombre:'Prescripción nutricia (NP)', grupos:[
+  {clase:'Prescripción nutricia', items:[
+   {c:'NP-1.1', t:'Prescripción nutricia', e:1}
+  ]}
+ ]},
+ {id:'ND', nombre:'Administración de alimentos y/o nutrimentos (ND)', grupos:[
+  {clase:'Comidas y colaciones (ND-1)', items:[
+   {c:'ND-1.1', t:'Dieta general/correcta'},
+   {c:'ND-1.2.1', t:'Composición de alimentos/colaciones: dieta modificada en consistencia'},
+   {c:'ND-1.2.2', t:'Composición de alimentos/colaciones: dieta modificada en energía'},
+   {c:'ND-1.2.3', t:'Composición de alimentos/colaciones: dieta modificada en proteína'},
+   {c:'ND-1.2.4', t:'Composición de alimentos/colaciones: dieta modificada en hidratos de carbono'},
+   {c:'ND-1.2.5', t:'Composición de alimentos/colaciones: dieta modificada en lípidos'},
+   {c:'ND-1.2.6', t:'Composición de alimentos/colaciones: dieta modificada en fibra'},
+   {c:'ND-1.2.7', t:'Composición de alimentos/colaciones: dieta modificada en líquidos'},
+   {c:'ND-1.2.8', t:'Composición de alimentos/colaciones: dieta modificada para algún alimento o ingrediente específico'},
+   {c:'ND-1.2.9', t:'Composición de alimentos/colaciones: dieta modificada en vitaminas'},
+   {c:'ND-1.2.10', t:'Composición de alimentos/colaciones: dieta modificada en nutrimentos inorgánicos'},
+   {c:'ND-1.3', t:'Horario de las comidas/líquidos'},
+   {c:'ND-1.4', t:'Alimentos/bebidas específicos o grupos'},
+   {c:'ND-1.5', t:'Otros (comidas y colaciones)', e:1}
+  ]},
+  {clase:'Nutrición enteral (ND-2.1)', items:[
+   {c:'ND-2.1.1', t:'Nutrición enteral: composición'},
+   {c:'ND-2.1.2', t:'Nutrición enteral: concentración'},
+   {c:'ND-2.1.3', t:'Nutrición enteral: velocidad'},
+   {c:'ND-2.1.4', t:'Nutrición enteral: volumen'},
+   {c:'ND-2.1.5', t:'Nutrición enteral: horario'},
+   {c:'ND-2.1.6', t:'Nutrición enteral: vía'},
+   {c:'ND-2.1.7', t:'Nutrición enteral: inserción de la sonda enteral'},
+   {c:'ND-2.1.8', t:'Nutrición enteral: cuidado del sitio'},
+   {c:'ND-2.1.9', t:'Nutrición enteral: lavado de la sonda'}
+  ]},
+  {clase:'Nutrición parenteral / líquidos IV (ND-2.2)', items:[
+   {c:'ND-2.2.1', t:'Nutrición parenteral: composición'},
+   {c:'ND-2.2.2', t:'Nutrición parenteral: concentración'},
+   {c:'ND-2.2.3', t:'Nutrición parenteral: velocidad'},
+   {c:'ND-2.2.4', t:'Nutrición parenteral: horario'},
+   {c:'ND-2.2.5', t:'Nutrición parenteral: vía'},
+   {c:'ND-2.2.6', t:'Nutrición parenteral: cuidado del sitio'},
+   {c:'ND-2.2.7', t:'Líquidos intravenosos'}
+  ]},
+  {clase:'Suplementos alimenticios médicos (ND-3.1)', items:[
+   {c:'ND-3.1.1', t:'Bebida comercial'},
+   {c:'ND-3.1.2', t:'Alimento comercial'},
+   {c:'ND-3.1.3', t:'Bebida modificada'},
+   {c:'ND-3.1.4', t:'Alimento modificado'},
+   {c:'ND-3.1.5', t:'Suplemento alimenticio médico: propósito', e:1}
+  ]},
+  {clase:'Suplementos de vitaminas y minerales (ND-3.2)', items:[
+   {c:'ND-3.2.1', t:'Multivitaminas/multi nutrimentos inorgánicos'},
+   {c:'ND-3.2.2', t:'Multi elementos traza'},
+   {c:'ND-3.2.3', t:'Suplemento de vitaminas (especificar cuál)', e:1},
+   {c:'ND-3.2.4', t:'Suplemento de nutrimentos inorgánicos (especificar cuál)', e:1}
+  ]},
+  {clase:'Administración de sustancias bioactivas (ND-3.3)', items:[
+   {c:'ND-3.3.1', t:'Esteroles de plantas'},
+   {c:'ND-3.3.2', t:'Estanoles de plantas'},
+   {c:'ND-3.3.3', t:'Proteína de soya'},
+   {c:'ND-3.3.4', t:'Psyllium'},
+   {c:'ND-3.3.5', t:'β-glucano'},
+   {c:'ND-3.3.6', t:'Aditivos de alimentos', e:1},
+   {c:'ND-3.3.7', t:'Alcohol'},
+   {c:'ND-3.3.8', t:'Cafeína'},
+   {c:'ND-3.3.9', t:'Otra sustancia bioactiva', e:1}
+  ]},
+  {clase:'Asistencia para la alimentación (ND-4)', items:[
+   {c:'ND-4.1', t:'Equipo adaptativo para comer'},
+   {c:'ND-4.2', t:'Postura para la alimentación'},
+   {c:'ND-4.3', t:'Acomodo de las comidas'},
+   {c:'ND-4.4', t:'Cuidado bucal'},
+   {c:'ND-4.5', t:'Asistencia para la selección de menús'},
+   {c:'ND-4.6', t:'Otra asistencia para la alimentación', e:1}
+  ]},
+  {clase:'Entorno de alimentación (ND-5)', items:[
+   {c:'ND-5.1', t:'Luz'},
+   {c:'ND-5.2', t:'Olores'},
+   {c:'ND-5.3', t:'Distracciones'},
+   {c:'ND-5.4', t:'Altura de la mesa'},
+   {c:'ND-5.5', t:'Servicio en la mesa'},
+   {c:'ND-5.6', t:'Temperatura del cuarto'},
+   {c:'ND-5.7', t:'Servicio de alimentación'},
+   {c:'ND-5.8', t:'Ubicación de las comidas'},
+   {c:'ND-5.9', t:'Otro (entorno de alimentación)', e:1}
+  ]},
+  {clase:'Medicamentos relacionados con la nutrición (ND-6)', items:[
+   {c:'ND-6.1', t:'Prescripción de medicamentos'},
+   {c:'ND-6.2', t:'Medicamentos libres de receta'},
+   {c:'ND-6.3', t:'Medicina complementaria/alternativa relacionada con la nutrición'}
+  ]}
+ ]},
+ {id:'E', nombre:'Educación nutricia (E)', grupos:[
+  {clase:'Contenidos (E-1)', items:[
+   {c:'E-1.1', t:'Propósito de la educación en nutrición'},
+   {c:'E-1.2', t:'Modificaciones prioritarias'},
+   {c:'E-1.3', t:'Información de sobrevivencia'},
+   {c:'E-1.4', t:'Relación de la nutrición con la salud/enfermedad'},
+   {c:'E-1.5', t:'Modificaciones recomendadas'},
+   {c:'E-1.6', t:'Otros o temas relacionados'},
+   {c:'E-1.7', t:'Otro (contenidos)', e:1}
+  ]},
+  {clase:'Aplicación (E-2)', items:[
+   {c:'E-2.1', t:'Interpretación de resultados'},
+   {c:'E-2.2', t:'Desarrollo de habilidades'},
+   {c:'E-2.3', t:'Otro (aplicación)', e:1}
+  ]}
+ ]},
+ {id:'C', nombre:'Asesoría nutricia (C)', grupos:[
+  {clase:'Base / enfoque teórico (C-1)', items:[
+   {c:'C-1.1', t:'Teoría cognitivo-conductual'},
+   {c:'C-1.2', t:'Modelo de creencias de salud'},
+   {c:'C-1.3', t:'Teoría del aprendizaje social'},
+   {c:'C-1.4', t:'Modelo transteórico / estados de cambio'},
+   {c:'C-1.5', t:'Otro enfoque teórico', e:1}
+  ]},
+  {clase:'Estrategias (C-2)', items:[
+   {c:'C-2.1', t:'Entrevista motivacional'},
+   {c:'C-2.2', t:'Establecimiento de metas'},
+   {c:'C-2.3', t:'Automonitoreo'},
+   {c:'C-2.4', t:'Resolución de problemas'},
+   {c:'C-2.5', t:'Apoyo social'},
+   {c:'C-2.6', t:'Manejo de estrés'},
+   {c:'C-2.7', t:'Control de estímulos'},
+   {c:'C-2.8', t:'Reestructuración cognitiva'},
+   {c:'C-2.9', t:'Prevención de recaídas'},
+   {c:'C-2.10', t:'Manejo de recompensas/contingencias'},
+   {c:'C-2.11', t:'Otra estrategia', e:1}
+  ]}
+ ]},
+ {id:'RC', nombre:'Coordinación de la atención nutricia (RC)', grupos:[
+  {clase:'Colaboración y canalización (RC-1)', items:[
+   {c:'RC-1.1', t:'Reuniones de equipo'},
+   {c:'RC-1.2', t:'Referencia a otro nutriólogo con diferente experiencia'},
+   {c:'RC-1.3', t:'Colaboración con otros profesionales en nutrición'},
+   {c:'RC-1.4', t:'Colaboración con otros proveedores de salud'},
+   {c:'RC-1.5', t:'Referencia a otros proveedores'},
+   {c:'RC-1.6', t:'Referencia a agencias/programas comunitarios', e:1}
+  ]},
+  {clase:'Alta y transferencia (RC-2)', items:[
+   {c:'RC-2.1', t:'Dar de alta y transferir a otro proveedor de salud'},
+   {c:'RC-2.2', t:'Dar de alta y transferir a otras agencias/programas comunitarios'},
+   {c:'RC-2.3', t:'Dar de alta y transferir a otro profesional de la nutrición'}
+  ]}
+ ]}
+];
+
+var INT_FLAT = [];
+INT_CATALOG.forEach(function(d){ d.grupos.forEach(function(g){ g.items.forEach(function(it){
+  INT_FLAT.push({c:it.c, t:it.t, e:!!it.e, dom:d.id});
+}); }); });
+
+function initIntSelect(){
+  var sd = document.getElementById('soap-int-dom');
+  if(!sd || sd.dataset.filled) return;
+  var html = '';
+  INT_CATALOG.forEach(function(d){ html += '<option value="'+d.id+'">'+d.nombre+'</option>'; });
+  sd.innerHTML = html;
+  sd.dataset.filled = '1';
+  cambiarDominioInt();
+}
+
+function cambiarDominioInt(){
+  var dom = gv('soap-int-dom');
+  var sel = document.getElementById('soap-int-sel');
+  if(!sel) return;
+  var html = '';
+  INT_CATALOG.forEach(function(d){
+    if(d.id !== dom) return;
+    d.grupos.forEach(function(g){
+      html += '<optgroup label="'+g.clase+'">';
+      g.items.forEach(function(it){
+        var idx = INT_FLAT.findIndex(function(f){ return f.c === it.c; });
+        html += '<option value="'+idx+'">'+it.c+' — '+it.t+'</option>';
+      });
+      html += '</optgroup>';
+    });
+  });
+  sel.innerHTML = html;
+  actualizarPhInt();
+}
+
+function actualizarPhInt(){
+  var det = document.getElementById('soap-int-det');
+  var it = INT_FLAT[parseInt(gv('soap-int-sel'))];
+  if(!det || !it) return;
+  det.placeholder = it.e
+    ? 'Especifica (el manual lo pide en esta intervención)'
+    : 'Cantidad, frecuencia o indicación específica (opcional)';
+}
+
+function agregarIntervencion(){
+  var it = INT_FLAT[parseInt(gv('soap-int-sel'))];
+  if(!it) return;
+  var det = gv('soap-int-det').trim();
+  var linea = '• '+it.c+' — '+it.t + (det ? ': '+det : (it.e ? ': __________' : ''));
+  var pEl = document.getElementById('soap-p');
+  pEl.value = pEl.value ? (pEl.value+'\n'+linea) : linea;
+  document.getElementById('soap-int-det').value = '';
+}
+
 function soapFromTab(which){
   var oEl = document.getElementById('soap-o');
   var texto = '';
@@ -3505,7 +3728,7 @@ function soapFromTab(which){
 }
 
 function limpiarSOAP(){
-  ['soap-cama','soap-nombre','soap-s-socio','soap-s-sintomas','soap-s-antec','soap-o','soap-a','soap-p'].forEach(function(id){
+  ['soap-cama','soap-nombre','soap-s-socio','soap-s-sintomas','soap-s-antec','soap-o','soap-a','soap-p','soap-int-det'].forEach(function(id){
     document.getElementById(id).value = '';
   });
 }
