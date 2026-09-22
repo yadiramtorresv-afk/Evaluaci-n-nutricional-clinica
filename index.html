@@ -253,6 +253,16 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
 .exp-new{background:none;border:1px solid var(--border);color:var(--muted);border-radius:99px;font-size:.66rem;padding:3px 9px;cursor:pointer}
 .exp-bar .btn-save{margin-bottom:8px}
 .exp-anexo{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--muted);margin-top:8px}
+.pl-search-results{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-top:4px;max-height:220px;overflow-y:auto}
+.pl-search-item{padding:8px 10px;font-size:.78rem;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.pl-search-item:last-child{border-bottom:none}
+.pl-search-item:hover{background:var(--card)}
+.pl-search-item .grp{color:var(--muted);font-size:.68rem;display:block}
+.pl-group-row{display:flex;align-items:center;gap:8px;font-size:.72rem;margin-bottom:4px}
+.pl-group-row .g-name{flex:0 0 160px;color:var(--muted)}
+.pl-group-row .g-track{flex:1;height:6px;background:var(--card);border-radius:99px;overflow:hidden}
+.pl-group-row .g-fill{height:100%;background:var(--accent)}
+.pl-group-row .g-val{flex:0 0 40px;text-align:right}
 .exp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px}
 .exp-name{font-weight:700;font-size:.9rem;color:var(--text)}
 .exp-meta{font-size:.68rem;color:var(--muted);margin-top:2px}
@@ -692,6 +702,11 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <div class="field"><label>Circunferencia media de brazo (cm)</label><input type="number" id="pe-muac" step="0.1" placeholder="0.0" oninput="calcMuac()"></div>
       <div class="field"><label>Clasificación (6–59 meses)</label><div class="res" id="pe-muacres">—</div></div>
       <p class="note">Puntos de corte OMS/UNICEF: &lt;11.5 cm desnutrición aguda severa · 11.5–12.4 cm moderada · ≥12.5 cm normal. Válido solo en el rango de 6 a 59 meses.</p>
+
+      <h4 style="margin-top:14px">Curva de crecimiento (OMS)</h4>
+      <div class="field"><label>Indicador a graficar</label><select id="ped-indicador" onchange="pedIndTouched();renderPedChart()"></select></div>
+      <div id="ped-chart-wrap" style="margin-top:6px"></div>
+      <p class="note">Bandas de referencia OMS en Z ±3, ±2 y 0 (mediana). El punto marca al paciente.</p>
     </div>
   </div>
 
@@ -903,6 +918,34 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
     <p class="note" style="margin-bottom:8px">Ajusta las porciones de cada grupo y observa cómo se acercan los totales al objetivo.</p>
     <div id="plan-grid"></div>
     <button class="btn-reset" onclick="resetPlanPortions()">↺ Reiniciar porciones</button>
+  </div>
+
+  <div class="section">
+    <div class="sec-title orange">Menú con alimentos reales (opcional)</div>
+    <p class="note" id="plan-db-status">Cargando base de alimentos…</p>
+    <div class="row" style="align-items:flex-end">
+      <div class="field" style="flex:1"><label>Buscar alimento, platillo o comida rápida</label><input type="text" id="pl-search" placeholder="ej. pechuga de pollo, manzana, frijoles…" autocomplete="off" oninput="plBuscar()"></div>
+      <button class="btn-reset" style="white-space:nowrap" onclick="plAutomatico()">⚙ Automático</button>
+    </div>
+    <div id="pl-search-results" class="pl-search-results" style="display:none"></div>
+    <p class="note" id="pl-auto-hint" style="display:none;margin-top:4px"></p>
+    <div style="overflow-x:auto;margin-top:10px">
+    <table style="width:100%;border-collapse:collapse;font-size:.76rem">
+      <thead><tr>
+        <th style="text-align:left;padding:4px 6px">Alimento</th>
+        <th style="text-align:left;padding:4px 6px">Grupo</th>
+        <th style="text-align:right;padding:4px 6px">Porc.</th>
+        <th style="text-align:right;padding:4px 6px">Kcal</th>
+        <th style="text-align:right;padding:4px 6px">Prot</th>
+        <th style="text-align:right;padding:4px 6px">HC</th>
+        <th style="text-align:right;padding:4px 6px">Lip</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="pl-menu-body"><tr><td colspan="8" class="pac-empty" style="padding:10px">Aún no hay alimentos en el menú.</td></tr></tbody>
+    </table>
+    </div>
+    <div class="res neutral" id="pl-menu-adq" style="margin-top:8px;font-size:.78rem">—</div>
+    <div id="pl-group-summary" style="margin-top:8px"></div>
   </div>
 
   <div class="section">
@@ -2245,6 +2288,99 @@ function calcPediatrico(){
   if(meses<=6) tip += ' Lactante &lt;6 meses: la lactancia materna exclusiva cubre estos requerimientos; usar esta cifra solo como referencia comparativa.';
   else if(meses>168) tip += ' En adolescentes, ajustar por velocidad de crecimiento puberal y nivel de actividad física.';
   sv('pe-tip', tip);
+  if (typeof renderPedChart === 'function') renderPedChart();
+}
+
+// ===== PEDIATRÍA: curva de crecimiento OMS (gráfica SVG) =====
+function initPedChartUI(){
+  var sel = document.getElementById('ped-indicador');
+  if(!sel || sel.dataset.filled) return;
+  var opciones = [
+    ['imc_edad','IMC para la edad (5-19 años)'],
+    ['talla_edad','Talla para la edad'],
+    ['peso_edad','Peso para la edad (0-5 años)'],
+    ['peso_talla','Peso para la talla (0-5 años)']
+  ];
+  sel.innerHTML = opciones.map(function(o){ return '<option value="'+o[0]+'">'+o[1]+'</option>'; }).join('');
+  sel.dataset.filled = '1';
+}
+function pedEdadDiasYMeses(){
+  var meses = parseFloat(gv('pe-edad'));
+  if(!meses || meses<=0) return null;
+  return { dias: Math.round(meses*30.4375), meses: meses };
+}
+function pedTablaParaIndicador(indId, sexoOMS, es0a5){
+  if(!window.tablasOMS) return null;
+  var grupo = sexoOMS==='M' ? 'girls' : 'boys';
+  var t = window.tablasOMS;
+  if(indId==='imc_edad') return {tabla:t.bmi_for_age['5_19'][grupo], unidadX:'months', label:'IMC'};
+  if(indId==='peso_edad') return {tabla:t.weight_for_age['0_5'][grupo], unidadX:'days', label:'Peso (kg)'};
+  if(indId==='peso_talla') return {tabla:t.weight_for_height['0_5'][grupo], unidadX:'height_cm', label:'Peso (kg)'};
+  if(indId==='talla_edad') return es0a5
+    ? {tabla:t.height_for_age['0_5'][grupo], unidadX:'days', label:'Talla (cm)'}
+    : {tabla:t.height_for_age['5_19'][grupo], unidadX:'months', label:'Talla (cm)'};
+  return null;
+}
+function pedIndTouched(){ var sel = document.getElementById('ped-indicador'); if(sel) sel.dataset.touched = '1'; }
+function renderPedChart(){
+  var wrap = document.getElementById('ped-chart-wrap');
+  if(!wrap) return;
+  if(!window.tablasOMS){ wrap.innerHTML=''; return; }
+  var edad = pedEdadDiasYMeses();
+  var sexoOMS = (typeof peSexo!=='undefined' && peSexo==='F') ? 'M' : 'H';
+  var es0a5 = edad ? edad.dias<=1856 : true;
+  var sel = document.getElementById('ped-indicador');
+  // Si el usuario no eligió el indicador a mano, se ajusta solo según la edad
+  // (IMC/edad no aplica antes de los 5 años; peso/edad y peso/talla no aplican después).
+  if(sel && !sel.dataset.touched && edad){
+    if(es0a5 && (sel.value==='imc_edad')) sel.value = 'peso_edad';
+    else if(!es0a5 && (sel.value==='peso_edad' || sel.value==='peso_talla')) sel.value = 'imc_edad';
+  }
+  var indId = gv('ped-indicador') || 'imc_edad';
+  var info = pedTablaParaIndicador(indId, sexoOMS, es0a5);
+  if(!info){ wrap.innerHTML=''; return; }
+  var tabla = info.tabla, unidadX = info.unidadX, label = info.label;
+  var paso = Math.max(1, Math.floor(tabla.length/60));
+  var muestras = tabla.filter(function(_,i){ return i%paso===0; });
+  var ejeX = muestras.map(function(f){ return f.x!=null ? f.x : f.month; });
+  var zLineas = [-3,-2,0,2,3];
+  var curvas = zLineas.map(function(z){ return muestras.map(function(f){ return window.valorParaZ(z, f.L, f.M, f.S); }); });
+  var minX = Math.min.apply(null, ejeX), maxX = Math.max.apply(null, ejeX);
+  var todos = [].concat.apply([], curvas);
+  var minY = Math.min.apply(null, todos), maxY = Math.max.apply(null, todos);
+  var W=640, H=280, PAD=38;
+  function escalaX(x){ return PAD + ((x-minX)/(maxX-minX))*(W-2*PAD); }
+  function escalaY(y){ return H-PAD - ((y-minY)/(maxY-minY))*(H-2*PAD); }
+  var colores = ['#cbd5c9','#8fae9b','var(--ped, #4a90a4)','#8fae9b','#cbd5c9'];
+  var grosores = [1,1.5,2.5,1.5,1];
+  var svg = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="overflow:visible;max-width:100%">';
+  svg += '<line x1="'+PAD+'" y1="'+(H-PAD)+'" x2="'+(W-PAD)+'" y2="'+(H-PAD)+'" stroke="#d9d3c4" />';
+  svg += '<line x1="'+PAD+'" y1="'+PAD+'" x2="'+PAD+'" y2="'+(H-PAD)+'" stroke="#d9d3c4" />';
+  curvas.forEach(function(serie,i){
+    var d = serie.map(function(y,j){ return (j===0?'M ':'L ')+escalaX(ejeX[j])+' '+escalaY(y); }).join(' ');
+    svg += '<path d="'+d+'" fill="none" stroke="'+colores[i]+'" stroke-width="'+grosores[i]+'" />';
+  });
+  zLineas.forEach(function(z,i){
+    var ultimoY = curvas[i][curvas[i].length-1];
+    svg += '<text x="'+(W-PAD+4)+'" y="'+(escalaY(ultimoY)+3)+'" font-size="10" fill="#857f6c">'+(z>0?'+':'')+z+'</text>';
+  });
+  var peso = parseFloat(gv('pe-peso')), talla = parseFloat(gv('pe-talla'));
+  var puntoX=null, puntoY=null;
+  if(edad){
+    if(unidadX==='days') puntoX = edad.dias;
+    else if(unidadX==='months') puntoX = edad.meses;
+    else if(unidadX==='height_cm') puntoX = talla;
+    if(indId==='imc_edad' && peso && talla) puntoY = peso/Math.pow(talla/100,2);
+    else if(indId==='peso_edad') puntoY = peso;
+    else if(indId==='peso_talla') puntoY = peso;
+    else if(indId==='talla_edad') puntoY = talla;
+  }
+  if(puntoX!=null && puntoY && puntoX>=minX && puntoX<=maxX){
+    svg += '<circle cx="'+escalaX(puntoX)+'" cy="'+escalaY(puntoY)+'" r="5" fill="#b2503a" stroke="#fff" stroke-width="1.5" />';
+  }
+  svg += '<text x="'+PAD+'" y="13" font-size="11" fill="#857f6c">'+esc(label)+'</text>';
+  svg += '</svg>';
+  wrap.innerHTML = svg;
 }
 
 function calcMuac(){
@@ -3412,6 +3548,181 @@ function setPlanCard(id, actual, target, dec){
 
 
 
+// ===== PLAN: menú con alimentos reales (food-database.js) =====
+// Sección opcional dentro de la pestaña Plan. Usa la meta de kcal/%macros que
+// ya está capturada arriba (plan-kcal, plan-pctHC, plan-pctProt, plan-pctLip);
+// no duplica esos campos. Independiente del sistema de 16 grupos genéricos de
+// arriba — ese no se toca.
+var plMenu = []; // [{alimento, porciones}]
+var plSearchTimeout = null;
+
+// Un alimento representativo por grupo SMAE, para el botón "Automático".
+var PL_ALIMENTO_REPRESENTATIVO = {
+  verduras: ['jitomate'],
+  frutas: ['manzana'],
+  leguminosas: ['frijol promedio cocido', 'frijol'],
+  leche_descremada: ['leche descremada'],
+  cereales_sin_grasa: ['tortilla de maíz', 'arroz cocido', 'arroz'],
+  aoa_bajo_aporte_grasa: ['pechuga de pollo', 'pollo'],
+  aceites_sin_proteina: ['aceite de oliva', 'aceite vegetal', 'aceite']
+};
+// Mapa de "equivalentes" de comida rápida -> grupos SMAE de calc-engine.js,
+// para poder calcular sus macros con PlanAlimentacion.aportePorGrupo().
+var PL_MAPA_COMIDA_RAPIDA = {
+  aoambag: 'aoa_muy_bajo_aporte_grasa', aoabag: 'aoa_bajo_aporte_grasa', aoamag: 'aoa_moderado_aporte_grasa',
+  grasa_sin_proteina: 'aceites_sin_proteina', cereal_sin_grasa: 'cereales_sin_grasa', azucar_sin_grasa: 'azucares_sin_grasa',
+  leche_entera: 'leche_entera', leche_descremada: 'leche_descremada', verduras: 'verduras', frutas: 'frutas', leguminosas: 'leguminosas'
+};
+
+function plNormalizarPlatillo(p){
+  return { alimento:p.nombre, grupo:p.categoria||'Platillo', tipo:'Platillo',
+    cantidad_sugerida:p.cantidad||'1', unidad:p.unidad||'porción', kcal:p.kcal||0,
+    proteina_g:p.proteina_g||0, lipidos_g:p.lipidos_g||0, hc_g:p.hc_g||0 };
+}
+function plNormalizarComidaRapida(item){
+  var tot = {proteina_g:0, lipidos_g:0, hc_g:0};
+  Object.keys(item.equivalentes||{}).forEach(function(clave){
+    var grupo = PL_MAPA_COMIDA_RAPIDA[clave], cant = item.equivalentes[clave];
+    if(!grupo || !cant || !window.PlanAlimentacion) return;
+    var a = window.PlanAlimentacion.aportePorGrupo(grupo, cant);
+    tot.proteina_g += a.proteina_g; tot.lipidos_g += a.lipidos_g; tot.hc_g += a.hc_g;
+  });
+  return { alimento:item.nombre, grupo:item.marca, tipo:'Comida rápida', cantidad_sugerida:'1', unidad:'porción',
+    kcal:item.kcal||0, proteina_g:r1(tot.proteina_g), lipidos_g:r1(tot.lipidos_g), hc_g:r1(tot.hc_g) };
+}
+
+function plBuscar(){
+  clearTimeout(plSearchTimeout);
+  var q = gv('pl-search').trim();
+  var box = document.getElementById('pl-search-results');
+  if(!window.dbAlimentos || q.length<2){ box.style.display='none'; return; }
+  plSearchTimeout = setTimeout(function(){
+    var alimentos = window.buscarAlimento(window.dbAlimentos, q).slice(0,15).map(function(a){ return Object.assign({tipo:'Alimento'}, a); });
+    var platillos = window.buscarPlatillo(window.dbAlimentos, q).slice(0,10).map(plNormalizarPlatillo);
+    var comidaRap = window.buscarComidaRapida(window.dbAlimentos, q).slice(0,10).map(plNormalizarComidaRapida);
+    plRenderResultados(alimentos.concat(platillos, comidaRap));
+  }, 120);
+}
+function plRenderResultados(resultados){
+  var box = document.getElementById('pl-search-results');
+  if(!resultados.length){ box.innerHTML = '<div class="pl-search-item">Sin resultados</div>'; box.style.display='block'; return; }
+  box.innerHTML = resultados.map(function(a,i){
+    var grp = a.tipo==='Alimento' ? (window.NOMBRES_GRUPOS[a.grupo]||a.grupo) : (a.tipo+' · '+a.grupo);
+    return '<div class="pl-search-item" data-idx="'+i+'"><span>'+esc(a.alimento)+'<span class="grp">'+esc(grp)+' · '+esc(a.cantidad_sugerida)+' '+esc(a.unidad)+'</span></span><span>'+r0(a.kcal)+' kcal</span></div>';
+  }).join('');
+  box.style.display = 'block';
+  box.querySelectorAll('.pl-search-item[data-idx]').forEach(function(el){
+    el.addEventListener('click', function(){
+      plMenu.push({alimento:resultados[+el.dataset.idx], porciones:1});
+      document.getElementById('pl-search').value = '';
+      box.style.display = 'none';
+      plRenderMenu();
+    });
+  });
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#pl-search') && !e.target.closest('#pl-search-results')){
+    var box = document.getElementById('pl-search-results'); if(box) box.style.display='none';
+  }
+});
+
+function plMenuMeta(){
+  var kcal = parseFloat(gv('plan-kcal'))||0;
+  if(!kcal || !window.Energia) return {kcal:kcal, proteina_g:0, hc_g:0, lipidos_g:0};
+  var m = window.Energia.macronutrientes({kcal_totales:kcal, pct_proteina:parseFloat(gv('plan-pctProt'))||0, pct_hc:parseFloat(gv('plan-pctHC'))||0, pct_lipidos:parseFloat(gv('plan-pctLip'))||0});
+  return {kcal:kcal, proteina_g:m.proteina.gr, hc_g:m.hc.gr, lipidos_g:m.lipidos.gr};
+}
+
+function plAutomatico(){
+  if(!window.dbAlimentos || !window.PlanAlimentacion){ showToast('⚠️ La base de alimentos aún no termina de cargar', true); return; }
+  var meta = plMenuMeta();
+  if(!meta.kcal){ showToast('⚠️ Captura primero el objetivo de kcal arriba', true); return; }
+  var resultado = window.PlanAlimentacion.reparticionAutomaticaPorGrupos(meta);
+  var nuevo = [];
+  Object.keys(resultado.porciones).forEach(function(grupo){
+    var porciones = resultado.porciones[grupo];
+    if(porciones<=0) return;
+    var terminos = PL_ALIMENTO_REPRESENTATIVO[grupo]||[];
+    var alimento = null;
+    for(var i=0;i<terminos.length && !alimento;i++){
+      var r = window.buscarAlimento(window.dbAlimentos, terminos[i], grupo);
+      if(r.length) alimento = r[0];
+    }
+    if(!alimento){ var todos = window.dbAlimentos[grupo] && window.dbAlimentos[grupo].alimentos; if(todos && todos.length) alimento = Object.assign({}, todos[0], {grupo:grupo}); }
+    if(alimento) nuevo.push({alimento:alimento, porciones:porciones});
+  });
+  plMenu = nuevo;
+  plRenderMenu();
+  var hint = document.getElementById('pl-auto-hint');
+  hint.style.display = 'block';
+  hint.textContent = 'Punto de partida generado a partir de tu meta de macros. Cambia cualquier alimento o cantidad libremente.';
+}
+
+function plRenderMenu(){
+  var body = document.getElementById('pl-menu-body');
+  if(!plMenu.length){
+    body.innerHTML = '<tr><td colspan="8" class="pac-empty" style="padding:10px">Aún no hay alimentos en el menú.</td></tr>';
+  } else {
+    body.innerHTML = plMenu.map(function(row,i){
+      var a = window.aporteDeAlimento(row.alimento, row.porciones);
+      var grp = row.alimento.tipo && row.alimento.tipo!=='Alimento' ? (row.alimento.tipo+' · '+row.alimento.grupo) : (window.NOMBRES_GRUPOS[row.alimento.grupo]||row.alimento.grupo);
+      return '<tr><td style="padding:4px 6px">'+esc(row.alimento.alimento)+'</td>'+
+        '<td style="padding:4px 6px;color:var(--muted);font-size:.68rem">'+esc(grp)+'</td>'+
+        '<td style="padding:4px 6px;text-align:right"><input type="number" min="0" step="0.5" value="'+row.porciones+'" style="width:52px" data-idx="'+i+'" onchange="plCambiarPorcion(this)"></td>'+
+        '<td style="padding:4px 6px;text-align:right">'+r0(a.kcal)+'</td>'+
+        '<td style="padding:4px 6px;text-align:right">'+r1(a.proteina_g)+'</td>'+
+        '<td style="padding:4px 6px;text-align:right">'+r1(a.hc_g)+'</td>'+
+        '<td style="padding:4px 6px;text-align:right">'+r1(a.lipidos_g)+'</td>'+
+        '<td style="padding:4px 6px"><button class="pac-del" style="margin:0" onclick="plQuitar('+i+')">✕</button></td></tr>';
+    }).join('');
+  }
+  plActualizarAdecuacion();
+  plRenderGroupSummary();
+}
+function plCambiarPorcion(inp){
+  plMenu[+inp.dataset.idx].porciones = parseFloat(inp.value)||0;
+  plRenderMenu();
+}
+function plQuitar(i){ plMenu.splice(i,1); plRenderMenu(); }
+
+function plTotalesMenu(){
+  var t = {kcal:0, proteina_g:0, hc_g:0, lipidos_g:0};
+  plMenu.forEach(function(row){
+    var a = window.aporteDeAlimento(row.alimento, row.porciones);
+    t.kcal+=a.kcal; t.proteina_g+=a.proteina_g; t.hc_g+=a.hc_g; t.lipidos_g+=a.lipidos_g;
+  });
+  return t;
+}
+function plActualizarAdecuacion(){
+  var t = plTotalesMenu(), meta = plMenuMeta();
+  var el = document.getElementById('pl-menu-adq');
+  if(!meta.kcal){ el.textContent = plMenu.length ? ('Menú: '+r0(t.kcal)+' kcal · P'+r1(t.proteina_g)+'g · HC'+r1(t.hc_g)+'g · L'+r1(t.lipidos_g)+'g (captura una meta de kcal arriba para ver % de adecuación)') : '—'; el.className='res neutral'; return; }
+  var pct = r0((t.kcal/meta.kcal)*100);
+  el.textContent = 'Menú: '+r0(t.kcal)+' / '+r0(meta.kcal)+' kcal ('+pct+'%) · P'+r1(t.proteina_g)+'/'+r0(meta.proteina_g)+'g · HC'+r1(t.hc_g)+'/'+r0(meta.hc_g)+'g · L'+r1(t.lipidos_g)+'/'+r0(meta.lipidos_g)+'g';
+  el.className = 'res '+(pct>=90 && pct<=110 ? 'ok' : (pct>=75 && pct<=125 ? 'warn' : 'danger'));
+}
+function plRenderGroupSummary(){
+  var box = document.getElementById('pl-group-summary');
+  var porGrupo = {};
+  plMenu.forEach(function(row){ var g=row.alimento.grupo; porGrupo[g]=(porGrupo[g]||0)+row.porciones; });
+  var entries = Object.keys(porGrupo).map(function(k){ return [k,porGrupo[k]]; }).sort(function(a,b){ return b[1]-a[1]; });
+  if(!entries.length){ box.innerHTML=''; return; }
+  var max = Math.max.apply(null, entries.map(function(e){ return e[1]; }).concat([1]));
+  box.innerHTML = entries.map(function(e){
+    return '<div class="pl-group-row"><div class="g-name">'+esc(window.NOMBRES_GRUPOS[e[0]]||e[0])+'</div><div class="g-track"><div class="g-fill" style="width:'+((e[1]/max)*100)+'%"></div></div><div class="g-val">'+r1(e[1])+'</div></div>';
+  }).join('');
+}
+function resetMenuPlan(){
+  plMenu = [];
+  var box = document.getElementById('pl-search-results'); if(box) box.style.display='none';
+  var hint = document.getElementById('pl-auto-hint'); if(hint) hint.style.display='none';
+  if(document.getElementById('pl-menu-body')) plRenderMenu();
+}
+['plan-kcal','plan-pctHC','plan-pctProt','plan-pctLip'].forEach(function(id){
+  var el = document.getElementById(id);
+  if(el) el.addEventListener('input', plActualizarAdecuacion);
+});
+
 // ===== SOAP / DIAGNÓSTICO NUTRICIONAL (PES) =====
 // Catálogo representativo eNCPT / NANDA-I por dominio: NI (Ingesta), NC (Clínico), NB (Conductual-ambiental)
 // Catálogo completo de diagnósticos nutricios (PES), tomado del Manual de
@@ -3978,6 +4289,7 @@ function aplicarPacienteATab(t){
 
 function nuevoPaciente(){
   camaActiva = ''; nombreActivo = '';
+  if (typeof resetMenuPlan === 'function') resetMenuPlan();
   CAMA_IDS.concat(NOMBRE_IDS).forEach(function(id){ var el = document.getElementById(id); if(el) el.value = ''; });
   actualizarInfoExp();
   showToast('Paciente activo limpiado. Captura la nueva cama.');
@@ -4070,6 +4382,21 @@ function snapshotTab(t){
   }
   if(t==='labs' && !labResultados.length) return null;
   var secs = snapshotGenerico(t);
+  if(t==='plan' && typeof plMenu!=='undefined' && plMenu.length){
+    var totM = plTotalesMenu();
+    var filasMenu = plMenu.map(function(row){
+      var a = window.aporteDeAlimento(row.alimento, row.porciones);
+      return [row.alimento.alimento, row.porciones+' porc. · '+r0(a.kcal)+' kcal · P'+r1(a.proteina_g)+'g HC'+r1(a.hc_g)+'g L'+r1(a.lipidos_g)+'g'];
+    });
+    filasMenu.push(['Total del menú', r0(totM.kcal)+' kcal · P'+r1(totM.proteina_g)+'g HC'+r1(totM.hc_g)+'g L'+r1(totM.lipidos_g)+'g']);
+    secs.push({t:'Menú con alimentos reales', rows:filasMenu, notas:[]});
+  }
+  if(t==='pediatria'){
+    var chartWrap = document.getElementById('ped-chart-wrap');
+    if(chartWrap && chartWrap.innerHTML.trim()){
+      secs.push({t:'Curva de crecimiento OMS', rows:[], notas:[], svg:chartWrap.innerHTML});
+    }
+  }
   if(t==='labs'){
     secs.push({
       t:'Resultados de laboratorio',
@@ -4180,6 +4507,7 @@ function htmlSeccionExp(id, s){
     if(sec.rows && sec.rows.length) h += tablaPares(sec.rows);
     if(sec.tabla) h += tablaGrid(sec.tabla);
     if(sec.notas && sec.notas.length) h += '<ul class="pr-notas">'+sec.notas.map(function(n){ return '<li>'+esc(n)+'</li>'; }).join('')+'</ul>';
+    if(sec.svg) h += '<div style="max-width:480px;margin:6px 0">'+sec.svg+'</div>';
   });
   return h;
 }
@@ -4504,19 +4832,38 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <script type="module">
-  import { cargarTablasOMS, Percentiles } from './percentiles.js';
-  import { Embarazo, Lactancia, AguaElectrolitos, Antropometria, PlanAlimentacion } from './calc-engine.js';
+  import { cargarTablasOMS, Percentiles, valorParaZ } from './percentiles.js';
+  import { Embarazo, Lactancia, AguaElectrolitos, Antropometria, PlanAlimentacion, Energia } from './calc-engine.js';
+  import { cargarBaseDeAlimentos, buscarAlimento, buscarPlatillo, buscarComidaRapida, aporteDeAlimento, NOMBRES_GRUPOS } from './food-database.js';
   window.Percentiles = Percentiles;
   window.Embarazo = Embarazo;
   window.Lactancia = Lactancia;
   window.AguaElectrolitos = AguaElectrolitos;
   window.Antropometria = Antropometria;
   window.PlanAlimentacion = PlanAlimentacion;
+  window.Energia = Energia;
+  window.valorParaZ = valorParaZ;
+  window.buscarAlimento = buscarAlimento;
+  window.buscarPlatillo = buscarPlatillo;
+  window.buscarComidaRapida = buscarComidaRapida;
+  window.aporteDeAlimento = aporteDeAlimento;
+  window.NOMBRES_GRUPOS = NOMBRES_GRUPOS;
+  window.dbAlimentos = null;
+  cargarBaseDeAlimentos('./food-database.json').then(function(d){
+    window.dbAlimentos = d;
+    var el = document.getElementById('plan-db-status');
+    if(el){ el.textContent = 'Base de alimentos lista (1,941 alimentos SMAE)'; el.className = 'note'; }
+  }).catch(function(err){
+    console.error('No se pudo cargar food-database.json:', err);
+    var el = document.getElementById('plan-db-status');
+    if(el){ el.textContent = '⚠️ No se pudo cargar food-database.json — revisa que esté subido en la raíz del repo.'; el.className = 'res danger'; }
+  });
   window.tablasOMS = null;
   window._modulosCargados = true;
   cargarTablasOMS('./who-growth-lms.json').then(function(t){
     window.tablasOMS = t;
     if (typeof calcPediatrico === 'function') calcPediatrico();
+    if (typeof renderPedChart === 'function') renderPedChart();
   }).catch(function(err){
     console.error('No se pudieron cargar las tablas OMS:', err);
     window._errorTablasOMS = err.message || 'Error desconocido';
@@ -4527,6 +4874,7 @@ if ('serviceWorker' in navigator) {
   if (typeof calcAguaReq === 'function') calcAguaReq();
   if (typeof calcElectrolitos === 'function') calcElectrolitos();
   if (typeof calcAntropometria === 'function') calcAntropometria();
+  if (typeof initPedChartUI === 'function') initPedChartUI();
 </script>
 
 <script>
