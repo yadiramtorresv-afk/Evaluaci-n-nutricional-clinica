@@ -891,37 +891,22 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
   </div>
 
   <div class="section">
-    <div class="sec-title orange">Sistema de equivalentes</div>
-    <div class="pb-wrap">
-      <div class="pb on" id="plan-mode-completo" onclick="setPlanMode('completo')">SMAE completo</div>
-      <div class="pb" id="plan-mode-simple" onclick="setPlanMode('simple')">Simplificado (sin azúcar)</div>
-    </div>
-  </div>
-
-  <div class="section">
     <div class="sec-title orange">Objetivo calórico y de macronutrientes</div>
     <div class="row">
       <button class="btn-reset" style="flex:1;font-size:.72rem" onclick="planFromTab('g')">↙ Usar de General</button>
       <button class="btn-reset" style="flex:1;font-size:.72rem" onclick="planFromTab('e')">↙ Usar de Embarazo</button>
     </div>
-    <div class="field" style="margin-top:10px"><label>Kcal totales</label><input type="number" id="plan-kcal" step="1" placeholder="0" oninput="renderPlanGrid()"></div>
+    <div class="field" style="margin-top:10px"><label>Kcal totales</label><input type="number" id="plan-kcal" step="1" placeholder="0" oninput="planTargets()"></div>
     <div class="row">
-      <div class="field"><label>% HC</label><input type="number" id="plan-pctHC" step="1" value="55" oninput="renderPlanGrid()"></div>
-      <div class="field"><label>% Prot</label><input type="number" id="plan-pctProt" step="1" value="15" oninput="renderPlanGrid()"></div>
-      <div class="field"><label>% Lip</label><input type="number" id="plan-pctLip" step="1" value="30" oninput="renderPlanGrid()"></div>
+      <div class="field"><label>% HC</label><input type="number" id="plan-pctHC" step="1" value="55" oninput="planTargets()"></div>
+      <div class="field"><label>% Prot</label><input type="number" id="plan-pctProt" step="1" value="15" oninput="planTargets()"></div>
+      <div class="field"><label>% Lip</label><input type="number" id="plan-pctLip" step="1" value="30" oninput="planTargets()"></div>
     </div>
     <div class="res neutral" id="plan-sumpct" style="margin-top:6px;font-size:.78rem">—</div>
   </div>
 
   <div class="section">
-    <div class="sec-title orange">Porciones por grupo</div>
-    <p class="note" style="margin-bottom:8px">Ajusta las porciones de cada grupo y observa cómo se acercan los totales al objetivo.</p>
-    <div id="plan-grid"></div>
-    <button class="btn-reset" onclick="resetPlanPortions()">↺ Reiniciar porciones</button>
-  </div>
-
-  <div class="section">
-    <div class="sec-title orange">Menú con alimentos reales (opcional)</div>
+    <div class="sec-title orange">Porciones y menú (alimentos reales)</div>
     <p class="note" id="plan-db-status">Cargando base de alimentos…</p>
     <div class="row" style="align-items:flex-end">
       <div class="field" style="flex:1"><label>Buscar alimento, platillo o comida rápida</label><input type="text" id="pl-search" placeholder="ej. pechuga de pollo, manzana, frijoles…" autocomplete="off" oninput="plBuscar()"></div>
@@ -944,18 +929,9 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <tbody id="pl-menu-body"><tr><td colspan="8" class="pac-empty" style="padding:10px">Aún no hay alimentos en el menú.</td></tr></tbody>
     </table>
     </div>
+    <button class="btn-reset" onclick="if(confirm('¿Vaciar el menú actual?')) resetMenuPlan()">🗑 Vaciar menú</button>
     <div class="res neutral" id="pl-menu-adq" style="margin-top:8px;font-size:.78rem">—</div>
     <div id="pl-group-summary" style="margin-top:8px"></div>
-  </div>
-
-  <div class="section">
-    <div class="sec-title orange">Totales del plan vs. objetivo</div>
-    <div class="plan-summary">
-      <div class="ps-card"><div class="ps-label">Kcal</div><div class="ps-val" id="ps-kcal">0</div><div class="ps-target" id="ps-kcal-t">meta: —</div></div>
-      <div class="ps-card"><div class="ps-label">HC (g)</div><div class="ps-val" id="ps-hc">0</div><div class="ps-target" id="ps-hc-t">meta: —</div></div>
-      <div class="ps-card"><div class="ps-label">Proteína (g)</div><div class="ps-val" id="ps-prot">0</div><div class="ps-target" id="ps-prot-t">meta: —</div></div>
-      <div class="ps-card"><div class="ps-label">Lípidos (g)</div><div class="ps-val" id="ps-lip">0</div><div class="ps-target" id="ps-lip-t">meta: —</div></div>
-    </div>
   </div>
 
 </div>
@@ -1489,7 +1465,7 @@ function switchTab(t) {
   else if(t==='pediatria') { tabs[3].classList.add('active'); calcPediatrico(); }
   else if(t==='labs') tabs[4].classList.add('active');
   else if(t==='agua') tabs[5].classList.add('active');
-  else if(t==='plan') { tabs[6].classList.add('active'); renderPlanGrid(); }
+  else if(t==='plan') { tabs[6].classList.add('active'); planTargets(); if (typeof plRenderMenu === 'function') plRenderMenu(); }
   else if(t==='historia') { tabs[7].classList.add('active'); renderHistoriaList(); }
   else if(t==='soap') { tabs[8].classList.add('active'); initPesSelect(); initIntSelect(); }
   else if(t==='pacientes') { tabs[9].classList.add('active'); renderPacs(); }
@@ -3406,50 +3382,8 @@ function renderInterpretacion() {
 
 
 
-// ===== PLAN DE ALIMENTOS (SMAE) =====
+// ===== PLAN DE ALIMENTOS =====
 var planFromGeneral = null, planFromEmbarazo = null;
-var planMode = 'completo';
-var planPortions = {};
-
-// Valores por porción: CHO(g), PROT(g), LIP(g), kcal — Sistema Mexicano de Equivalentes
-var PLAN_GROUPS_COMPLETO = [
- {key:'verduras', name:'Verduras', cho:4, prot:2, lip:0, kcal:25},
- {key:'frutas', name:'Frutas', cho:15, prot:0, lip:0, kcal:60},
- {key:'cereal_sg', name:'Cereales y tubérculos sin grasa', cho:15, prot:2, lip:0, kcal:70},
- {key:'cereal_cg', name:'Cereales y tubérculos con grasa', cho:15, prot:2, lip:5, kcal:115},
- {key:'legumin', name:'Leguminosas', cho:20, prot:8, lip:1, kcal:120},
- {key:'aoa_mb', name:'AOA muy bajo aporte de grasa', cho:0, prot:7, lip:1, kcal:40},
- {key:'aoa_b', name:'AOA bajo aporte de grasa', cho:0, prot:7, lip:3, kcal:55},
- {key:'aoa_m', name:'AOA moderado aporte de grasa', cho:0, prot:7, lip:5, kcal:75},
- {key:'aoa_a', name:'AOA alto aporte de grasa', cho:0, prot:7, lip:8, kcal:100},
- {key:'leche_desc', name:'Leche descremada', cho:12, prot:9, lip:2, kcal:95},
- {key:'leche_semi', name:'Leche semidescremada', cho:12, prot:9, lip:4, kcal:110},
- {key:'leche_ent', name:'Leche entera', cho:12, prot:9, lip:8, kcal:150},
- {key:'aceite_sp', name:'Aceites y grasas sin proteína', cho:0, prot:0, lip:5, kcal:45},
- {key:'aceite_cp', name:'Aceites y grasas con proteína', cho:0, prot:3, lip:5, kcal:70},
- {key:'azucar_sg', name:'Azúcares sin grasa', cho:10, prot:0, lip:0, kcal:40},
- {key:'azucar_cg', name:'Azúcares con grasa', cho:10, prot:0, lip:5, kcal:85}
-];
-
-var PLAN_GROUPS_SIMPLE = [
- {key:'verduras', name:'Verduras', cho:4, prot:2, lip:0, kcal:25},
- {key:'frutas', name:'Frutas', cho:15, prot:0, lip:0, kcal:60},
- {key:'cereal_sg', name:'Cereales y tubérculos', cho:15, prot:2, lip:0, kcal:70},
- {key:'legumin', name:'Leguminosas', cho:20, prot:8, lip:1, kcal:120},
- {key:'aoa_m', name:'AOA (moderado aporte de grasa)', cho:0, prot:7, lip:5, kcal:75},
- {key:'leche_semi', name:'Leche semidescremada', cho:12, prot:9, lip:4, kcal:110},
- {key:'aceite_sp', name:'Aceites y grasas', cho:0, prot:0, lip:5, kcal:45}
-];
-
-function planGroups(){ return planMode==='completo' ? PLAN_GROUPS_COMPLETO : PLAN_GROUPS_SIMPLE; }
-
-function setPlanMode(m){
-  planMode = m;
-  document.getElementById('plan-mode-completo').className = 'pb'+(m==='completo'?' on':'');
-  document.getElementById('plan-mode-simple').className = 'pb'+(m==='simple'?' on':'');
-  planPortions = {};
-  renderPlanGrid();
-}
 
 function planFromTab(which){
   var src = which==='g' ? planFromGeneral : planFromEmbarazo;
@@ -3461,34 +3395,12 @@ function planFromTab(which){
   document.getElementById('plan-pctHC').value = r0(pctHC);
   document.getElementById('plan-pctProt').value = r0(pctProt);
   document.getElementById('plan-pctLip').value = r0(pctLip);
-  renderPlanGrid();
+  planTargets();
+  if (typeof plActualizarAdecuacion === 'function') plActualizarAdecuacion();
 }
 
-function resetPlanPortions(){
-  planPortions = {};
-  renderPlanGrid();
-}
-
-function updatePortion(key, val){
-  var n = parseFloat(val);
-  planPortions[key] = isNaN(n) ? 0 : n;
-  renderPlanTotals();
-}
-
-function renderPlanGrid(){
-  var grid = document.getElementById('plan-grid');
-  if(!grid) return;
-  var groups = planGroups();
-  grid.innerHTML = groups.map(function(g){
-    var val = planPortions[g.key]||'';
-    return '<div class="pg-row">'+
-      '<div class="pg-info"><div class="pg-name">'+g.name+'</div><div class="pg-macros">HC '+g.cho+'g · Prot '+g.prot+'g · Lip '+g.lip+'g · '+g.kcal+' kcal / porción</div></div>'+
-      '<input class="pg-input" type="number" step="0.5" min="0" placeholder="0" value="'+val+'" oninput="updatePortion(\''+g.key+'\',this.value)">'+
-      '</div>';
-  }).join('');
-  renderPlanTotals();
-}
-
+// Objetivo de kcal/macros (también usado por el menú de alimentos reales, plMenuMeta()).
+// Actualiza el aviso de "los % deberían sumar 100" y devuelve la meta en gramos.
 function planTargets(){
   var kcal = parseFloat(gv('plan-kcal'))||0;
   var pctHC = parseFloat(gv('plan-pctHC'))||0;
@@ -3508,45 +3420,6 @@ function planTargets(){
     lip: kcal*(pctLip/100)/9
   };
 }
-
-function pctDiffClass(actual, target){
-  if(target<=0) return 'neutral';
-  var diff = Math.abs(actual-target)/target*100;
-  if(diff<=5) return 'ok';
-  if(diff<=15) return 'warn';
-  return 'off';
-}
-
-function renderPlanTotals(){
-  var groups = planGroups();
-  var totCho=0, totProt=0, totLip=0, totKcal=0;
-  groups.forEach(function(g){
-    var n = planPortions[g.key]||0;
-    totCho += n*g.cho; totProt += n*g.prot; totLip += n*g.lip; totKcal += n*g.kcal;
-  });
-  var t = planTargets();
-  setPlanCard('ps-kcal', totKcal, t.kcal, 0);
-  setPlanCard('ps-hc', totCho, t.cho, 1);
-  setPlanCard('ps-prot', totProt, t.prot, 1);
-  setPlanCard('ps-lip', totLip, t.lip, 1);
-}
-
-function setPlanCard(id, actual, target, dec){
-  var valEl = document.getElementById(id);
-  var tEl = document.getElementById(id+'-t');
-  if(!valEl) return;
-  var actualR = dec===0 ? r0(actual) : r1(actual);
-  valEl.textContent = actualR + (id==='ps-kcal'?'':' g');
-  valEl.className = 'ps-val '+pctDiffClass(actual, target);
-  if(target>0){
-    tEl.textContent = 'meta: '+(dec===0?r0(target):r1(target))+(id==='ps-kcal'?' kcal':' g');
-  } else {
-    tEl.textContent = 'meta: —';
-  }
-}
-
-
-
 
 // ===== PLAN: menú con alimentos reales (food-database.js) =====
 // Sección opcional dentro de la pestaña Plan. Usa la meta de kcal/%macros que
