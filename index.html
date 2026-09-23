@@ -701,7 +701,15 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <h4 style="margin-top:14px">Gasto energético en reposo (GER/REE) — por fórmula</h4>
       <p class="note">Elige el grupo de edad y la fuente. Se sugiere el grupo según la edad capturada arriba, pero puedes cambiarlo.</p>
       <div class="field"><label>Grupo de edad</label><select id="ge-grupo" onchange="geGrupoTouched();geCambiarGrupo()"></select></div>
-      <div class="field"><label>Fórmula / fuente</label><select id="ge-fuente" onchange="calcGerRee()"></select></div>
+      <div class="field"><label>Fórmula / fuente</label><select id="ge-fuente" onchange="geFuenteCambiada()"></select></div>
+      <div class="field" id="ge-tipo-wrap" style="display:none">
+        <label>Tipo de alimentación (primer año de vida)</label>
+        <select id="ge-tipo-lact" onchange="calcGerRee()">
+          <option value="seno">Seno materno</option>
+          <option value="sucedaneo">Sucedáneo de leche materna</option>
+          <option value="ambas">Ambas formas</option>
+        </select>
+      </div>
       <div class="res neutral" id="ge-resultado">Completa edad, peso (y talla si la fórmula la pide) para calcular.</div>
 
       <h4 style="margin-top:14px">Tamizaje por circunferencia de brazo (MUAC)</h4>
@@ -2447,6 +2455,24 @@ function getFaoNinoMayor(sexoOMS, pesoKg){
     : (65.3*pesoKg) - (0.454*pesoKg*pesoKg) + 263.4;
 }
 // Depósito de energía (kcal/día) por banda de edad — Institute of Medicine 2005, tablas de referencia.
+// Depósito de energía (kcal/día) para lactantes 0-12 meses — FAO/WHO/UNU 2001
+// (distinta de la tabla de IOM 2005 usada en iom_tabla; esta es la que exige
+// la fórmula REE=GET+depósito de la sección "Primer año de vida" del manual).
+var GE_DEPOSITO_LACTANTE_FAO = {
+  M: [[0.5,211],[1.5,183],[2.5,139],[3.5,53],[4.5,45],[5.5,36],[6.5,17],[7.5,16],[8.5,14],[9.5,21],[10.5,21],[11.5,22]],
+  F: [[0.5,178],[1.5,161],[2.5,134],[3.5,68],[4.5,57],[5.5,47],[6.5,20],[7.5,17],[8.5,15],[9.5,18],[10.5,15],[11.5,14]]
+};
+function getFaoLactante(tipo, pesoKg){
+  if(tipo==='seno') return (92.8*pesoKg) - 152.0;
+  if(tipo==='sucedaneo') return (82.6*pesoKg) - 29.0;
+  return (88.6*pesoKg) - 99.4; // ambas
+}
+function reeFaoLactante(tipo, sexoOMS, pesoKg, meses){
+  var get = getFaoLactante(tipo, pesoKg);
+  var dep = interpolarTabla(GE_DEPOSITO_LACTANTE_FAO[sexoOMS], meses);
+  return {get:get, dep:dep, ree:get+dep};
+}
+
 var GE_DEPOSITO = {
   M: [ // niños
     [2.5,11],[3.5,12],[4.5,11],           // preescolares 2-5a
@@ -2480,7 +2506,8 @@ var GE_FUENTES = {
     {id:'iom_banda', nombre:'IOM 2005 — fórmula por banda de edad'},
     {id:'iom_tabla', nombre:'IOM 2005 — tabla de referencia (interpolada por mes)'},
     {id:'scho_peso', nombre:'Schofield 1985 (<3 años) — peso'},
-    {id:'scho_pesotalla', nombre:'Schofield 1985 (<3 años) — peso y talla'}
+    {id:'scho_pesotalla', nombre:'Schofield 1985 (<3 años) — peso y talla'},
+    {id:'fao_lact', nombre:'FAO/WHO/UNU 2001 — GET + depósito (0-12 meses, por tipo de alimentación)'}
   ],
   preescolares: [
     {id:'scho_peso', nombre:'Schofield 1985 — peso'},
@@ -2491,6 +2518,8 @@ var GE_FUENTES = {
     {id:'fao', nombre:'FAO/WHO/UNU 2001 — GET + depósito de energía'}
   ],
   escolares: [
+    {id:'scho_peso', nombre:'Schofield 1985 — peso'},
+    {id:'scho_pesotalla', nombre:'Schofield 1985 — peso y talla'},
     {id:'iom_normal', nombre:'IOM 2005 — peso normal'},
     {id:'iom_mixto', nombre:'IOM 2005 — peso normal, sobrepeso y obesos'},
     {id:'iom_sobrepeso', nombre:'IOM 2005 — sobrepeso y obesidad'},
@@ -2524,6 +2553,12 @@ function gePoblarFuentes(){
   var grupo = gv('ge-grupo') || 'preescolares';
   var fsel = document.getElementById('ge-fuente');
   fsel.innerHTML = GE_FUENTES[grupo].map(function(f){ return '<option value="'+f.id+'">'+f.nombre+'</option>'; }).join('');
+  geFuenteCambiada();
+}
+function geFuenteCambiada(){
+  var wrap = document.getElementById('ge-tipo-wrap');
+  if(wrap) wrap.style.display = (gv('ge-fuente')==='fao_lact') ? 'block' : 'none';
+  calcGerRee();
 }
 function geGrupoTouched(){ var s=document.getElementById('ge-grupo'); if(s) s.dataset.touched='1'; }
 function geCambiarGrupo(){ gePoblarFuentes(); calcGerRee(); }
@@ -2576,6 +2611,14 @@ function calcGerRee(){
     var r = reeFaoNinoMayor(sexoOMS, pesoKg, edadAnios);
     kcal = r.ree;
     detalle = 'FAO/WHO/UNU 2001 — GET '+r0(r.get)+' kcal/día + depósito '+r0(r.dep)+' kcal/día';
+  } else if(fuente==='fao_lact'){
+    if(isNaN(meses)){ res.textContent='Captura la edad en meses.'; res.className='res neutral'; return; }
+    if(meses>12){ res.textContent='Esta fórmula (FAO/WHO/UNU, primer año de vida) solo aplica de 0 a 12 meses.'; res.className='res neutral'; return; }
+    var tipo = gv('ge-tipo-lact') || 'ambas';
+    var rl = reeFaoLactante(tipo, sexoOMS, pesoKg, meses);
+    kcal = rl.ree;
+    var tipoTxt = {seno:'seno materno', sucedaneo:'sucedáneo de leche materna', ambas:'ambas formas'}[tipo];
+    detalle = 'FAO/WHO/UNU 2001 ('+tipoTxt+') — GET '+r0(rl.get)+' kcal/día + depósito '+r0(rl.dep)+' kcal/día';
   }
 
   if(kcal==null || isNaN(kcal)){ res.textContent='—'; res.className='res neutral'; return; }
