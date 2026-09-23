@@ -698,6 +698,12 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <div class="field"><label>Líquidos (Holliday-Segar)</label><div class="res neutral" id="pe-liq">—</div></div>
       <div class="pat-tip" id="pe-tip">Completa edad y peso para ver los requerimientos.</div>
 
+      <h4 style="margin-top:14px">Gasto energético en reposo (GER/REE) — por fórmula</h4>
+      <p class="note">Elige el grupo de edad y la fuente. Se sugiere el grupo según la edad capturada arriba, pero puedes cambiarlo.</p>
+      <div class="field"><label>Grupo de edad</label><select id="ge-grupo" onchange="geGrupoTouched();geCambiarGrupo()"></select></div>
+      <div class="field"><label>Fórmula / fuente</label><select id="ge-fuente" onchange="calcGerRee()"></select></div>
+      <div class="res neutral" id="ge-resultado">Completa edad, peso (y talla si la fórmula la pide) para calcular.</div>
+
       <h4 style="margin-top:14px">Tamizaje por circunferencia de brazo (MUAC)</h4>
       <div class="field"><label>Circunferencia media de brazo (cm)</label><input type="number" id="pe-muac" step="0.1" placeholder="0.0" oninput="calcMuac()"></div>
       <div class="field"><label>Clasificación (6–59 meses)</label><div class="res" id="pe-muacres">—</div></div>
@@ -2265,6 +2271,7 @@ function calcPediatrico(){
   else if(meses>168) tip += ' En adolescentes, ajustar por velocidad de crecimiento puberal y nivel de actividad física.';
   sv('pe-tip', tip);
   if (typeof renderPedChart === 'function') renderPedChart();
+  if (typeof calcGerRee === 'function') calcGerRee();
 }
 
 // ===== PEDIATRÍA: curva de crecimiento OMS (gráfica SVG) =====
@@ -2357,6 +2364,223 @@ function renderPedChart(){
   svg += '<text x="'+PAD+'" y="13" font-size="11" fill="#857f6c">'+esc(label)+'</text>';
   svg += '</svg>';
   wrap.innerHTML = svg;
+}
+
+// ===== PEDIATRÍA: motor de fórmulas GER/REE (Schofield 1985, IOM 2005, FAO/WHO/UNU 2001) =====
+// Cada grupo de edad ofrece las fuentes que realmente trae el manual para ese rango;
+// no se inventan bandas que no estaban en las fotos (p. ej. Schofield no cubre Escolares).
+
+// --- Schofield 1985 ---
+var GE_SCHO = {
+  // <3 años y 3-5 años: niños/niñas por separado (Lactantes y Preescolares)
+  menor3: {
+    peso:      { M:{m:59.512, b:-30.4},  F:{m:58.317, b:-31.1} },
+    pesoTalla: { M:{p:0.167,  t:15.17,  b:-617.6}, F:{p:16.252, t:10.232, b:-413.5} }
+  },
+  de3a5: {
+    peso:      { M:{m:22.706, b:504.3}, F:{m:20.315, b:485.9} },
+    pesoTalla: { M:{p:19.59,  t:1.303, b:414.9}, F:{p:16.969, t:1.618, b:371.2} }
+  },
+  // Preadolescentes y adolescentes: una sola fórmula (muchachos/muchachas), sin banda por edad
+  mayores: {
+    peso:      { M:{m:17.686, b:658.2}, F:{m:13.384, b:692.6} },
+    pesoTalla: { M:{p:16.25,  t:1.372, b:515.5}, F:{p:8.365,  t:4.65,  b:200.0} }
+  }
+};
+function gerSchofieldPeso(banda, sexoOMS, pesoKg){
+  var f = GE_SCHO[banda].peso[sexoOMS];
+  return f.m*pesoKg + f.b;
+}
+function gerSchofieldPesoTalla(banda, sexoOMS, pesoKg, tallaCm){
+  var f = GE_SCHO[banda].pesoTalla[sexoOMS];
+  return f.p*pesoKg + f.t*tallaCm + f.b;
+}
+
+// --- IOM 2005 (fórmulas continuas ~3-18 años, usan talla en metros) ---
+// F = mujer/niña, M = hombre/niño (misma convención que el resto de la app)
+var GE_IOM = {
+  normal:    { F:{a:189, edad:-17.6, talla:625,   peso:7.9},  M:{a:68,  edad:-43.3, talla:712,   peso:19.2} },
+  mixto:     { F:{a:322, edad:-26.0, talla:504,   peso:11.6}, M:{a:79,  edad:-34.2, talla:730,   peso:15.3} },
+  sobrepeso: { F:{a:516, edad:-26.8, talla:347,   peso:12.4}, M:{a:420, edad:-33.5, talla:418.9, peso:16.7} }
+};
+function gerIOM(estado, sexoOMS, edadAnios, tallaCm, pesoKg){
+  var f = GE_IOM[estado][sexoOMS];
+  return f.a + f.edad*edadAnios + f.talla*(tallaCm/100) + f.peso*pesoKg;
+}
+
+// --- IOM 2005, lactantes: fórmula por banda de edad (0-3, 4-6, 7-12, 13-36 meses) ---
+function reeIOMLactanteBanda(meses, pesoKg){
+  var c;
+  if(meses<=3) c=175; else if(meses<=6) c=56; else if(meses<=12) c=22; else c=20;
+  return (89*pesoKg - 100) + c;
+}
+
+// --- IOM 2005, lactantes: tabla de referencia (interpolada por mes, niños/niñas) ---
+// Fuente: manual, páginas 122-124 — GET, depósito de energía y REE tabulados.
+var GE_IOM_TABLA_LACT = {
+  M: [ // niños
+    [1,472],[2,567],[3,572],[4,548],[5,596],[6,645],[7,668],[8,710],[9,746],[10,793],[11,817],[12,844],
+    [15,908],[18,961],[21,1006],[24,1050],[27,1086],[30,1121],[33,1157],[35,1184]
+  ],
+  F: [ // niñas
+    [1,438],[2,500],[3,521],[4,508],[5,553],[6,593],[7,608],[8,643],[9,678],[10,717],[11,742],[12,768],
+    [15,837],[18,899],[21,952],[24,997],[27,1033],[30,1077],[33,1113],[35,1139]
+  ]
+};
+function interpolarTabla(tabla, x){
+  if(x<=tabla[0][0]) return tabla[0][1];
+  if(x>=tabla[tabla.length-1][0]) return tabla[tabla.length-1][1];
+  for(var i=0;i<tabla.length-1;i++){
+    var a=tabla[i], b=tabla[i+1];
+    if(x>=a[0] && x<=b[0]) return a[1] + (b[1]-a[1])*((x-a[0])/(b[0]-a[0]));
+  }
+  return tabla[tabla.length-1][1];
+}
+function reeIOMLactanteTabla(sexoOMS, meses){
+  return interpolarTabla(GE_IOM_TABLA_LACT[sexoOMS], meses);
+}
+
+// --- FAO/WHO/UNU 2001, GET (5-18 años aprox., cuadrática en peso) + depósito de energía tabulado ---
+function getFaoNinoMayor(sexoOMS, pesoKg){
+  return sexoOMS==='M'
+    ? (63.3*pesoKg) - (0.263*pesoKg*pesoKg) + 310.2
+    : (65.3*pesoKg) - (0.454*pesoKg*pesoKg) + 263.4;
+}
+// Depósito de energía (kcal/día) por banda de edad — Institute of Medicine 2005, tablas de referencia.
+var GE_DEPOSITO = {
+  M: [ // niños
+    [2.5,11],[3.5,12],[4.5,11],           // preescolares 2-5a
+    [5.5,11],[6.5,12],[7.5,14],[8.5,16],[9.5,19], // escolares 5-10a
+    [10.5,22],[11.5,25],[12.5,29],[13.5,33],[14.5,33],[15.5,30],[16.5,24],[17.5,15] // adolescentes 10-18a
+  ],
+  F: [ // niñas
+    [2.5,12],[3.5,11],[4.5,10],
+    [5.5,10],[6.5,13],[7.5,17],[8.5,21],[9.5,23],
+    [10.5,25],[11.5,25],[12.5,26],[13.5,24],[14.5,19],[15.5,12],[16.5,5],[17.5,0]
+  ]
+};
+function depositoFao(sexoOMS, edadAnios){
+  return interpolarTabla(GE_DEPOSITO[sexoOMS], edadAnios);
+}
+function reeFaoNinoMayor(sexoOMS, pesoKg, edadAnios){
+  var get = getFaoNinoMayor(sexoOMS, pesoKg);
+  var dep = depositoFao(sexoOMS, edadAnios);
+  return {get:get, dep:dep, ree:get+dep};
+}
+
+// --- Menú de fuentes disponibles por grupo de edad ---
+var GE_GRUPOS = [
+  {id:'lactantes', nombre:'Lactantes (29 días – 2 años)'},
+  {id:'preescolares', nombre:'Preescolares (2 – 5 años)'},
+  {id:'escolares', nombre:'Escolares (5 – 9 años)'},
+  {id:'adolescentes', nombre:'Preadolescentes y adolescentes (10 – 19 años)'}
+];
+var GE_FUENTES = {
+  lactantes: [
+    {id:'iom_banda', nombre:'IOM 2005 — fórmula por banda de edad'},
+    {id:'iom_tabla', nombre:'IOM 2005 — tabla de referencia (interpolada por mes)'},
+    {id:'scho_peso', nombre:'Schofield 1985 (<3 años) — peso'},
+    {id:'scho_pesotalla', nombre:'Schofield 1985 (<3 años) — peso y talla'}
+  ],
+  preescolares: [
+    {id:'scho_peso', nombre:'Schofield 1985 — peso'},
+    {id:'scho_pesotalla', nombre:'Schofield 1985 — peso y talla'},
+    {id:'iom_normal', nombre:'IOM 2005 — peso normal'},
+    {id:'iom_mixto', nombre:'IOM 2005 — peso normal, sobrepeso y obesos'},
+    {id:'iom_sobrepeso', nombre:'IOM 2005 — sobrepeso y obesidad'},
+    {id:'fao', nombre:'FAO/WHO/UNU 2001 — GET + depósito de energía'}
+  ],
+  escolares: [
+    {id:'iom_normal', nombre:'IOM 2005 — peso normal'},
+    {id:'iom_mixto', nombre:'IOM 2005 — peso normal, sobrepeso y obesos'},
+    {id:'iom_sobrepeso', nombre:'IOM 2005 — sobrepeso y obesidad'},
+    {id:'fao', nombre:'FAO/WHO/UNU 2001 — GET + depósito de energía'}
+  ],
+  adolescentes: [
+    {id:'scho_peso', nombre:'Schofield 1985 — peso'},
+    {id:'scho_pesotalla', nombre:'Schofield 1985 — peso y talla'},
+    {id:'iom_normal', nombre:'IOM 2005 — peso normal'},
+    {id:'iom_mixto', nombre:'IOM 2005 — peso normal, sobrepeso y obesos'},
+    {id:'iom_sobrepeso', nombre:'IOM 2005 — sobrepeso y obesidad'},
+    {id:'fao', nombre:'FAO/WHO/UNU 2001 — GET + depósito de energía'}
+  ]
+};
+
+function geGrupoPorEdad(meses){
+  if(meses==null) return 'preescolares';
+  if(meses<24) return 'lactantes';
+  if(meses<60) return 'preescolares';
+  if(meses<120) return 'escolares';
+  return 'adolescentes';
+}
+function initGeSelects(){
+  var gsel = document.getElementById('ge-grupo');
+  if(!gsel || gsel.dataset.filled) return;
+  gsel.innerHTML = GE_GRUPOS.map(function(g){ return '<option value="'+g.id+'">'+g.nombre+'</option>'; }).join('');
+  gsel.dataset.filled = '1';
+  gePoblarFuentes();
+}
+function gePoblarFuentes(){
+  var grupo = gv('ge-grupo') || 'preescolares';
+  var fsel = document.getElementById('ge-fuente');
+  fsel.innerHTML = GE_FUENTES[grupo].map(function(f){ return '<option value="'+f.id+'">'+f.nombre+'</option>'; }).join('');
+}
+function geGrupoTouched(){ var s=document.getElementById('ge-grupo'); if(s) s.dataset.touched='1'; }
+function geCambiarGrupo(){ gePoblarFuentes(); calcGerRee(); }
+
+function calcGerRee(){
+  var res = document.getElementById('ge-resultado');
+  if(!res) return;
+  var meses = parseFloat(gv('pe-edad'));
+  var pesoKg = parseFloat(gv('pe-peso'));
+  var tallaCm = parseFloat(gv('pe-talla'));
+  var sexoOMS = (typeof peSexo!=='undefined' && peSexo==='F') ? 'F' : 'M';
+
+  var gsel = document.getElementById('ge-grupo');
+  if(gsel && !gsel.dataset.touched && !isNaN(meses)){
+    var sugerido = geGrupoPorEdad(meses);
+    if(gsel.value !== sugerido){ gsel.value = sugerido; gePoblarFuentes(); }
+  }
+  var grupo = gv('ge-grupo') || 'preescolares';
+  var fuente = gv('ge-fuente');
+  var edadAnios = isNaN(meses) ? NaN : meses/12;
+
+  if(isNaN(pesoKg) || pesoKg<=0){ res.textContent='Captura al menos el peso.'; res.className='res neutral'; return; }
+
+  var banda = edadAnios<3 ? 'menor3' : 'de3a5';
+  if(grupo==='adolescentes') banda = 'mayores';
+
+  var kcal=null, detalle='';
+  if(fuente==='iom_banda'){
+    if(isNaN(meses)){ res.textContent='Captura la edad en meses.'; res.className='res neutral'; return; }
+    kcal = reeIOMLactanteBanda(meses, pesoKg);
+    detalle = 'IOM 2005, fórmula por banda de edad';
+  } else if(fuente==='iom_tabla'){
+    if(isNaN(meses)){ res.textContent='Captura la edad en meses.'; res.className='res neutral'; return; }
+    kcal = reeIOMLactanteTabla(sexoOMS, meses);
+    detalle = 'IOM 2005, tabla de referencia (interpolada)';
+  } else if(fuente==='scho_peso'){
+    kcal = gerSchofieldPeso(banda, sexoOMS, pesoKg);
+    detalle = 'Schofield 1985, mediante peso';
+  } else if(fuente==='scho_pesotalla'){
+    if(isNaN(tallaCm) || tallaCm<=0){ res.textContent='Esta fórmula necesita también la talla.'; res.className='res neutral'; return; }
+    kcal = gerSchofieldPesoTalla(banda, sexoOMS, pesoKg, tallaCm);
+    detalle = 'Schofield 1985, mediante peso y talla';
+  } else if(fuente==='iom_normal' || fuente==='iom_mixto' || fuente==='iom_sobrepeso'){
+    if(isNaN(tallaCm) || tallaCm<=0 || isNaN(edadAnios)){ res.textContent='Esta fórmula necesita edad, peso y talla.'; res.className='res neutral'; return; }
+    var estado = fuente==='iom_normal' ? 'normal' : (fuente==='iom_mixto' ? 'mixto' : 'sobrepeso');
+    kcal = gerIOM(estado, sexoOMS, edadAnios, tallaCm, pesoKg);
+    detalle = 'IOM 2005 ('+({normal:'peso normal', mixto:'peso normal, sobrepeso y obesos', sobrepeso:'sobrepeso y obesidad'})[estado]+')';
+  } else if(fuente==='fao'){
+    if(isNaN(edadAnios)){ res.textContent='Captura la edad.'; res.className='res neutral'; return; }
+    var r = reeFaoNinoMayor(sexoOMS, pesoKg, edadAnios);
+    kcal = r.ree;
+    detalle = 'FAO/WHO/UNU 2001 — GET '+r0(r.get)+' kcal/día + depósito '+r0(r.dep)+' kcal/día';
+  }
+
+  if(kcal==null || isNaN(kcal)){ res.textContent='—'; res.className='res neutral'; return; }
+  res.innerHTML = '<b>'+r0(kcal)+' kcal/día</b><br><span style="font-size:.72rem;font-weight:400">'+detalle+'</span>';
+  res.className = 'res ok';
 }
 
 function calcMuac(){
@@ -4748,6 +4972,7 @@ if ('serviceWorker' in navigator) {
   if (typeof calcElectrolitos === 'function') calcElectrolitos();
   if (typeof calcAntropometria === 'function') calcAntropometria();
   if (typeof initPedChartUI === 'function') initPedChartUI();
+  if (typeof initGeSelects === 'function') initGeSelects();
 </script>
 
 <script>
