@@ -717,6 +717,22 @@ span.tag{font-size:.69rem;font-weight:700;padding:2px 7px;border-radius:4px}
       <div class="field"><label>Clasificación (6–59 meses)</label><div class="res" id="pe-muacres">—</div></div>
       <p class="note">Puntos de corte OMS/UNICEF: &lt;11.5 cm desnutrición aguda severa · 11.5–12.4 cm moderada · ≥12.5 cm normal. Válido solo en el rango de 6 a 59 meses.</p>
 
+      <h4 style="margin-top:14px">Lactantes: índices y composición corporal</h4>
+      <p class="note">Manual de Fórmulas y Tablas, 4a ed. Usa la edad, peso y talla ya capturados arriba. Solo aplica de 29 días a 2 años; los campos que no llenes simplemente no muestran resultado.</p>
+      <div class="row">
+        <div class="field"><label>Perímetro de brazo (cm)</label><input type="number" step="0.1" id="lac-pb" oninput="renderLactantesIndices()"></div>
+        <div class="field"><label>Pliegue del tríceps (mm)</label><input type="number" step="0.1" id="lac-pct" oninput="renderLactantesIndices()"></div>
+      </div>
+      <div class="field"><label>Fórmula para área muscular/grasa del brazo</label>
+        <select id="lac-autor-brazo" onchange="renderLactantesIndices()">
+          <option value="rolland">Rolland-Cachera y cols., 1997</option>
+          <option value="jelliffe">Jelliffe y Jelliffe, 1969</option>
+        </select>
+      </div>
+      <div class="field"><label>Sumatoria de 4 pliegues — bíceps+tríceps+suprailiaco+subescapular (mm)</label><input type="number" step="0.1" id="lac-sumapliegues" oninput="renderLactantesIndices()"></div>
+      <div class="field"><label>Creatinina en orina de 24 h (mg/24h)</label><input type="number" step="0.1" id="lac-creat" oninput="renderLactantesIndices()"></div>
+      <div id="lac-resultado" class="res neutral" style="margin-top:6px">Completa los campos de arriba (peso, talla, edad y/o las medidas de brazo/pliegues) para ver los resultados.</div>
+
       <h4 style="margin-top:14px">Curva de crecimiento (OMS)</h4>
       <div class="field"><label>Indicador a graficar</label><select id="ped-indicador" onchange="pedIndTouched();renderPedChart()"></select></div>
       <div id="ped-chart-wrap" style="margin-top:6px"></div>
@@ -2280,6 +2296,7 @@ function calcPediatrico(){
   sv('pe-tip', tip);
   if (typeof renderPedChart === 'function') renderPedChart();
   if (typeof calcGerRee === 'function') calcGerRee();
+  if (typeof renderLactantesIndices === 'function') renderLactantesIndices();
 }
 
 // ===== PEDIATRÍA: curva de crecimiento OMS (gráfica SVG) =====
@@ -2624,6 +2641,155 @@ function calcGerRee(){
   if(kcal==null || isNaN(kcal)){ res.textContent='—'; res.className='res neutral'; return; }
   res.innerHTML = '<b>'+r0(kcal)+' kcal/día</b><br><span style="font-size:.72rem;font-weight:400">'+detalle+'</span>';
   res.className = 'res ok';
+}
+
+// ===== PEDIATRÍA · LACTANTES: índices del Manual de Fórmulas y Tablas (4a ed., pág. 74-116) =====
+
+// --- Área de superficie corporal (ASC). Gunn y Nechyba, 2002 ---
+function calcASC(pesoKg){
+  if(pesoKg<5) return (pesoKg*0.05)+0.05;
+  if(pesoKg<=10) return (pesoKg*0.04)+0.1;
+  return (pesoKg*0.03)+0.2; // 10-20 kg (rango del manual para lactantes)
+}
+
+// --- % de peso/edad, % de longitud/edad, % de peso/longitud ---
+// Se calculan contra la MEDIANA de las tablas OMS 2006 ya cargadas en la app
+// (valorParaZ con z=0 devuelve exactamente el parámetro M, que es la mediana).
+function medianaOMS(tabla, x){
+  var fila = filaMasCercanaGE(tabla, x);
+  return fila ? fila.M : null;
+}
+function filaMasCercanaGE(tabla, x){
+  var mejor=null, mejorDist=Infinity;
+  for(var i=0;i<tabla.length;i++){
+    var v = tabla[i].x!=null ? tabla[i].x : tabla[i].month;
+    var d = Math.abs(v-x);
+    if(d<mejorDist){ mejorDist=d; mejor=tabla[i]; }
+  }
+  return mejor;
+}
+function calcPorcentajesMediana(grupo, meses, pesoKg, tallaCm){
+  if(!window.tablasOMS) return null;
+  var dias = Math.round(meses*30.4375);
+  var out = {};
+  if(!isNaN(pesoKg)){
+    var medPeso = medianaOMS(window.tablasOMS.weight_for_age['0_5'][grupo], dias);
+    if(medPeso) out.pe = {valor: medPeso, pct: (pesoKg/medPeso)*100};
+  }
+  if(!isNaN(tallaCm)){
+    var medTalla = medianaOMS(window.tablasOMS.height_for_age['0_5'][grupo], dias);
+    if(medTalla) out.le = {valor: medTalla, pct: (tallaCm/medTalla)*100};
+  }
+  if(!isNaN(pesoKg) && !isNaN(tallaCm)){
+    var medPL = medianaOMS(window.tablasOMS.weight_for_height['0_5'][grupo], tallaCm);
+    if(medPL) out.pl = {valor: medPL, pct: (pesoKg/medPL)*100};
+  }
+  return out;
+}
+function interpretarPct(pct, tipo){
+  // Cortes clásicos de Gómez (peso/edad) reutilizados para las 3 razones, como hace el manual.
+  if(pct==null) return '';
+  if(pct>=90) return 'Normal';
+  if(pct>=75) return 'Desnutrición de primer grado (leve)';
+  if(pct>=60) return 'Desnutrición de segundo grado (moderada)';
+  return 'Desnutrición de tercer grado (severa)';
+}
+
+// --- Índices del brazo ---
+// Rolland-Cachera y cols., 1997: AGBr = PB×(PCT/2); AMBr = ABr − AGBr
+// Jelliffe y Jelliffe, 1969: AMBr = (PB − (PCT×π))² / 4π; AGBr = ABr − AMBr
+// Ambos autores: ABr = PB² / 4π ; %AGBr = AGBr/ABr × 100
+function calcIndicesBrazo(autor, pbCm, pctCm){
+  var ABr = (pbCm*pbCm)/(4*Math.PI);
+  var AGBr, AMBr;
+  if(autor==='jelliffe'){
+    AMBr = Math.pow(pbCm-(pctCm*Math.PI), 2)/(4*Math.PI);
+    AGBr = ABr - AMBr;
+  } else { // rolland
+    AGBr = pbCm*(pctCm/2);
+    AMBr = ABr - AGBr;
+  }
+  var pctAGBr = (AGBr/ABr)*100;
+  return {ABr:ABr, AGBr:AGBr, AMBr:AMBr, pctAGBr:pctAGBr};
+}
+
+// --- % de grasa corporal total y densidad corporal. Weststrate y Deurenberg, 1989 ---
+// (el manual rotula el exponente de "edad" como "mm"; se usa edad en MESES, coherente
+// con la fórmula de densidad corporal de la misma página, que sí la rotula "meses").
+function calcDensidadCorporal(edadMeses, sumaPliegues4mm){
+  return (1.1235 + (0.0016*Math.pow(edadMeses,0.5))) - (0.0719*Math.log10(sumaPliegues4mm));
+}
+function calcGrasaCorporalTotal(edadMeses, sumaPliegues4mm){
+  var dc = calcDensidadCorporal(edadMeses, sumaPliegues4mm);
+  var e05 = Math.pow(edadMeses,0.5);
+  var pctGCT = ((585-(4.7*e05))/dc) - (550-(5.1*e05));
+  return {dc:dc, pctGCT:pctGCT};
+}
+
+// --- % de creatinina de acuerdo con la talla (%CT). Viteri y Alvarado, 1970 ---
+var TABLA_CT_TALLA = [
+  [50.0,35.5],[53.5,44.9],[56.9,55.2],[60.4,66.4],[62.4,72.4],[64.4,78.6],[66.4,85.0],
+  [68.0,90.4],[69.6,96.1],[71.2,101.8],[72.5,107.3],[73.8,112.9],[75.2,118.8],[76.3,123.6],
+  [77.4,128.5],[78.5,132.7],[79.6,137.7],[80.7,142.8],[81.8,147.2],[82.2,156.4],[83.7,159.0],
+  [84.7,165.2],[85.6,171.2],[86.6,177.5],[87.5,183.8],[88.5,189.4],[89.8,189.5],[91.5,209.5],
+  [92.8,219.9],[94.1,231.5],[95.5,244.5],[96.8,256.5],[98.0,263.6],[99.2,272.8],[100.4,281.1],
+  [101.6,287.5],[102.8,293.0],[104.0,299.5],[105.1,305.8],[106.2,311.2],[107.1,318.1],[108.0,329.4]
+];
+function ctEsperadaPorTalla(tallaCm){
+  return interpolarTabla(TABLA_CT_TALLA, tallaCm);
+}
+function calcPorcentajeCreatinina(creatOrina24h, tallaCm){
+  var ct = ctEsperadaPorTalla(tallaCm);
+  return {ct:ct, pctCT:(creatOrina24h/ct)*100};
+}
+
+function renderLactantesIndices(){
+  var box = document.getElementById('lac-resultado');
+  if(!box) return;
+  var meses = parseFloat(gv('pe-edad'));
+  var pesoKg = parseFloat(gv('pe-peso'));
+  var tallaCm = parseFloat(gv('pe-talla'));
+  var grupoOMS = (typeof peSexo!=='undefined' && peSexo==='F') ? 'girls' : 'boys';
+  var h = '';
+
+  // ASC
+  if(!isNaN(pesoKg) && pesoKg>0){
+    var asc = calcASC(pesoKg);
+    h += '<div class="res ok">Área de superficie corporal: <b>'+asc.toFixed(2)+' m²</b></div>';
+  }
+
+  // % PE / LE / PL
+  var pcts = calcPorcentajesMediana(grupoOMS, meses, pesoKg, tallaCm);
+  if(pcts){
+    if(pcts.pe) h += '<div class="res neutral">%Peso/edad: <b>'+r1(pcts.pe.pct)+'%</b> — '+interpretarPct(pcts.pe.pct)+'</div>';
+    if(pcts.le) h += '<div class="res neutral">%Longitud/edad: <b>'+r1(pcts.le.pct)+'%</b> — '+interpretarPct(pcts.le.pct)+'</div>';
+    if(pcts.pl) h += '<div class="res neutral">%Peso/longitud: <b>'+r1(pcts.pl.pct)+'%</b> — '+interpretarPct(pcts.pl.pct)+'</div>';
+  }
+
+  // Índices del brazo
+  var pb = parseFloat(gv('lac-pb')), pctMm = parseFloat(gv('lac-pct'));
+  if(!isNaN(pb) && pb>0 && !isNaN(pctMm) && pctMm>0){
+    var autor = gv('lac-autor-brazo');
+    var r = calcIndicesBrazo(autor, pb, pctMm/10);
+    h += '<div class="res neutral">Área del brazo: '+r1(r.ABr)+' cm² · Área grasa: '+r1(r.AGBr)+' cm² · '+
+      'Área muscular: '+r1(r.AMBr)+' cm² · %Área grasa: '+r1(r.pctAGBr)+'%</div>';
+  }
+
+  // % Grasa corporal total
+  var sumaPliegues = parseFloat(gv('lac-sumapliegues'));
+  if(!isNaN(sumaPliegues) && sumaPliegues>0 && !isNaN(meses)){
+    var g = calcGrasaCorporalTotal(meses, sumaPliegues);
+    h += '<div class="res neutral">Densidad corporal: '+g.dc.toFixed(4)+' · % Grasa corporal total: <b>'+r1(g.pctGCT)+'%</b></div>';
+  }
+
+  // % Creatinina/talla
+  var creat = parseFloat(gv('lac-creat'));
+  if(!isNaN(creat) && creat>0 && !isNaN(tallaCm) && tallaCm>0){
+    var c = calcPorcentajeCreatinina(creat, tallaCm);
+    h += '<div class="res neutral">Creatinina esperada según talla: '+r1(c.ct)+' mg/24h · %CT: <b>'+r1(c.pctCT)+'%</b></div>';
+  }
+
+  box.innerHTML = h || 'Completa los campos de arriba (peso, talla, edad y/o las medidas de brazo/pliegues) para ver los resultados.';
 }
 
 function calcMuac(){
@@ -4535,6 +4701,15 @@ function snapshotTab(t){
     var chartWrap = document.getElementById('ped-chart-wrap');
     if(chartWrap && chartWrap.innerHTML.trim()){
       secs.push({t:'Curva de crecimiento OMS', rows:[], notas:[], svg:chartWrap.innerHTML});
+    }
+    var lacBox = document.getElementById('lac-resultado');
+    if(lacBox && lacBox.querySelector('.res')){
+      var filasLac = [].map.call(lacBox.querySelectorAll('.res'), function(el){
+        var txt = el.textContent.replace(/\s+/g,' ').trim();
+        var partes = txt.split(/:\s*/);
+        return partes.length>1 ? [partes[0], partes.slice(1).join(': ')] : ['', txt];
+      });
+      secs.push({t:'Lactantes — índices y composición corporal', rows:filasLac, notas:[]});
     }
   }
   if(t==='labs'){
