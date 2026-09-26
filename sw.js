@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nutri-calc-v35';
+const CACHE_NAME = 'nutri-calc-v36';
 const ASSETS = [
   './index.html',
   './manifest.json',
